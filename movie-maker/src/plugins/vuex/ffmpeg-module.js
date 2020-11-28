@@ -1,6 +1,7 @@
 import ffbinaries from "ffbinaries";
 import path from "path";
 import EventEmitter from 'events'
+const ffmpeg = window.require('fluent-ffmpeg')
 
 export default {
     state: {
@@ -11,10 +12,12 @@ export default {
     mutations: {},
     getters: {},
     actions: {
-        async initializeFfmpeg({dispatch}) {
+        async initializeFfmpeg({dispatch, state}) {
             console.log("Getting ffmpeg and ffprobe...")
             await dispatch('getPaths');
-            console.log("ffmpeg and ffprobe have been retrieved")
+            ffmpeg.setFfmpegPath(state.paths.ffmpeg);
+            ffmpeg.setFfprobePath(state.paths.ffprobe);
+            console.log("ffmpeg and ffprobe have been retrieved", {ffmpeg})
         },
         async getPaths({state}) {
             const downloadDirectory = './';
