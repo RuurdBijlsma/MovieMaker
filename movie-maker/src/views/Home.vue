@@ -1,19 +1,22 @@
 <template>
     <div class="home">
         <div class="left-panel">
-            <video controls></video>
+            <video-player></video-player>
         </div>
         <div class="right-panel">
-
+            <timeline class="timeline"></timeline>
         </div>
     </div>
 </template>
 
 <script>
 
+import Timeline from "@/components/Timeline";
+import VideoPlayer from "@/components/VideoPlayer";
+
 export default {
     name: "Home",
-    components: {},
+    components: {VideoPlayer, Timeline},
     data: () => ({}),
     mounted() {
     },
@@ -21,16 +24,14 @@ export default {
     },
     methods: {},
     watch: {},
-    computed: {},
-    beforeRouteLeave(to, from, next) {
-
+    computed: {
     },
 }
 </script>
 
 <style scoped>
 .home {
-    padding: 20px;
+    padding: 5px;
     display: flex;
     height: 100%;
 }
@@ -41,6 +42,12 @@ export default {
 }
 
 .right-panel {
-    flex-grow: 1;
+    width: 50%;
+    padding: 10px;
+}
+
+.timeline {
+    width: 100%;
+    height: 100%;
 }
 </style>

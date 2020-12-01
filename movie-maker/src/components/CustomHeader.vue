@@ -6,7 +6,7 @@
             </div>
             <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="importVideo" v-bind="attrs" v-on="on">
+                    <v-btn class="no-drag" icon @click="importVideoInput" v-bind="attrs" v-on="on">
                         <v-icon>mdi-import</v-icon>
                     </v-btn>
                 </template>
@@ -71,11 +71,23 @@
 </template>
 
 <script>
+import {mapActions} from "vuex";
+
 export default {
     name: "CustomHeader",
     components: {},
     methods: {
-        importVideo() {
+        importVideoInput() {
+            let element = document.createElement('input');
+            element.setAttribute('type', 'file');
+            element.setAttribute('accept', 'video/*');
+            element.setAttribute('multiple', '');
+            element.click();
+            element.onchange = () => {
+                for(let file of element.files){
+                    this.importVideo(file.path);
+                }
+            }
             console.log("IMPORT");
         },
         addAudioTrack() {
@@ -87,6 +99,7 @@ export default {
         exportToYouTube() {
             console.log("exportToYouTube");
         },
+        ...mapActions(['importVideo'])
     },
     watch: {
         '$vuetify.theme.dark'() {
