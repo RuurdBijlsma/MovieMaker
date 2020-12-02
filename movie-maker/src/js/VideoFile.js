@@ -2,6 +2,19 @@ export default class VideoFile {
     constructor(probeData, screenshots) {
         this.probe = probeData;
         this.screenshots = screenshots;
+        this.container = null;
+
+        this._elCache = null;
+    }
+
+    get element() {
+        if (this.container === null)
+            return null;
+        if (this._elCache === null) {
+            let el = [...this.container.children].find(c => c.getAttribute('id') === this.filePath);
+            if (el) this._elCache = el;
+        }
+        return this._elCache;
     }
 
     get streams() {

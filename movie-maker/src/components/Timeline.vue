@@ -3,11 +3,14 @@
         <div class="fragment" v-for="fragment in visualFragments" :style="{
             width: fragment.width + 'px',
         }">
-            <div class="fragment-background" :class="{
+            <div class="fragment-background"
+                 @mousedown="$store.commit('activeFragment', fragment.fragment)"
+                 :class="{
                 'fragment-continues-right': fragment.continuesRight,
                 'fragment-continues-left': fragment.continuesLeft,
                 'active-fragment': fragment.fragment === activeFragment,
-            }" :style="{
+            }"
+                 :style="{
                 backgroundImage: `url(${fragment.screenshots.merged})`,
                 backgroundPositionX: (-1 * fragment.leftCrop) + 'px'
             }"></div>
@@ -35,11 +38,11 @@ export default {
     },
     methods: {
         lazyUpdateFragmentsLayout() {
-            clearTimeout(this.lazyUpdateTimeout);
-            this.lazyUpdateTimeout = setTimeout(() => this.updateFragmentsLayout(), 150);
+            // clearTimeout(this.lazyUpdateTimeout);
+            // this.lazyUpdateTimeout = setTimeout(() => this.updateFragmentsLayout(), 150);
+            this.updateFragmentsLayout();
         },
         updateFragmentsLayout() {
-            console.log("Updating layout")
             let currentOffsetLeft = 0;
             let visualFragments = [];
             let fragmentQueue = [...this.fragments];
@@ -78,7 +81,6 @@ export default {
     },
     watch: {
         timeline() {
-            console.log("Timeline changed", this.timeline);
             this.updateFragmentsLayout();
         },
     },
@@ -100,8 +102,8 @@ export default {
         ...mapState({
             activeFragment: state => state.activeFragment,
             timeline: state => state.timeline,
-            minFragmentWidth: state => state.timelineConfig.minFragmentWidth,
-            widthPerSecond: state => state.timelineConfig.widthPerSecond,
+            minFragmentWidth: state => state.configTimeline.minFragmentWidth,
+            widthPerSecond: state => state.configTimeline.widthPerSecond,
         }),
     },
 }
@@ -116,8 +118,8 @@ export default {
 }
 
 .fragment-background {
-    box-shadow: 0 0 0 1px grey;
-    border-radius: 15px;
+    /*box-shadow: 0 0 0 1px grey;*/
+    border-radius: 8px;
     width: 100%;
     height: 100%;
     background-color: grey;
@@ -128,7 +130,7 @@ export default {
 }
 
 .active-fragment {
-    box-shadow: 0 0 20px 0 rgba(128, 128, 128, 0.8), 0 0 0 1px grey;
+    box-shadow: 0 0 20px 2px rgba(128, 128, 128, 0.8);
 }
 
 .fragment-continues-right {

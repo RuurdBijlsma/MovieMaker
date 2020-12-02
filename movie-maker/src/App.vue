@@ -39,8 +39,7 @@ export default {
     async mounted() {
         await this.initialize();
         console.log("Store", this.$store);
-        console.log("Theme", this.$vuetify)
-        await this.addSnack({text: "Hello snackers :)"})
+        console.log("Theme", this.$vuetify);
     },
     beforeDestroy() {
 

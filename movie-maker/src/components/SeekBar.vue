@@ -1,6 +1,6 @@
 <template>
     <div class="seek" @mousedown="moveStart" ref="seek">
-        <v-sheet color="secondary darken-2" class="seek-background">
+        <v-sheet color="primaryLight" class="seek-background">
             <v-sheet color="secondary" class="seek-progress" :style="{
                 width: percentage + '%',
             }"></v-sheet>
@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapActions, mapState} from "vuex";
 
 export default {
     name: "SeekBar",
@@ -46,13 +46,12 @@ export default {
                 this.seek(this.progressFromEvent(e));
             this.seekDown = false;
         },
-        seek(progress) {
-            this.$store.commit('progress', progress);
-        },
+        ...mapActions(['seek']),
     },
     computed: {
         percentage() {
-            return Math.round(this.progress * 100000) / 1000;
+            let p = Math.round(this.progress * 100000) / 1000;
+            return isNaN(p) ? 0 : p;
         },
         ...mapState({
             progress: state => state.player.progress,
@@ -79,7 +78,7 @@ export default {
 }
 
 .seek-progress {
-    width: 30%;
+    width: 0%;
     height: 100%;
     border-bottom-left-radius: 0.15em;
     border-top-left-radius: 0.15em;

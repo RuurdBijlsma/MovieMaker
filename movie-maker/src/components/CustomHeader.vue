@@ -21,6 +21,52 @@
                 <span>Add audio track</span>
             </v-tooltip>
         </div>
+        <div class="center-content">
+            <div v-if="activeFragment" class="fragment-controls">
+                <div class="slider-holder no-drag">
+                    <v-slider class="slider" dense hide-details min="0" max="1"
+                              step="0.01"
+                              v-model="activeFragment.volume"></v-slider>
+                    <div class="slider-label">
+                        <p>Volume: {{ Math.round(activeFragment.volume * 100) }}%</p>
+                    </div>
+                </div>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn x-small icon class="reset-button no-drag"
+                               :style="{
+                                            opacity: activeFragment.volume === 1 ? 0 : 0.5,
+                                            pointerEvents: activeFragment.volume === 1 ? 'none' : 'all',
+                                        }"
+                               @click="activeFragment.volume = 1" v-bind="attrs" v-on="on">
+                            <v-icon>mdi-reload</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>Set default volume</span>
+                </v-tooltip>
+                <div class="slider-holder no-drag">
+                    <v-slider class="slider" dense hide-details min="0.1" max="8"
+                              step="0.01"
+                              v-model="activeFragment.playbackRate"></v-slider>
+                    <div class="slider-label">
+                        <p>Playback rate: {{ activeFragment.playbackRate.toFixed(2) }}x</p>
+                    </div>
+                </div>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn x-small icon class="reset-button no-drag"
+                               :style="{
+                                            opacity: activeFragment.playbackRate === 1 ? 0 : 0.5,
+                                            pointerEvents: activeFragment.playbackRate === 1 ? 'none' : 'all',
+                                        }"
+                               @click="activeFragment.playbackRate = 1" v-bind="attrs" v-on="on">
+                            <v-icon>mdi-reload</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>Set default playback rate</span>
+                </v-tooltip>
+            </div>
+        </div>
         <div class="right-content">
             <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
@@ -71,11 +117,10 @@
 </template>
 
 <script>
-import {mapActions} from "vuex";
+import {mapActions, mapState} from "vuex";
 
 export default {
     name: "CustomHeader",
-    components: {},
     methods: {
         importVideoInput() {
             let element = document.createElement('input');
@@ -84,7 +129,7 @@ export default {
             element.setAttribute('multiple', '');
             element.click();
             element.onchange = () => {
-                for(let file of element.files){
+                for (let file of element.files) {
                     this.importVideo(file.path);
                 }
             }
@@ -105,7 +150,12 @@ export default {
         '$vuetify.theme.dark'() {
             localStorage.darkTheme = this.$vuetify.theme.dark;
         },
-    }
+    },
+    computed: {
+        ...mapState({
+            activeFragment: state => state.activeFragment,
+        }),
+    },
 }
 </script>
 
@@ -141,6 +191,49 @@ export default {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
+}
+
+.center-content {
+    flex-grow: 1;
+}
+
+.fragment-controls {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.slider-holder {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin: 0 10px;
+}
+
+.slider-label {
+    display: flex;
+}
+
+.reset-button {
+    margin-top: -2px;
+    opacity: 0;
+}
+
+.reset-button:hover, .reset-button:active {
+    opacity: 1;
+}
+
+.slider-label > p {
+    font-size: 12px;
+    opacity: 0.8;
+    width: 130px;
+    margin: 0;
+    text-align: center;
+}
+
+.slider {
+    width: 100%;
 }
 
 .close-button:hover, .close-button:active {

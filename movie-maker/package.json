@@ -14,7 +14,7 @@
   "productName": "Movie Maker",
   "author": "Ruurd Bijlsma <ruurd@bijlsma.dev",
   "repository": "https://github.com/ruurdbijlsma/MovieMaker",
-  "homepage": "ruurd.dev/moviemaker",
+  "homepage": "https://github.com/ruurdbijlsma/MovieMaker",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
