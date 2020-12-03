@@ -1,7 +1,9 @@
 import pcm from 'pcm-extract'
+import EventEmitter from 'events'
 
-export default class VideoFile {
+export default class VideoFile extends EventEmitter {
     constructor(probeData, screenshots) {
+        super();
         this.probe = probeData;
         this.screenshots = screenshots;
         this.container = null;
@@ -15,17 +17,23 @@ export default class VideoFile {
             ffmpeg: VideoFile.ffmpegPath,
         });
         let i = 0;
+        const avgWindowSize = 1000;
+        this.pcmLoaded = false;
         stream.on('readable', () => {
             let avg = 0;
             while (true) {
                 let value = stream.read();
                 if (value === null)
                     break;
-                avg += value;
-                if (i++ % 1000 === 0) {
-                    let index = Math.floor(i / 1000);
-                    this.pcm[index] = avg / 1000;
+                avg += Math.abs(value);
+                if (i++ % avgWindowSize === 0) {
+                    let index = Math.floor(i / avgWindowSize);
+                    this.pcm[index] = avg / avgWindowSize;
                     avg = 0;
+                    if (index + 1 >= this.pcm.length) {
+                        this.emit("pcm");
+                        this.pcmLoaded = true;
+                    }
                 }
             }
         });

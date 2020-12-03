@@ -48,7 +48,10 @@ export default {
                 context.drawImage(image, x, 0);
                 x += image.width;
             }
-            return canvas.toDataURL();
+
+            return new Promise(((resolve, reject) => {
+                canvas.toBlob(b => resolve(URL.createObjectURL(b)), 'image/jpg');
+            }))
         },
         async loadMetadata({state, commit, dispatch}, file) {
             if (!state.videoFileCache.hasOwnProperty(file)) {

@@ -43,6 +43,12 @@ export default new Vuex.Store({
         playing: (state, playing) => state.player.playing = playing,
     },
     getters: {
+        timelineVideos: state => {
+            let videos = new Set();
+            for (let {video} of state.timeline)
+                videos.add(video);
+            return [...videos];
+        },
         progressAtFragmentProgress: (state, getters) => ({fragment, progress}) => {
             let timeBefore = state.timeline.slice(0, state.timeline.indexOf(fragment)).reduce((a, b) => a + b.adjustedDuration, 0);
             let fragmentPart = fragment.adjustedDuration / getters.fullDuration;

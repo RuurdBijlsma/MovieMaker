@@ -7,6 +7,10 @@ export default class VideoFragment {
         this.volume = 1;
     }
 
+    get portion(){
+        return this.end - this.start;
+    }
+
     reset() {
         this.video.element.pause();
         this.video.element.currentTime = this.start * this.video.duration;
@@ -14,14 +18,12 @@ export default class VideoFragment {
 
     get progress() {
         let videoProgress = this.video.element.currentTime / this.video.duration;
-        let cutPortion = this.end - this.start;
-        return (videoProgress - this.start) * cutPortion;
+        return (videoProgress - this.start) * this.portion;
     }
 
     get adjustedDuration() {
         let duration = this.video.duration / this.playbackRate
-        let cut = this.end - this.start;
-        let adjusted = duration * cut;
+        let adjusted = duration * this.portion;
         return isNaN(adjusted) ? 0 : adjusted;
     }
 }
