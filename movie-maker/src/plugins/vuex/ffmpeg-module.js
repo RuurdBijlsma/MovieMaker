@@ -22,6 +22,7 @@ export default {
         async initializeFfmpeg({dispatch, state}) {
             console.log("Getting ffmpeg and ffprobe...");
             await dispatch('getPaths');
+            VideoFile.ffmpegPath = state.paths.ffmpeg;
             ffmpeg.setFfmpegPath(state.paths.ffmpeg);
             ffmpeg.setFfprobePath(state.paths.ffprobe);
             console.log("ffmpeg and ffprobe have been retrieved", {ffmpeg});

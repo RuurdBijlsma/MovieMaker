@@ -80,6 +80,9 @@ export default {
         },
     },
     watch: {
+        'activeFragment.playbackRate'() {
+            this.updateFragmentsLayout();
+        },
         timeline() {
             this.updateFragmentsLayout();
         },

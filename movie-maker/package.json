@@ -29,6 +29,7 @@
     "core-js": "^3.7.0",
     "ffbinaries": "^1.1.4",
     "fluent-ffmpeg": "^2.1.2",
+    "pcm-extract": "^0.1.0",
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.11",
     "vue-router": "^3.4.9",

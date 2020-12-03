@@ -15,7 +15,8 @@ let win
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
-    {scheme: 'app', privileges: {secure: true, standard: true}}
+    {scheme: 'app', privileges: {secure: true, standard: true}},
+    {scheme: 'http', privileges: {secure: true, standard: true}},
 ])
 
 function registerLocalResourceProtocol() {

@@ -26,8 +26,11 @@
 // TODO: Features
 // Sound line on preview thing
 // Right click in explorer on video -> edit with ruurd movie maker
-// ffmpeg export to stream for instant actual preview
 // export to youtube with manual key input
+// scroll on sliders for precise input
+// better visualizer for highlighting active fragment
+// split/set start/etc.
+// do pcm reading in thread
 
 import {mapActions} from "vuex";
 import CustomHeader from "@/components/CustomHeader";
