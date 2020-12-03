@@ -1,23 +1,19 @@
 <template>
     <div ref="timeline">
         <div class="fragment" v-for="fragment in visualFragments" :style="{
-            width: fragment.width + 'px',
-        }">
+                width: fragment.width + 'px',
+            }" :class="{
+                'continues-right': fragment.continuesRight,
+                'continues-left': fragment.continuesLeft,
+                'active': fragment.fragment === activeFragment,
+            }"
+             @mousedown="$store.commit('activeFragment', fragment.fragment)">
             <div class="fragment-background"
-                 @mousedown="$store.commit('activeFragment', fragment.fragment)"
-                 :class="{
-                    'continues-right': fragment.continuesRight,
-                    'continues-left': fragment.continuesLeft,
-                    'active-fragment': fragment.fragment === activeFragment,
-                }"
                  :style="{
                 backgroundImage: `url(${fragment.screenshots.merged})`,
                 backgroundPositionX: (-1 * fragment.leftPixels) + 'px'
             }"></div>
-            <canvas class="audio-wave" ref="audioCanvases" :class="{
-                'continues-right': fragment.continuesRight,
-                'continues-left': fragment.continuesLeft,
-            }"></canvas>
+            <canvas class="audio-wave" ref="audioCanvases"></canvas>
         </div>
     </div>
 </template>
@@ -67,7 +63,7 @@ export default {
                 context.moveTo(x, canvas.height);
                 for (let x = 0; x < canvas.width; x++) {
                     let index = start + Math.floor((end - start) * (x / canvas.width))
-                    let value = pcm[index] * canvas.height * fragment.fragment.volume;
+                    let value = pcm[index] * canvas.height * fragment.fragment.volume * 1.6;
                     context.lineTo(x++, canvas.height - value);
                 }
                 // for (let j = start; j < end; j++) {
@@ -75,7 +71,8 @@ export default {
                 //     context.lineTo(x++, canvas.height - value);
                 // }
                 context.stroke();
-                context.lineTo(x, canvas.height);
+                context.lineTo(canvas.width, canvas.height);
+                context.lineTo(0, canvas.height);
                 context.fill();
             }
         },
@@ -132,7 +129,7 @@ export default {
                     canvas.height = bounds.height;
                 }
                 this.timelineVideos.filter(v => !v.pcmLoaded).forEach(v => v.on('pcm', () => this.renderAudio()));
-                this.renderAudio()
+                this.renderAudio();
             });
             this.visualFragments = visualFragments;
         },
@@ -191,6 +188,20 @@ export default {
     margin-bottom: 10px;
     padding: 10px;
     flex-direction: column;
+    border-radius: calc(var(--border-radius) * 1.5);
+    cursor: pointer;
+}
+
+.continues-left.fragment {
+    padding-left: 0;
+}
+
+.continues-right.fragment {
+    padding-right: 0;
+}
+
+.fragment > * {
+    pointer-events: none;
 }
 
 .fragment-background {
@@ -202,26 +213,25 @@ export default {
     background-repeat: repeat;
     background-size: auto 100%;
     background-position: left;
-    cursor: pointer;
 }
 
-.active-fragment {
-    box-shadow: 0 0 20px 2px rgba(128, 128, 128, 0.7);
+.active {
+    box-shadow: inset 0 -4px 10px 0px grey;
 }
 
-.continues-right {
+.continues-right .fragment-background, .continues-right .audio-wave, .continues-right.fragment {
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
 }
 
-.continues-left {
+.continues-left .fragment-background, .continues-left .audio-wave, .continues-left.fragment {
     border-top-left-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
 }
 
 .audio-wave {
     width: 100%;
-    height: 30px;
+    height: 25px;
     background-color: rgba(128, 128, 128, 0.4);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }

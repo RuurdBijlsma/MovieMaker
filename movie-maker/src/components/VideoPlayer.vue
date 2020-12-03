@@ -1,12 +1,13 @@
 <template>
     <div class="player" ref="player">
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
-            <video @ended="videoEnd" ref="videos" v-show="videoFile === activeFragment.video"
+            <video @ended="videoEnd" ref="videos"
                    v-for="videoFile in videoFiles"
                    :key="videoFile.filePath" :id="videoFile.filePath"
                    :src="videoFile.filePath" :style="{
-                width: videoWidth + 'px',
-                height: videoWidth / videoFile.aspectRatio + 'px',
+                        width: videoWidth + 'px',
+                        height: videoWidth / videoFile.aspectRatio + 'px',
+                        opacity: videoFile === activeFragment.video ? 1 : 0.1,
             }"></video>
         </div>
         <div class="time-control" v-if="videoFiles.length > 0">
@@ -62,9 +63,9 @@ export default {
                 });
                 if (!isNaN(progress))
                     this.$store.commit('progress', progress);
-                if(activeVideo.playbackRate !== this.activeFragment.playbackRate)
+                if (activeVideo.playbackRate !== this.activeFragment.playbackRate)
                     activeVideo.playbackRate = this.activeFragment.playbackRate;
-                if(activeVideo.volume !== this.activeFragment.volume)
+                if (activeVideo.volume !== this.activeFragment.volume)
                     activeVideo.volume = this.activeFragment.volume;
             }
         }, 1000 / 60);
@@ -85,7 +86,20 @@ export default {
         },
         ...mapActions(['play', 'pause', 'videoEnd'])
     },
-    watch: {},
+    watch: {
+        activeFragment(fragment, previousFragment) {
+            if (previousFragment === null)
+                return;
+            console.log("Active video changed");
+            if (fragment.video !== previousFragment.video) {
+                const wasPaused = previousFragment.video.element.paused;
+                previousFragment.reset();
+                if (!wasPaused) {
+                    fragment.video.element.play();
+                }
+            }
+        }
+    },
     computed: {
         videoWidth() {
             if (this.bounds === null)

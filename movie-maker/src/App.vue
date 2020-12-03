@@ -31,6 +31,8 @@
 // better visualizer for highlighting active fragment
 // split/set start/etc.
 // do pcm reading in thread
+// when no video is loaded, show big thing in screen "No videos loaded, click here to import some videos or drag them here"
+// TODO: Check if video freeze but audio keeps going still happens (still happens when something other than opacity is used)
 
 import {mapActions} from "vuex";
 import CustomHeader from "@/components/CustomHeader";
