@@ -24,11 +24,9 @@
 
 <script>
 // TODO: Features
-// seek thing on timeline
-// scroll on sliders for precise input
 // Right click in explorer on video -> edit with ruurd movie maker
 // export to youtube with manual key input
-// [top bar and context menu]: split/set start/set end/delete fragment/(un)mute fragment/more?
+// [top bar and context menu]: split/set start/set end/delete fragment/(un)mute fragment/more? Maybe add extra top bar for this? because no space there
 // do pcm reading in thread
 // when no video is loaded, show big thing in screen "No videos loaded, click here to import some videos or drag them here"
 // theme color chooser in settings
@@ -38,6 +36,8 @@
 // todo bug: memory pls
 
 // DONE TODO
+// scroll on sliders for precise input
+// seek thing on timeline
 // better visualizer for highlighting active fragment
 // amplitude audio wave timeline
 import {mapActions, mapGetters} from "vuex";
