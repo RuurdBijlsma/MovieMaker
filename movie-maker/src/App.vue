@@ -1,5 +1,5 @@
 <template>
-    <v-app class="app">
+    <v-app class="app" :style="cssProps">
 
         <v-app-bar color="secondary" app elevation="0">
             <custom-header></custom-header>
@@ -24,17 +24,23 @@
 
 <script>
 // TODO: Features
-// Sound line on preview thing
+// seek thing on timeline
+// scroll on sliders for precise input
 // Right click in explorer on video -> edit with ruurd movie maker
 // export to youtube with manual key input
-// scroll on sliders for precise input
-// better visualizer for highlighting active fragment
-// split/set start/etc.
+// [top bar and context menu]: split/set start/set end/delete fragment/(un)mute fragment/more?
 // do pcm reading in thread
 // when no video is loaded, show big thing in screen "No videos loaded, click here to import some videos or drag them here"
-// TODO: Check if video freeze but audio keeps going still happens (still happens when something other than opacity is used)
+// theme color chooser in settings
+// Stop merging images, display them separately
+// fix bugs with sometimes layout isn't updated hot reload issue maybe
+// TODO: Check if video freeze but audio keeps going still happens (still happens when something other than opacity is used) (happens because of vue hot reload hopefully)
+// todo bug: memory pls
 
-import {mapActions} from "vuex";
+// DONE TODO
+// better visualizer for highlighting active fragment
+// amplitude audio wave timeline
+import {mapActions, mapGetters} from "vuex";
 import CustomHeader from "@/components/CustomHeader";
 
 export default {
@@ -44,7 +50,6 @@ export default {
     async mounted() {
         await this.initialize();
         console.log("Store", this.$store);
-        console.log("Theme", this.$vuetify);
     },
     beforeDestroy() {
 
@@ -53,6 +58,19 @@ export default {
         ...mapActions(['addSnack', 'initialize'])
     },
     watch: {},
+    computed: {
+        cssProps() {
+            console.log(this.$vuetify.theme);
+            return {
+                '--primary': this.themeColors.primary,
+                '--foreground': this.themeColors.foreground,
+                '--soft-foreground': this.themeColors.softForeground,
+                '--soft-background': this.themeColors.softBackground,
+                '--secondary': this.themeColors.secondary,
+            }
+        },
+        ...mapGetters(['themeColors'])
+    }
 };
 </script>
 <style>

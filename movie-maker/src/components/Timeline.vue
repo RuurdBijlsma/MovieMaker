@@ -1,19 +1,26 @@
 <template>
     <div ref="timeline">
-        <div class="fragment" v-for="fragment in visualFragments" :style="{
+        <div class="fragment" v-for="(fragment, i) in visualFragments" :style="{
                 width: fragment.width + 'px',
             }" :class="{
                 'continues-right': fragment.continuesRight,
                 'continues-left': fragment.continuesLeft,
                 'active': fragment.fragment === activeFragment,
             }"
-             @mousedown="$store.commit('activeFragment', fragment.fragment)">
-            <div class="fragment-background"
-                 :style="{
+             ref="fragments"
+             @mousemove="switchFragment($event, i)"
+             @mousedown="moveStart($event, i)">
+            <div class="visual-fragment">
+                <div class="fragment-background"
+                     :style="{
                 backgroundImage: `url(${fragment.screenshots.merged})`,
                 backgroundPositionX: (-1 * fragment.leftPixels) + 'px'
             }"></div>
-            <canvas class="audio-wave" ref="audioCanvases"></canvas>
+                <canvas class="audio-wave" ref="audioCanvases"></canvas>
+            </div>
+            <div v-show="activeVisualFragment === fragment" :style="{
+                left: seekLeft + 'px',
+            }" class="seek-thumb"></div>
         </div>
     </div>
 </template>
@@ -27,17 +34,82 @@ export default {
         bounds: null,
         visualFragments: [],
         lazyUpdateTimeout: -1,
+        renderAudioInterval: -1,
+        activeVisualFragment: null,
+        seekLeft: 0,
+        fragmentIndex: false,
     }),
-    mounted() {
-        this.windowResize();
-        window.addEventListener('resize', this.windowResize, false);
-    },
     beforeDestroy() {
         window.removeEventListener('resize', this.windowResize);
         clearTimeout(this.lazyUpdateTimeout);
-        requestAnimationFrame(() => this.renderAudio());
+        clearInterval(this.renderAudioInterval);
+        document.removeEventListener('mousemove', this.move);
+        document.removeEventListener('mouseup', this.moveEnd);
+    },
+    mounted() {
+        this.windowResize();
+        window.addEventListener('resize', this.windowResize, false);
+        requestAnimationFrame(() => this.updateFragmentsLayout());
+        this.renderAudioInterval = setInterval(() => this.renderAudio(), 500);
+        document.addEventListener('mousemove', this.move, false);
+        document.addEventListener('mouseup', this.moveEnd, false);
     },
     methods: {
+        switchFragment(e, fragmentIndex) {
+            if (this.fragmentIndex !== false && this.fragmentIndex !== fragmentIndex) {
+                this.fragmentIndex = fragmentIndex;
+                this.seek(this.progressFromEvent(e));
+            }
+        },
+        progressFromEvent(e) {
+            const visualFragment = this.visualFragments[this.fragmentIndex];
+            const bounds = this.$refs.fragments[this.fragmentIndex].getBoundingClientRect();
+            const leftMargin = visualFragment.continuesLeft ? 0 : 10;
+            const rightMargin = visualFragment.continuesRight ? 0 : 10;
+            const left = bounds.left + leftMargin;
+            const width = bounds.width - rightMargin;
+            let visualFragmentProgress = e.pageX - left;
+            visualFragmentProgress = Math.max(Math.min(visualFragmentProgress / width, 1), 0);
+            const {fragment} = visualFragment;
+            const visualFragmentPortion = (visualFragment.end - visualFragment.start);
+            const fragmentProgress = visualFragment.start + (visualFragmentProgress * visualFragmentPortion);
+            const videoProgress = fragment.start + fragmentProgress * fragment.portion;
+            this.$store.commit('activeFragment', fragment);
+            fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
+        },
+        moveStart(e, fragmentIndex) {
+            this.fragmentIndex = fragmentIndex;
+            this.seek(this.progressFromEvent(e));
+        },
+        move(e) {
+            if (this.fragmentIndex !== false)
+                this.seek(this.progressFromEvent(e));
+        },
+        moveEnd(e) {
+            if (this.fragmentIndex !== false)
+                this.seek(this.progressFromEvent(e));
+            this.fragmentIndex = false;
+        },
+        seek() {
+
+        },
+        calculateSeekPosition() {
+            const fragmentProgress = this.activeFragment.progress;
+            const visualFragment = this.visualFragments.find(v =>
+                v.fragment === this.activeFragment &&
+                v.start <= fragmentProgress && fragmentProgress <= v.end
+            );
+            if (visualFragment === undefined)
+                return;
+
+            const margin = (visualFragment.continuesLeft ? 0 : 10) + (visualFragment.continuesRight ? 0 : 10);
+            this.activeVisualFragment = visualFragment;
+            this.seekLeft = Math.round(
+                (fragmentProgress - visualFragment.start) /
+                (visualFragment.end - visualFragment.start) *
+                (visualFragment.width - margin) * 100
+            ) / 100;
+        },
         renderAudio() {
             if (!this.$refs.audioCanvases)
                 return;
@@ -56,14 +128,14 @@ export default {
                 const start = Math.floor(fragment.start * pcm.length)
                 const end = Math.floor(fragment.end * pcm.length)
 
-                context.fillStyle = 'rgba(0, 222, 100, 0.4)';
-                context.strokeStyle = 'green';
-                let x = 0;
+                context.fillStyle = this.themeColors.secondary;
+                context.strokeStyle = this.themeColors.primary;
+                const x = 0;
                 context.beginPath();
                 context.moveTo(x, canvas.height);
                 for (let x = 0; x < canvas.width; x++) {
-                    let index = start + Math.floor((end - start) * (x / canvas.width))
-                    let value = pcm[index] * canvas.height * fragment.fragment.volume * 1.6;
+                    const index = start + Math.floor((end - start) * (x / canvas.width));
+                    const value = pcm[index] * canvas.height * fragment.fragment.volume * 1.6;
                     context.lineTo(x++, canvas.height - value);
                 }
                 // for (let j = start; j < end; j++) {
@@ -86,20 +158,20 @@ export default {
                 return;
 
             let currentOffsetLeft = 0;
-            let visualFragments = [];
-            let fragmentQueue = [...this.fragments];
-            let fullWidth = this.bounds.width;
+            const visualFragments = [];
+            const fragmentQueue = [...this.fragments];
+            const fullWidth = this.bounds.width;
             while (fragmentQueue.length > 0) {
-                let fragment = fragmentQueue.shift();
-                let fits = fragment.width + currentOffsetLeft < fullWidth;
+                const fragment = fragmentQueue.shift();
+                const fits = fragment.width + currentOffsetLeft < fullWidth;
                 if (fits) {
                     currentOffsetLeft += fragment.width;
                     visualFragments.push(fragment);
                 } else {
-                    let splitSizeLeft = fullWidth - currentOffsetLeft;
-                    let splitSizeRight = fragment.width - splitSizeLeft;
-                    let leftPartExists = splitSizeLeft > 30;
-                    let rightPartExists = splitSizeRight > 30;
+                    const splitSizeLeft = fullWidth - currentOffsetLeft;
+                    const splitSizeRight = fragment.width - splitSizeLeft;
+                    const leftPartExists = splitSizeLeft > 30;
+                    const rightPartExists = splitSizeRight > 30;
 
                     if (leftPartExists)
                         visualFragments.push({
@@ -110,7 +182,7 @@ export default {
                         });
 
                     if (rightPartExists) {
-                        let leftPixels = fragment.leftPixels + (leftPartExists ? splitSizeLeft : 0);
+                        const leftPixels = fragment.leftPixels + (leftPartExists ? splitSizeLeft : 0);
                         fragmentQueue.unshift({
                             ...fragment,
                             width: splitSizeRight,
@@ -123,13 +195,16 @@ export default {
                 }
             }
             this.$nextTick(() => {
-                for (let canvas of this.$refs.audioCanvases) {
-                    let bounds = canvas.getBoundingClientRect();
-                    canvas.width = bounds.width;
-                    canvas.height = bounds.height;
+                this.calculateSeekPosition();
+                if (this.$refs.audioCanvases) {
+                    for (const canvas of this.$refs.audioCanvases) {
+                        const bounds = canvas.getBoundingClientRect();
+                        canvas.width = bounds.width;
+                        canvas.height = bounds.height;
+                    }
+                    this.renderAudio();
+                    this.timelineVideos.filter(v => !v.pcmLoaded).forEach(v => v.on('pcm', () => this.renderAudio()));
                 }
-                this.timelineVideos.filter(v => !v.pcmLoaded).forEach(v => v.on('pcm', () => this.renderAudio()));
-                this.renderAudio();
             });
             this.visualFragments = visualFragments;
         },
@@ -139,6 +214,9 @@ export default {
         },
     },
     watch: {
+        progress() {
+            requestAnimationFrame(() => this.calculateSeekPosition());
+        },
         'activeFragment.playbackRate'() {
             requestAnimationFrame(() => this.updateFragmentsLayout());
         },
@@ -146,13 +224,13 @@ export default {
             requestAnimationFrame(() => this.renderAudio());
         },
         timeline() {
-            this.updateFragmentsLayout();
+            requestAnimationFrame(() => this.updateFragmentsLayout());
         },
     },
     computed: {
         fragments() {
             return this.timeline.map(fragment => {
-                let pixelWidth = Math.max(fragment.adjustedDuration * this.widthPerSecond, this.minFragmentWidth);
+                const pixelWidth = Math.max(fragment.adjustedDuration * this.widthPerSecond, this.minFragmentWidth);
                 return {
                     fragment,
                     fullWidth: pixelWidth,
@@ -166,12 +244,13 @@ export default {
                 };
             });
         },
-        ...mapGetters(['timelineVideos']),
+        ...mapGetters(['timelineVideos', 'fragmentAtProgress', 'themeColors', 'progressAtFragmentProgress']),
         ...mapState({
             activeFragment: state => state.activeFragment,
             timeline: state => state.timeline,
             minFragmentWidth: state => state.configTimeline.minFragmentWidth,
             widthPerSecond: state => state.configTimeline.widthPerSecond,
+            progress: state => state.player.progress,
         }),
     },
 }
@@ -184,12 +263,20 @@ export default {
 
 .fragment {
     height: 125px;
-    display: inline-flex;
+    display: inline-block;
     margin-bottom: 10px;
     padding: 10px;
-    flex-direction: column;
     border-radius: calc(var(--border-radius) * 1.5);
     cursor: pointer;
+    box-shadow: inset 0 0px 0px 0 #5b5b5b;
+    transition: box-shadow 0.3s;
+}
+
+.visual-fragment {
+    width: 100%;
+    height: 105px;
+    display: inline-flex;
+    flex-direction: column;
 }
 
 .continues-left.fragment {
@@ -216,7 +303,7 @@ export default {
 }
 
 .active {
-    box-shadow: inset 0 -4px 10px 0px grey;
+    box-shadow: inset 0 -4px 10px 0 #5b5b5b;
 }
 
 .continues-right .fragment-background, .continues-right .audio-wave, .continues-right.fragment {
@@ -232,7 +319,17 @@ export default {
 .audio-wave {
     width: 100%;
     height: 25px;
-    background-color: rgba(128, 128, 128, 0.4);
+    background-color: rgba(80, 80, 80, 0.4);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+.seek-thumb {
+    width: 4px;
+    height: 105px;
+    position: relative;
+    background-color: var(--primary);
+    box-shadow: 0 0 10px 0 rgba(255, 255, 255, 0.5);
+    margin-top: -105px;
+    border-radius: 2px;
 }
 </style>

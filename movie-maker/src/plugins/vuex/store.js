@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Vuetify from '../vuetify'
 
 import electron from './electron-module'
 import ffmpeg from './ffmpeg-module'
@@ -43,6 +44,9 @@ export default new Vuex.Store({
         playing: (state, playing) => state.player.playing = playing,
     },
     getters: {
+        themeColors() {
+            return Vuetify.framework.theme.themes[Vuetify.framework.theme.isDark ? 'dark' : 'light'];
+        },
         timelineVideos: state => {
             let videos = new Set();
             for (let {video} of state.timeline)
@@ -59,7 +63,7 @@ export default new Vuex.Store({
             let beforeParts = 0;
             for (let fragment of state.timeline) {
                 let fragmentPart = fragment.adjustedDuration / fullDuration;
-                if (beforeParts + fragmentPart > progress) {
+                if (beforeParts + fragmentPart >= progress - 0.0001) {
                     let fragmentProgress = (progress - beforeParts) / fragmentPart;
                     let fragmentCut = fragment.end - fragment.start;
                     return {fragment, videoProgress: fragmentProgress * fragmentCut};

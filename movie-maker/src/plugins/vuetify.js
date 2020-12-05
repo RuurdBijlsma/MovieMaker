@@ -10,13 +10,15 @@ export default new Vuetify({
             dark: {
                 primary: '#ed4b83',
                 foreground: '#ffffff',
-                primaryLight: '#2a2a2b',
+                softForeground: '#d6d6d6',
+                softBackground: '#2a2a2b',
                 secondary: '#5e50bd',
             },
             light: {
                 primary: '#ed4b83',
                 foreground: '#17181a',
-                primaryLight: '#f1efef',
+                softForeground: '#353535',
+                softBackground: '#f1efef',
                 secondary: '#7e6de5',
             },
         },

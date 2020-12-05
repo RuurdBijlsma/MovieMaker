@@ -23,9 +23,9 @@
         </div>
         <div class="center-content">
             <div v-if="activeFragment" class="fragment-controls">
-                <div class="slider-holder no-drag">
+                <div class="slider-holder no-drag" @wheel="wheelVolume">
                     <v-slider class="slider" dense hide-details min="0" max="1"
-                              step="0.01"
+                              step="0.001"
                               v-model="activeFragment.volume"></v-slider>
                     <div class="slider-label">
                         <p>Volume: {{ Math.round(activeFragment.volume * 100) }}%</p>
@@ -44,10 +44,10 @@
                     </template>
                     <span>Set default volume</span>
                 </v-tooltip>
-                <div class="slider-holder no-drag">
-                    <v-slider class="slider" dense hide-details min="0.1" max="8"
-                              step="0.01"
-                              v-model="activeFragment.playbackRate"></v-slider>
+                <div class="slider-holder no-drag" @wheel="wheelPbr">
+                    <v-slider class="slider" dense hide-details min="0.1" max="2"
+                              step="0.001"
+                              v-model="rawPlaybackRate"></v-slider>
                     <div class="slider-label">
                         <p>Playback rate: {{ activeFragment.playbackRate.toFixed(2) }}x</p>
                     </div>
@@ -59,7 +59,7 @@
                                             opacity: activeFragment.playbackRate === 1 ? 0 : 0.5,
                                             pointerEvents: activeFragment.playbackRate === 1 ? 'none' : 'all',
                                         }"
-                               @click="activeFragment.playbackRate = 1" v-bind="attrs" v-on="on">
+                               @click="rawPlaybackRate = 1" v-bind="attrs" v-on="on">
                             <v-icon>mdi-reload</v-icon>
                         </v-btn>
                     </template>
@@ -121,7 +121,21 @@ import {mapActions, mapState} from "vuex";
 
 export default {
     name: "CustomHeader",
+    data: () => ({
+        rawPlaybackRate: 1,
+    }),
+    mounted() {
+
+    },
     methods: {
+        wheelVolume(e) {
+            console.log(e.deltaY)
+            this.activeFragment.volume -= e.deltaY * 0.0001;
+        },
+        wheelPbr(e) {
+            console.log(e.deltaY);
+            this.rawPlaybackRate -= e.deltaY * 0.00005;
+        },
         importVideoInput() {
             let element = document.createElement('input');
             element.setAttribute('type', 'file');
@@ -147,6 +161,19 @@ export default {
         ...mapActions(['importVideo'])
     },
     watch: {
+        activeFragment() {
+            let pbr = this.activeFragment.playbackRate;
+            if (pbr > 1)
+                pbr = 1 + (pbr - 1) / 7;
+            console.log(pbr);
+            this.rawPlaybackRate = pbr;
+        },
+        rawPlaybackRate() {
+            let pbr = this.rawPlaybackRate;
+            if (this.rawPlaybackRate > 1)
+                pbr = 1 + (this.rawPlaybackRate - 1) * 7;
+            this.activeFragment.playbackRate = pbr;
+        },
         '$vuetify.theme.dark'() {
             localStorage.darkTheme = this.$vuetify.theme.dark;
         },

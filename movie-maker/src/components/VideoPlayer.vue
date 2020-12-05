@@ -7,7 +7,7 @@
                    :src="videoFile.filePath" :style="{
                         width: videoWidth + 'px',
                         height: videoWidth / videoFile.aspectRatio + 'px',
-                        opacity: videoFile === activeFragment.video ? 1 : 0.1,
+                        opacity: videoFile === activeFragment.video ? 1 : 0.001,
             }"></video>
         </div>
         <div class="time-control" v-if="videoFiles.length > 0">

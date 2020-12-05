@@ -1,6 +1,6 @@
 <template>
     <div class="seek" @mousedown="moveStart" ref="seek">
-        <v-sheet color="primaryLight" class="seek-background">
+        <v-sheet color="softBackground" class="seek-background">
             <v-sheet color="secondary" class="seek-progress" :style="{
                 width: percentage + '%',
             }"></v-sheet>
