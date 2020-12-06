@@ -1,53 +1,65 @@
 <template>
     <div class="home">
-        <div class="left-panel">
-            <video-player></video-player>
-        </div>
-        <div class="right-panel">
-            <timeline class="timeline"></timeline>
+        <editor class="editor" v-if="activeFragment"></editor>
+        <div v-else class="no-data">
+            <v-icon class="no-data-icon" size="300">mdi-video-off-outline</v-icon>
+            <h1>Import a video to start</h1>
+            <p>Drag a video here or click the import videos button</p>
+            <v-btn @click="promptVideoInput" color="primary" rounded>Import videos</v-btn>
         </div>
     </div>
 </template>
 
 <script>
 
-import Timeline from "@/components/Timeline";
-import VideoPlayer from "@/components/VideoPlayer";
+import {mapActions, mapState} from "vuex";
+import Editor from "@/components/Editor";
 
 export default {
     name: "Home",
-    components: {VideoPlayer, Timeline},
+    components: {Editor},
     data: () => ({}),
     mounted() {
     },
     beforeDestroy() {
     },
-    methods: {},
+    methods: {
+        ...mapActions(['promptVideoInput']),
+    },
     watch: {},
     computed: {
+        ...mapState({
+            activeFragment: state => state.activeFragment,
+        }),
     },
 }
 </script>
 
 <style scoped>
 .home {
-    padding: 5px;
     display: flex;
+    flex-direction: column;
     height: 100%;
 }
 
-.left-panel {
-    border-right: 1px solid rgba(128, 128, 128, 0.5);
-    width: 50%;
+.no-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 70%;
+    flex-direction: column;
 }
 
-.right-panel {
-    width: 50%;
-    padding: 10px;
+.no-data-icon {
+    opacity: 0.3;
 }
 
-.timeline {
-    width: 100%;
-    height: 100%;
+.no-data h1 {
+    margin-bottom: 20px;
+}
+
+.no-data p {
+    margin-bottom: 30px;
+    opacity: 0.8;
 }
 </style>

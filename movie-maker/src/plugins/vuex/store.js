@@ -115,6 +115,17 @@ export default new Vuex.Store({
         async initialize({dispatch}) {
             await dispatch("initializeFfmpeg");
         },
+        promptVideoInput({dispatch}) {
+            let element = document.createElement('input');
+            element.setAttribute('type', 'file');
+            element.setAttribute('accept', 'video/*');
+            element.setAttribute('multiple', '');
+            element.click();
+            element.onchange = () => {
+                for (let file of element.files)
+                    dispatch('importVideo', file.path);
+            }
+        },
         async importVideo({state, commit, dispatch}, path) {
             let videoFile = await dispatch('loadMetadata', path);
             let fragment = new VideoFragment(videoFile);
@@ -123,6 +134,15 @@ export default new Vuex.Store({
                 commit('activeFragment', fragment);
             }
             commit('addToTimeline', fragment);
+        },
+        exportVideo({}){
+
+        },
+        exportToYouTube({}){
+
+        },
+        addAudioTrack({}){
+
         },
         addSnack: async ({state, commit}, {text, timeout = 3000}) => {
             let snack = {text, open: true, timeout};

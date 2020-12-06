@@ -19,6 +19,9 @@
                 </v-btn>
             </template>
         </v-snackbar>
+        <v-footer v-if="activeFragment">
+            <video-info-footer></video-info-footer>
+        </v-footer>
     </v-app>
 </template>
 
@@ -40,12 +43,13 @@
 // seek thing on timeline
 // better visualizer for highlighting active fragment
 // amplitude audio wave timeline
-import {mapActions, mapGetters} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import CustomHeader from "@/components/CustomHeader";
+import VideoInfoFooter from "@/components/VideoInfoFooter";
 
 export default {
     name: 'App',
-    components: {CustomHeader},
+    components: {VideoInfoFooter, CustomHeader},
     data: () => ({}),
     async mounted() {
         await this.initialize();
@@ -69,7 +73,10 @@ export default {
                 '--secondary': this.themeColors.secondary,
             }
         },
-        ...mapGetters(['themeColors'])
+        ...mapGetters(['themeColors']),
+        ...mapState({
+            activeFragment: state => state.activeFragment,
+        })
     }
 };
 </script>

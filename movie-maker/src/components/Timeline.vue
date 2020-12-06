@@ -218,13 +218,17 @@ export default {
             requestAnimationFrame(() => this.calculateSeekPosition());
         },
         'activeFragment.playbackRate'() {
-            requestAnimationFrame(() => this.updateFragmentsLayout());
+            this.$nextTick(() => {
+                requestAnimationFrame(() => this.updateFragmentsLayout());
+            });
         },
         'activeFragment.volume'() {
             requestAnimationFrame(() => this.renderAudio());
         },
         timeline() {
-            requestAnimationFrame(() => this.updateFragmentsLayout());
+            this.$nextTick(() => {
+                requestAnimationFrame(() => this.updateFragmentsLayout());
+            });
         },
     },
     computed: {

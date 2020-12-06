@@ -1,5 +1,6 @@
 import pcm from 'pcm-extract'
 import EventEmitter from 'events'
+import Utils from "@/js/Utils";
 
 export default class VideoFile extends EventEmitter {
     constructor(probeData, screenshots) {
@@ -48,6 +49,19 @@ export default class VideoFile extends EventEmitter {
                 this._elCache = el;
         }
         return this._elCache;
+    }
+
+    get fileName(){
+        return Utils.baseFileName(this.filePath);
+    }
+
+    get bitrate() {
+        return this.videoStream.bit_rate;
+    }
+
+    get fps() {
+        let fps = this.videoStream.avg_frame_rate.split('/').map(n => +n);
+        return Math.round(fps[0] / fps[1] * 100) / 100;
     }
 
     get streams() {

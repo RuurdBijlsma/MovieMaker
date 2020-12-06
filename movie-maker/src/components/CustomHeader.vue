@@ -6,7 +6,7 @@
             </div>
             <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="importVideoInput" v-bind="attrs" v-on="on">
+                    <v-btn class="no-drag" icon @click="promptVideoInput" v-bind="attrs" v-on="on">
                         <v-icon>mdi-import</v-icon>
                     </v-btn>
                 </template>
@@ -23,48 +23,6 @@
         </div>
         <div class="center-content">
             <div v-if="activeFragment" class="fragment-controls">
-                <div class="slider-holder no-drag" @wheel="wheelVolume">
-                    <v-slider class="slider" dense hide-details min="0" max="1"
-                              step="0.001"
-                              v-model="activeFragment.volume"></v-slider>
-                    <div class="slider-label">
-                        <p>Volume: {{ Math.round(activeFragment.volume * 100) }}%</p>
-                    </div>
-                </div>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn x-small icon class="reset-button no-drag"
-                               :style="{
-                                            opacity: activeFragment.volume === 1 ? 0 : 0.5,
-                                            pointerEvents: activeFragment.volume === 1 ? 'none' : 'all',
-                                        }"
-                               @click="activeFragment.volume = 1" v-bind="attrs" v-on="on">
-                            <v-icon>mdi-reload</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Set default volume</span>
-                </v-tooltip>
-                <div class="slider-holder no-drag" @wheel="wheelPbr">
-                    <v-slider class="slider" dense hide-details min="0.1" max="2"
-                              step="0.001"
-                              v-model="rawPlaybackRate"></v-slider>
-                    <div class="slider-label">
-                        <p>Playback rate: {{ activeFragment.playbackRate.toFixed(2) }}x</p>
-                    </div>
-                </div>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn x-small icon class="reset-button no-drag"
-                               :style="{
-                                            opacity: activeFragment.playbackRate === 1 ? 0 : 0.5,
-                                            pointerEvents: activeFragment.playbackRate === 1 ? 'none' : 'all',
-                                        }"
-                               @click="rawPlaybackRate = 1" v-bind="attrs" v-on="on">
-                            <v-icon>mdi-reload</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Set default playback rate</span>
-                </v-tooltip>
             </div>
         </div>
         <div class="right-content">
@@ -118,62 +76,21 @@
 
 <script>
 import {mapActions, mapState} from "vuex";
+import VolumeSlider from "@/components/VolumeSlider";
+import PlaybackRateSlider from "@/components/PlaybackRateSlider";
 
 export default {
     name: "CustomHeader",
+    components: {PlaybackRateSlider, VolumeSlider},
     data: () => ({
-        rawPlaybackRate: 1,
     }),
     mounted() {
 
     },
     methods: {
-        wheelVolume(e) {
-            console.log(e.deltaY)
-            this.activeFragment.volume -= e.deltaY * 0.0001;
-        },
-        wheelPbr(e) {
-            console.log(e.deltaY);
-            this.rawPlaybackRate -= e.deltaY * 0.00005;
-        },
-        importVideoInput() {
-            let element = document.createElement('input');
-            element.setAttribute('type', 'file');
-            element.setAttribute('accept', 'video/*');
-            element.setAttribute('multiple', '');
-            element.click();
-            element.onchange = () => {
-                for (let file of element.files) {
-                    this.importVideo(file.path);
-                }
-            }
-            console.log("IMPORT");
-        },
-        addAudioTrack() {
-            console.log("add audio");
-        },
-        exportVideo() {
-            console.log("exportVideo");
-        },
-        exportToYouTube() {
-            console.log("exportToYouTube");
-        },
-        ...mapActions(['importVideo'])
+        ...mapActions(['promptVideoInput', 'exportToYouTube', 'exportVideo', 'addAudioTrack']),
     },
     watch: {
-        activeFragment() {
-            let pbr = this.activeFragment.playbackRate;
-            if (pbr > 1)
-                pbr = 1 + (pbr - 1) / 7;
-            console.log(pbr);
-            this.rawPlaybackRate = pbr;
-        },
-        rawPlaybackRate() {
-            let pbr = this.rawPlaybackRate;
-            if (this.rawPlaybackRate > 1)
-                pbr = 1 + (this.rawPlaybackRate - 1) * 7;
-            this.activeFragment.playbackRate = pbr;
-        },
         '$vuetify.theme.dark'() {
             localStorage.darkTheme = this.$vuetify.theme.dark;
         },
@@ -229,38 +146,6 @@ export default {
     width: 100%;
     justify-content: center;
     align-items: center;
-}
-
-.slider-holder {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    margin: 0 10px;
-}
-
-.slider-label {
-    display: flex;
-}
-
-.reset-button {
-    margin-top: -2px;
-    opacity: 0;
-}
-
-.reset-button:hover, .reset-button:active {
-    opacity: 1;
-}
-
-.slider-label > p {
-    font-size: 12px;
-    opacity: 0.8;
-    width: 130px;
-    margin: 0;
-    text-align: center;
-}
-
-.slider {
-    width: 100%;
 }
 
 .close-button:hover, .close-button:active {

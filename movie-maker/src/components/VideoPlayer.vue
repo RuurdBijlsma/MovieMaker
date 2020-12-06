@@ -104,7 +104,7 @@ export default {
         videoWidth() {
             if (this.bounds === null)
                 return 0;
-            return this.bounds.width - 40;
+            return this.bounds.width - 20;
         },
         maxVideoHeight() {
             let maxRatio = this.videoFiles.reduce((a, b) => Math.min(a, b.aspectRatio), 3);
@@ -124,7 +124,7 @@ export default {
 
 <style scoped>
 .player {
-    padding: 20px;
+    padding: 10px;
     width: 100%;
 }
 
