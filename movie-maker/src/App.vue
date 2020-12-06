@@ -29,9 +29,10 @@
 // TODO: Features
 // Right click in explorer on video -> edit with ruurd movie maker
 // export to youtube with manual key input
-// [top bar and context menu]: split/set start/set end/delete fragment/(un)mute fragment/more? Maybe add extra top bar for this? because no space there
+// lotta bugs with start and end time
+// stop video playing when end of fragment is reached
+// add command pattern (Ezpz lemon squeezy)
 // do pcm reading in thread
-// when no video is loaded, show big thing in screen "No videos loaded, click here to import some videos or drag them here"
 // theme color chooser in settings
 // Stop merging images, display them separately
 // fix bugs with sometimes layout isn't updated hot reload issue maybe
@@ -39,6 +40,8 @@
 // todo bug: memory pls
 
 // DONE TODO
+// [top bar and context menu]: split/set start/set end/delete fragment/(un)mute fragment/more? Maybe add extra top bar for this? because no space there
+// when no video is loaded, show big thing in screen "No videos loaded, click here to import some videos or drag them here"
 // scroll on sliders for precise input
 // seek thing on timeline
 // better visualizer for highlighting active fragment

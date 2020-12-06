@@ -32,12 +32,15 @@ export default new Vuex.Store({
         },
         addSnackObject: (state, snack) => state.snackbars.push(snack),
         removeSnack: (state, snack) => state.snackbars.splice(state.snackbars.indexOf(snack), 1),
-        addToTimeline: (state, videoFragment) => {
-            if (!state.videoFiles.includes(videoFragment.video)) {
-                videoFragment.video.container = state.videosContainer;
-                state.videoFiles.push(videoFragment.video);
+        addToTimeline: (state, {fragment, index}) => {
+            if (!state.videoFiles.includes(fragment.video)) {
+                fragment.video.container = state.videosContainer;
+                state.videoFiles.push(fragment.video);
             }
-            state.timeline.push(videoFragment)
+            if (index === undefined)
+                state.timeline.push(fragment)
+            else
+                state.timeline.splice(index, 0, fragment);
         },
         activeFragment: (state, fragment) => state.activeFragment = fragment,
         progress: (state, progress) => state.player.progress = progress,
@@ -66,7 +69,7 @@ export default new Vuex.Store({
                 if (beforeParts + fragmentPart >= progress - 0.0001) {
                     let fragmentProgress = (progress - beforeParts) / fragmentPart;
                     let fragmentCut = fragment.end - fragment.start;
-                    return {fragment, videoProgress: fragmentProgress * fragmentCut};
+                    return {fragment, videoProgress: fragment.start + fragmentProgress * fragmentCut};
                 }
                 beforeParts += fragmentPart;
             }
@@ -79,17 +82,36 @@ export default new Vuex.Store({
         toHms: () => seconds => {
             if (isNaN(seconds))
                 return `00:00.00`;
-            let ms = Math.round((seconds % 1) * 100).toString().padStart(2, '0');
-            let s = Math.round(seconds % 60).toString().padStart(2, '0');
-            let m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            let h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            h = h === '00' ? '' : h + ':';
-            return `${h}${m}:${s}.${ms}`;
+            let hms = new Date(seconds * 1000).toISOString().substr(11, 11)
+            if (hms.startsWith('00'))
+                return hms.substr(3);
+            return hms;
         }
     },
     actions: {
+        setStartPoint({state, getters}, {fragment, start}) {
+            fragment ??= state.activeFragment;
+            start ??= getters.fragmentAtProgress(state.player.progress).videoProgress;
+            fragment.start = start;
+        },
+        setEndPoint({state, getters}, {fragment, end}) {
+            fragment ??= state.activeFragment;
+            end ??= getters.fragmentAtProgress(state.player.progress).videoProgress;
+            fragment.end = end;
+        },
+        async split({state, dispatch, getters, commit}, {fragment, split}) {
+            fragment ??= state.activeFragment;
+            split ??= getters.fragmentAtProgress(state.player.progress).videoProgress;
+            let newFragment = new VideoFragment(fragment.video);
+            fragment.end = split;
+            newFragment.start = split;
+            let index = state.timeline.indexOf(fragment) + 1;
+            commit('addToTimeline', {fragment: newFragment, index});
+            console.log('timeline', state.timeline);
+        },
         async seek({state, commit, getters}, progress) {
             let {fragment, videoProgress} = getters.fragmentAtProgress(progress);
+            console.log(videoProgress);
             state.timeline.filter(f => f !== fragment).forEach(f => f.reset());
             fragment.video.element.currentTime = videoProgress * fragment.video.duration;
             commit('activeFragment', fragment);
@@ -133,15 +155,15 @@ export default new Vuex.Store({
             if (state.activeFragment === null) {
                 commit('activeFragment', fragment);
             }
-            commit('addToTimeline', fragment);
+            commit('addToTimeline', {fragment});
         },
-        exportVideo({}){
+        exportVideo({}) {
 
         },
-        exportToYouTube({}){
+        exportToYouTube({}) {
 
         },
-        addAudioTrack({}){
+        addAudioTrack({}) {
 
         },
         addSnack: async ({state, commit}, {text, timeout = 3000}) => {

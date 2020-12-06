@@ -10,29 +10,31 @@
                         opacity: videoFile === activeFragment.video ? 1 : 0.001,
             }"></video>
         </div>
-        <div class="time-control" v-if="videoFiles.length > 0">
-            <seek-bar class="seek-bar"></seek-bar>
-            <span class="seek-time">{{ toHms(progress * fullDuration) }} / {{ toHms(fullDuration) }}</span>
-        </div>
-        <div class="controls" v-if="videoFiles.length > 0">
-            <v-spacer></v-spacer>
-            <div class="center-controls">
-                <v-btn icon>
-                    <v-icon>mdi-skip-previous</v-icon>
-                </v-btn>
-                <v-btn icon x-large @click="togglePlay">
-                    <v-icon v-if="playing">mdi-pause</v-icon>
-                    <v-icon v-else>mdi-play</v-icon>
-                </v-btn>
-                <v-btn icon>
-                    <v-icon>mdi-skip-next</v-icon>
-                </v-btn>
+        <div class="controls">
+            <div class="time-control" v-if="videoFiles.length > 0">
+                <seek-bar class="seek-bar"></seek-bar>
+                <span class="seek-time">{{ toHms(progress * fullDuration) }} / {{ toHms(fullDuration) }}</span>
             </div>
-            <v-spacer></v-spacer>
-            <div class="right-controls">
-                <v-btn icon>
-                    <v-icon>mdi-fullscreen</v-icon>
-                </v-btn>
+            <div class="playback-controls" v-if="videoFiles.length > 0">
+                <v-spacer></v-spacer>
+                <div class="center-controls">
+                    <v-btn icon>
+                        <v-icon>mdi-skip-previous</v-icon>
+                    </v-btn>
+                    <v-btn icon x-large @click="togglePlay">
+                        <v-icon v-if="playing">mdi-pause</v-icon>
+                        <v-icon v-else>mdi-play</v-icon>
+                    </v-btn>
+                    <v-btn icon>
+                        <v-icon>mdi-skip-next</v-icon>
+                    </v-btn>
+                </div>
+                <v-spacer></v-spacer>
+                <div class="right-controls">
+                    <v-btn icon>
+                        <v-icon>mdi-fullscreen</v-icon>
+                    </v-btn>
+                </div>
             </div>
         </div>
     </div>
@@ -57,6 +59,7 @@ export default {
             if (this.$refs.videos) {
                 let activeVideo = this.activeFragment.video.element;
                 this.$store.commit('playing', !activeVideo.paused)
+                // console.log(this.activeFragment.progress);
                 let progress = this.progressAtFragmentProgress({
                     fragment: this.activeFragment,
                     progress: this.activeFragment.progress
@@ -104,7 +107,7 @@ export default {
         videoWidth() {
             if (this.bounds === null)
                 return 0;
-            return this.bounds.width - 20;
+            return this.bounds.width;
         },
         maxVideoHeight() {
             let maxRatio = this.videoFiles.reduce((a, b) => Math.min(a, b.aspectRatio), 3);
@@ -124,7 +127,6 @@ export default {
 
 <style scoped>
 .player {
-    padding: 10px;
     width: 100%;
 }
 
@@ -132,9 +134,13 @@ export default {
     width: 100%;
     position: absolute;
 }
+.controls{
+    margin:20px;
+    display: flex;
+    flex-direction: column;
+}
 
 .time-control {
-    margin-top: 10px;
     display: flex;
 }
 
@@ -145,7 +151,7 @@ export default {
     opacity: 0.7;
 }
 
-.controls {
+.playback-controls {
     display: flex;
     place-content: center;
 }

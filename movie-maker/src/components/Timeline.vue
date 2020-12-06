@@ -33,7 +33,6 @@ export default {
     data: () => ({
         bounds: null,
         visualFragments: [],
-        lazyUpdateTimeout: -1,
         renderAudioInterval: -1,
         activeVisualFragment: null,
         seekLeft: 0,
@@ -41,7 +40,6 @@ export default {
     }),
     beforeDestroy() {
         window.removeEventListener('resize', this.windowResize);
-        clearTimeout(this.lazyUpdateTimeout);
         clearInterval(this.renderAudioInterval);
         document.removeEventListener('mousemove', this.move);
         document.removeEventListener('mouseup', this.moveEnd);
@@ -58,10 +56,10 @@ export default {
         switchFragment(e, fragmentIndex) {
             if (this.fragmentIndex !== false && this.fragmentIndex !== fragmentIndex) {
                 this.fragmentIndex = fragmentIndex;
-                this.seek(this.progressFromEvent(e));
+                this.seekToProgress(e);
             }
         },
-        progressFromEvent(e) {
+        seekToProgress(e) {
             const visualFragment = this.visualFragments[this.fragmentIndex];
             const bounds = this.$refs.fragments[this.fragmentIndex].getBoundingClientRect();
             const leftMargin = visualFragment.continuesLeft ? 0 : 10;
@@ -70,43 +68,42 @@ export default {
             const width = bounds.width - rightMargin;
             let visualFragmentProgress = e.pageX - left;
             visualFragmentProgress = Math.max(Math.min(visualFragmentProgress / width, 1), 0);
-            const {fragment} = visualFragment;
-            const visualFragmentPortion = (visualFragment.end - visualFragment.start);
-            const fragmentProgress = visualFragment.start + (visualFragmentProgress * visualFragmentPortion);
-            const videoProgress = fragment.start + fragmentProgress * fragment.portion;
+            let fragmentProgress = visualFragment.start + visualFragmentProgress * (visualFragment.end - visualFragment.start);
+            let {fragment} = visualFragment;
+            let videoProgress = fragment.start + fragmentProgress * fragment.portion;
             this.$store.commit('activeFragment', fragment);
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
         },
         moveStart(e, fragmentIndex) {
             this.fragmentIndex = fragmentIndex;
-            this.seek(this.progressFromEvent(e));
+            this.seekToProgress(e);
         },
         move(e) {
-            if (this.fragmentIndex !== false)
-                this.seek(this.progressFromEvent(e));
+            if (this.fragmentIndex !== false) {
+                this.seekToProgress(e);
+                requestAnimationFrame(() => this.calculateSeekPosition());
+            }
         },
         moveEnd(e) {
             if (this.fragmentIndex !== false)
-                this.seek(this.progressFromEvent(e));
+                this.seekToProgress(e);
             this.fragmentIndex = false;
-        },
-        seek() {
-
         },
         calculateSeekPosition() {
             const fragmentProgress = this.activeFragment.progress;
-            const visualFragment = this.visualFragments.find(v =>
-                v.fragment === this.activeFragment &&
-                v.start <= fragmentProgress && fragmentProgress <= v.end
+            const visualFragment = this.visualFragments.find(v => {
+                    return v.fragment === this.activeFragment &&
+                        v.start <= fragmentProgress && fragmentProgress <= v.end;
+                }
             );
             if (visualFragment === undefined)
                 return;
 
             const margin = (visualFragment.continuesLeft ? 0 : 10) + (visualFragment.continuesRight ? 0 : 10);
             this.activeVisualFragment = visualFragment;
+            let visualFragmentProgress = (fragmentProgress - visualFragment.start) / (visualFragment.end - visualFragment.start);
             this.seekLeft = Math.round(
-                (fragmentProgress - visualFragment.start) /
-                (visualFragment.end - visualFragment.start) *
+                visualFragmentProgress *
                 (visualFragment.width - margin) * 100
             ) / 100;
         },
@@ -148,11 +145,6 @@ export default {
                 context.fill();
             }
         },
-        lazyUpdateFragmentsLayout() {
-            // clearTimeout(this.lazyUpdateTimeout);
-            // this.lazyUpdateTimeout = setTimeout(() => this.updateFragmentsLayout(), 150);
-            this.updateFragmentsLayout();
-        },
         updateFragmentsLayout() {
             if (this.fragments.length === 0)
                 return;
@@ -178,7 +170,7 @@ export default {
                             ...fragment,
                             width: splitSizeLeft,
                             continuesRight: rightPartExists,
-                            end: fragment.fragment.start + fragment.fragment.portion * (fragment.leftPixels + splitSizeLeft) / fragment.fullWidth,
+                            end: (fragment.leftPixels + splitSizeLeft) / fragment.fullWidth,
                         });
 
                     if (rightPartExists) {
@@ -188,7 +180,7 @@ export default {
                             width: splitSizeRight,
                             continuesLeft: leftPartExists,
                             leftPixels,
-                            start: fragment.fragment.start + fragment.fragment.portion * leftPixels / fragment.fullWidth
+                            start: leftPixels / fragment.fullWidth
                         });
                     }
                     currentOffsetLeft = 0;
@@ -210,12 +202,20 @@ export default {
         },
         windowResize() {
             this.bounds = this.$refs.timeline.getBoundingClientRect();
-            this.lazyUpdateFragmentsLayout();
+            this.$nextTick(() => {
+                requestAnimationFrame(() => this.updateFragmentsLayout());
+            });
         },
     },
     watch: {
-        progress() {
+        progress(){
             requestAnimationFrame(() => this.calculateSeekPosition());
+        },
+        'activeFragment.end'() {
+            requestAnimationFrame(() => this.updateFragmentsLayout());
+        },
+        'activeFragment.start'() {
+            requestAnimationFrame(() => this.updateFragmentsLayout());
         },
         'activeFragment.playbackRate'() {
             this.$nextTick(() => {
@@ -242,8 +242,8 @@ export default {
                     screenshots: fragment.video.screenshots,
                     continuesRight: false,
                     continuesLeft: false,
-                    start: fragment.start,
-                    end: fragment.end,
+                    start: 0,
+                    end: 1,
                     leftPixels: 0,
                 };
             });

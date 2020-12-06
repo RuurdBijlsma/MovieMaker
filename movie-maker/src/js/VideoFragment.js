@@ -18,11 +18,11 @@ export default class VideoFragment {
 
     get progress() {
         let videoProgress = this.video.element.currentTime / this.video.duration;
-        return (videoProgress - this.start) * this.portion;
+        return (videoProgress - this.start) / this.portion;
     }
 
     get adjustedDuration() {
-        let duration = this.video.duration / this.playbackRate
+        let duration = this.video.duration / this.playbackRate;
         let adjusted = duration * this.portion;
         return isNaN(adjusted) ? 0 : adjusted;
     }
