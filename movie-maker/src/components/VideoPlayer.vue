@@ -1,7 +1,7 @@
 <template>
     <div class="player" ref="player">
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
-            <video @ended="videoEnd" ref="videos"
+            <video @ended="playNextFragment" ref="videos"
                    v-for="videoFile in videoFiles"
                    :key="videoFile.filePath" :id="videoFile.filePath"
                    :src="videoFile.filePath" :style="{
@@ -66,10 +66,15 @@ export default {
                 });
                 if (!isNaN(progress))
                     this.$store.commit('progress', progress);
+
+                if (this.activeFragment.progress >= 1)
+                    this.playNextFragment();
+
                 if (activeVideo.playbackRate !== this.activeFragment.playbackRate)
                     activeVideo.playbackRate = this.activeFragment.playbackRate;
-                if (activeVideo.volume !== this.activeFragment.volume)
-                    activeVideo.volume = this.activeFragment.volume;
+                const gainNode = this.activeFragment.video.gainNode;
+                if (gainNode && gainNode.gain.value !== this.activeFragment.volume)
+                    gainNode.gain.value = this.activeFragment.volume;
             }
         }, 1000 / 60);
     },
@@ -87,7 +92,7 @@ export default {
         windowResize() {
             this.bounds = this.$refs.player.getBoundingClientRect();
         },
-        ...mapActions(['play', 'pause', 'videoEnd'])
+        ...mapActions(['play', 'pause', 'playNextFragment'])
     },
     watch: {
         activeFragment(fragment, previousFragment) {
@@ -134,8 +139,9 @@ export default {
     width: 100%;
     position: absolute;
 }
-.controls{
-    margin:20px;
+
+.controls {
+    margin: 20px;
     display: flex;
     flex-direction: column;
 }

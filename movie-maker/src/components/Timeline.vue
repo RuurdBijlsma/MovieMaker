@@ -48,7 +48,7 @@ export default {
         this.windowResize();
         window.addEventListener('resize', this.windowResize, false);
         requestAnimationFrame(() => this.updateFragmentsLayout());
-        this.renderAudioInterval = setInterval(() => this.renderAudio(), 500);
+        this.renderAudioInterval = setInterval(() => requestAnimationFrame(this.updateFragmentsLayout), 500);
         document.addEventListener('mousemove', this.move, false);
         document.addEventListener('mouseup', this.moveEnd, false);
     },
@@ -212,10 +212,14 @@ export default {
             requestAnimationFrame(() => this.calculateSeekPosition());
         },
         'activeFragment.end'() {
-            requestAnimationFrame(() => this.updateFragmentsLayout());
+            this.$nextTick(() => {
+                requestAnimationFrame(() => this.updateFragmentsLayout());
+            });
         },
         'activeFragment.start'() {
-            requestAnimationFrame(() => this.updateFragmentsLayout());
+            this.$nextTick(() => {
+                requestAnimationFrame(() => this.updateFragmentsLayout());
+            });
         },
         'activeFragment.playbackRate'() {
             this.$nextTick(() => {

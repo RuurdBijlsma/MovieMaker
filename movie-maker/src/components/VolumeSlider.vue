@@ -8,9 +8,9 @@
                 dense
                 hide-details
                 min="0"
-                max="1"
+                max="2"
                 step="0.001"
-                v-model="activeFragment.volume"></v-slider>
+                v-model="rawVolume"></v-slider>
             <div class="slider-label">
                 <p>Volume: {{ Math.round(activeFragment.volume * 100) }}%</p>
             </div>
@@ -22,7 +22,7 @@
                                             opacity: activeFragment.volume === 1 ? 0 : 0.5,
                                             pointerEvents: activeFragment.volume === 1 ? 'none' : 'all',
                                         }"
-                       @click="activeFragment.volume = 1" v-bind="attrs" v-on="on">
+                       @click="rawVolume = 1" v-bind="attrs" v-on="on">
                     <v-icon>mdi-reload</v-icon>
                 </v-btn>
             </template>
@@ -32,24 +32,41 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapActions, mapState} from "vuex";
 
 export default {
     name: "VolumeSlider",
     data: () => ({
         prevVolume: 1,
+        rawVolume: 1,
     }),
     methods: {
         toggleMute() {
-            if (this.activeFragment.volume > 0) {
-                this.prevVolume = this.activeFragment.volume;
-                this.activeFragment.volume = 0;
+            if (this.rawVolume > 0) {
+                this.prevVolume = this.rawVolume;
+                this.rawVolume = 0;
             } else {
-                this.activeFragment.volume = this.prevVolume;
+                this.rawVolume = this.prevVolume;
             }
         },
         wheelVolume(e) {
-            this.activeFragment.volume -= e.deltaY * 0.0001;
+            this.setVolume({volume: this.activeFragment.volume - e.deltaY * 0.0001});
+        },
+        ...mapActions(['setVolume']),
+    },
+    watch: {
+        activeFragment() {
+            let vol = this.activeFragment.volume;
+            if (vol > 1)
+                vol = 1 + (vol - 1) / 7;
+            console.log(vol);
+            this.rawVolume = vol;
+        },
+        rawVolume() {
+            let volume = this.rawVolume;
+            if (this.rawVolume > 1)
+                volume = 1 + (this.rawVolume - 1) * 7;
+            this.setVolume({volume});
         },
     },
     computed: {
@@ -58,8 +75,10 @@ export default {
                 return 'mdi-volume-mute';
             } else if (this.activeFragment.volume < 0.5) {
                 return 'mdi-volume-medium';
-            } else {
+            } else if (this.activeFragment.volume < 4) {
                 return 'mdi-volume-high';
+            } else {
+                return 'mdi-volume-vibrate';
             }
         },
         ...mapState({

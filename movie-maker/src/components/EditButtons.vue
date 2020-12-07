@@ -2,15 +2,15 @@
     <v-sheet color="softBackground" class="edit-buttons">
         <div class="flow-buttons">
             <v-btn small rounded text @click="split">
-                <span class="button-caption">Split</span>
+                <span class="button-caption button-layout">Split</span>
                 <v-icon small>mdi-arrow-split-vertical</v-icon>
             </v-btn>
             <v-btn small rounded text @click="setStartPoint">
-                <span class="button-caption">Set start</span>
+                <span class="button-caption button-layout">Set start</span>
                 <v-icon small>mdi-contain-start</v-icon>
             </v-btn>
             <v-btn small rounded text @click="setEndPoint">
-                <span class="button-caption">Set end</span>
+                <span class="button-caption button-layout">Set end</span>
                 <v-icon small>mdi-contain-end</v-icon>
             </v-btn>
         </div>
@@ -19,18 +19,30 @@
             <playback-rate-slider></playback-rate-slider>
         </div>
         <div class="flow-buttons fb2">
-            <v-btn small rounded text>
-                <span class="button-caption">Delete</span>
+            <v-btn small rounded text @click="removeFragment()">
+                <span class="button-caption button-layout">Delete</span>
                 <v-icon small>mdi-delete</v-icon>
             </v-btn>
-            <v-btn small rounded text>
-                <span class="button-caption">Undo</span>
-                <v-icon small>mdi-undo</v-icon>
-            </v-btn>
-            <v-btn small rounded text>
-                <span class="button-caption">Redo</span>
-                <v-icon small>mdi-redo</v-icon>
-            </v-btn>
+            <div class="two-way-buttons">
+                <v-btn small icon @click="shiftFragment({shift: -1})">
+                    <v-icon small>mdi-chevron-left</v-icon>
+                </v-btn>
+                <span class="button-caption two-way-caption">Move</span>
+                <v-btn small icon @click="shiftFragment({shift: 1})">
+                    <v-icon small>mdi-chevron-right</v-icon>
+                </v-btn>
+            </div>
+            <div class="two-way-buttons">
+                <v-btn small icon @click="undo">
+                    <v-icon small>mdi-undo</v-icon>
+                </v-btn>
+                <span class="button-caption two-way-caption">Undo</span>
+                <v-btn small icon @click="redo">
+                    <v-icon small>mdi-redo</v-icon>
+                </v-btn>
+            </div>
+        </div>
+        <div class="move-buttons">
         </div>
     </v-sheet>
 </template>
@@ -43,8 +55,8 @@ import {mapActions} from "vuex";
 export default {
     name: "EditButtons",
     components: {PlaybackRateSlider, VolumeSlider},
-    methods:{
-        ...mapActions(['split', 'setStartPoint','setEndPoint']),
+    methods: {
+        ...mapActions(['split', 'setStartPoint', 'setEndPoint', 'removeFragment', 'shiftFragment', 'undo', 'redo']),
     }
 }
 </script>
@@ -67,21 +79,34 @@ export default {
     margin: 2px 0;
 }
 
-.flow-buttons span {
+.button-layout {
+    margin-right: 10px;
+    width: 70px;
+}
+
+.button-caption {
     text-transform: uppercase;
     font-size: 12px;
     opacity: 0.7;
-    margin-right: 10px;
-    width: 70px;
     text-align: right;
     display: inline-block;
 }
 
-.fb2 span {
+.fb2 .button-layout {
     width: 50px;
+}
+
+.two-way-caption {
+    margin: 0 10px;
 }
 
 .sliders {
     display: flex;
+}
+
+.move-buttons {
+    height: 100%;
+    display: flex;
+    place-items: center;
 }
 </style>

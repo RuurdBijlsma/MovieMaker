@@ -12,6 +12,9 @@ export default class VideoFile extends EventEmitter {
         this.pcm = new Float32Array(Math.ceil(this.audioStream.sample_rate * this.duration / 1000));
         this._elCache = null;
 
+        this.source = null;
+        this.gainNode = null;
+
         let stream = pcm.getStream({
             filepath: this.filePath,
             channels: 1,
@@ -45,13 +48,19 @@ export default class VideoFile extends EventEmitter {
             return null;
         if (this._elCache === null) {
             let el = [...this.container.children].find(c => c.getAttribute('id') === this.filePath);
+            this.source = VideoFile.audioContext.createMediaElementSource(el);
+            if (this.gainNode)
+                this.gainNode.disconnect();
+            this.gainNode = VideoFile.audioContext.createGain();
+            this.source.connect(this.gainNode);
+            this.gainNode.connect(VideoFile.audioContext.destination);
             if (el)
                 this._elCache = el;
         }
         return this._elCache;
     }
 
-    get fileName(){
+    get fileName() {
         return Utils.baseFileName(this.filePath);
     }
 
@@ -97,3 +106,4 @@ export default class VideoFile extends EventEmitter {
     }
 }
 VideoFile.ffmpegPath = 'ffmpeg';
+VideoFile.audioContext = new AudioContext();
