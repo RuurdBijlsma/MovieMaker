@@ -37,6 +37,7 @@
 // make getting ffmpeg path awaitable and wait when it's not retrieved yet
 // Next frame/ prev frame button
 // adjust width of player/timeline
+// remove windows media control notification (add setting?)
 // TODO: Check if video freeze but audio keeps going still happens (still happens when something other than opacity is used) (happens because of vue hot reload hopefully)
 // todo bug: memory pls
 
