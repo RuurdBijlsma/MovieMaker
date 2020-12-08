@@ -33,11 +33,11 @@
                 </v-btn>
             </div>
             <div class="two-way-buttons">
-                <v-btn small icon @click="undo">
+                <v-btn :disabled="!canUndo" small icon @click="undo">
                     <v-icon small>mdi-undo</v-icon>
                 </v-btn>
                 <span class="button-caption two-way-caption">Undo</span>
-                <v-btn small icon @click="redo">
+                <v-btn :disabled="!canRedo" small icon @click="redo">
                     <v-icon small>mdi-redo</v-icon>
                 </v-btn>
             </div>
@@ -50,14 +50,17 @@
 <script>
 import VolumeSlider from "@/components/VolumeSlider";
 import PlaybackRateSlider from "@/components/PlaybackRateSlider";
-import {mapActions} from "vuex";
+import {mapActions, mapGetters} from "vuex";
 
 export default {
     name: "EditButtons",
     components: {PlaybackRateSlider, VolumeSlider},
     methods: {
         ...mapActions(['split', 'setStartPoint', 'setEndPoint', 'removeFragment', 'shiftFragment', 'undo', 'redo']),
-    }
+    },
+    computed: {
+        ...mapGetters(['canUndo', 'canRedo'])
+    },
 }
 </script>
 

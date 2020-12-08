@@ -13,7 +13,8 @@ import DeleteFragment from "@/js/Commands/DeleteFragment";
 import MoveFragment from "@/js/Commands/MoveFragment";
 import SetPlaybackRate from "@/js/Commands/SetPlaybackRate";
 import SetVolume from "@/js/Commands/SetVolume";
-import Command from "@/js/Commands/Command";
+import command from './command-module'
+import Utils from "@/js/Utils";
 
 Vue.use(Vuex)
 
@@ -63,6 +64,15 @@ export default new Vuex.Store({
             if (!keepVideo) {
                 state.videoFiles.splice(state.videoFiles.indexOf(removedFragment.video), 1);
             }
+            if (state.activeFragment === removedFragment) {
+                if (state.timeline.length === 0) {
+                    state.activeFragment = null;
+                } else {
+                    let newIndex = Math.min(state.timeline.length - 1, Math.max(0, index - 1));
+                    state.activeFragment = state.timeline[newIndex];
+                    state.activeFragment.reset();
+                }
+            }
         },
         addToTimeline: (state, {fragment, index}) => {
             if (!state.videoFiles.includes(fragment.video)) {
@@ -91,7 +101,7 @@ export default new Vuex.Store({
         progressAtFragmentProgress: (state, getters) => ({fragment, progress}) => {
             let timeBefore = state.timeline.slice(0, state.timeline.indexOf(fragment)).reduce((a, b) => a + b.adjustedDuration, 0);
             let fragmentPart = fragment.adjustedDuration / getters.fullDuration;
-            return timeBefore / getters.fullDuration + fragmentPart * progress;
+            return Utils.clamp(timeBefore / getters.fullDuration + fragmentPart * progress);
         },
         fragmentAtProgress: (state, getters) => progress => {
             let fullDuration = getters.fullDuration;
@@ -101,7 +111,7 @@ export default new Vuex.Store({
                 if (beforeParts + fragmentPart >= progress - 0.0001) {
                     let fragmentProgress = (progress - beforeParts) / fragmentPart;
                     let fragmentCut = fragment.end - fragment.start;
-                    return {fragment, videoProgress: fragment.start + fragmentProgress * fragmentCut};
+                    return {fragment, videoProgress: Utils.clamp(fragment.start + fragmentProgress * fragmentCut)};
                 }
                 beforeParts += fragmentPart;
             }
@@ -121,50 +131,52 @@ export default new Vuex.Store({
         }
     },
     actions: {
-        undo({}) {
-            Command.undo();
+        undo({commit, dispatch}) {
+            commit('undoCommand');
+            dispatch('printUndoStack');
         },
-        redo({}) {
-            Command.redo();
+        redo({commit, dispatch}) {
+            commit('redoCommand');
+            dispatch('printUndoStack');
         },
-        setVolume({state}, {fragment, volume}) {
-            fragment ??= state.activeFragment;
-            new SetVolume(fragment, volume).execute();
+        setVolume({state, dispatch}, {fragment = state.activeFragment, volume}) {
+            dispatch('executeCommand', new SetVolume(fragment, volume));
         },
-        setPlaybackRate({state}, {fragment, playbackRate}) {
-            fragment ??= state.activeFragment;
-            new SetPlaybackRate(fragment, playbackRate).execute();
+        setPlaybackRate({state, dispatch}, {fragment = state.activeFragment, playbackRate}) {
+            dispatch('executeCommand', new SetPlaybackRate(fragment, playbackRate));
         },
-        setStartPoint({state, getters}, {fragment, start}) {
-            fragment ??= state.activeFragment;
-            start ??= getters.fragmentAtProgress(state.player.progress).videoProgress;
-            new SetStartPoint(fragment, start).execute();
+        setStartPoint({state, getters, dispatch}, {
+            fragment = state.activeFragment,
+            start = getters.fragmentAtProgress(state.player.progress).videoProgress
+        }) {
+            dispatch('executeCommand', new SetStartPoint(fragment, start));
         },
-        setEndPoint({state, getters}, {fragment, end}) {
-            fragment ??= state.activeFragment;
-            end ??= getters.fragmentAtProgress(state.player.progress).videoProgress;
-            new SetEndPoint(fragment, end).execute();
+        setEndPoint({state, getters, dispatch}, {
+            fragment = state.activeFragment,
+            end = getters.fragmentAtProgress(state.player.progress).videoProgress
+        }) {
+            dispatch('executeCommand', new SetEndPoint(fragment, end));
         },
-        split(store, {fragment, split}) {
-            fragment ??= store.state.activeFragment;
-            split ??= store.getters.fragmentAtProgress(store.state.player.progress).videoProgress;
-            new SplitFragment(store, fragment, split).execute();
+        split({state, getters, dispatch}, {
+            fragment = state.activeFragment,
+            split = getters.fragmentAtProgress(state.player.progress).videoProgress
+        }) {
+            console.log("Split at", split);
+            dispatch('executeCommand', new SplitFragment(fragment, split));
         },
-        async importVideo(store, path) {
-            let videoFile = await store.dispatch('loadMetadata', path);
+        async importVideo({dispatch}, path) {
+            let videoFile = await dispatch('loadMetadata', path);
             let fragment = new VideoFragment(videoFile);
-            new AddFragment(store, fragment).execute();
+            dispatch('executeCommand', new AddFragment(fragment));
         },
-        removeFragment(store, fragment) {
-            fragment ??= store.state.activeFragment;
-            new DeleteFragment(store, fragment).execute();
+        removeFragment({state, dispatch}, fragment = state.activeFragment) {
+            dispatch('executeCommand', new DeleteFragment(fragment));
         },
-        shiftFragment(store, {fragment, shift = 1}) {
-            fragment ??= store.state.activeFragment;
-            let newIndex = store.state.timeline.indexOf(fragment) + shift;
-            if (newIndex < 0 || newIndex >= store.state.timeline.length)
+        shiftFragment({state, dispatch}, {fragment = state.activeFragment, shift = 1}) {
+            let newIndex = state.timeline.indexOf(fragment) + shift;
+            if (newIndex < 0 || newIndex >= state.timeline.length)
                 return;
-            new MoveFragment(store, fragment, newIndex).execute();
+            dispatch('executeCommand', new MoveFragment(fragment, newIndex));
         },
         addAudioTrack({}) {
 
@@ -174,7 +186,6 @@ export default new Vuex.Store({
         },
         async seek({state, commit, getters}, progress) {
             let {fragment, videoProgress} = getters.fragmentAtProgress(progress);
-            console.log(videoProgress);
             state.timeline.filter(f => f !== fragment).forEach(f => f.reset());
             fragment.video.element.currentTime = videoProgress * fragment.video.duration;
             commit('activeFragment', fragment);
@@ -229,5 +240,5 @@ export default new Vuex.Store({
             });
         },
     },
-    modules: {electron, ffmpeg}
+    modules: {electron, ffmpeg, command}
 })

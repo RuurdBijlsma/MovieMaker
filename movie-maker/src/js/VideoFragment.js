@@ -7,7 +7,11 @@ export default class VideoFragment {
         this.volume = 1;
     }
 
-    get portion(){
+    get id() {
+        return this.video.filePath + '|' + this.start + '|' + this.end;
+    }
+
+    get portion() {
         return this.end - this.start;
     }
 

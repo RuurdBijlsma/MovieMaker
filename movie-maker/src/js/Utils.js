@@ -23,6 +23,10 @@ export default class Utils {
         return bytes.toFixed(dp) + ' ' + units[u];
     }
 
+    static clamp(x, min = 0, max = 1) {
+        return Math.min(max, Math.max(min, x));
+    }
+
     static baseFileName(filePath) {
         return path.basename(filePath);
     }

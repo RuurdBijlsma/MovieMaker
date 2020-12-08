@@ -13,6 +13,7 @@
 
 <script>
 import {mapActions, mapState} from "vuex";
+import Utils from "@/js/Utils";
 
 export default {
     name: "SeekBar",
@@ -51,7 +52,7 @@ export default {
     computed: {
         percentage() {
             let p = Math.round(this.progress * 100000) / 1000;
-            return isNaN(p) ? 0 : p;
+            return Utils.clamp(isNaN(p) ? 0 : p, 0, 100);
         },
         ...mapState({
             progress: state => state.player.progress,
@@ -78,7 +79,7 @@ export default {
 }
 
 .seek-progress {
-    width: 0%;
+    width: 0;
     height: 100%;
     border-bottom-left-radius: 0.15em;
     border-top-left-radius: 0.15em;

@@ -27,6 +27,7 @@
 
 <script>
 import {mapGetters, mapState} from "vuex";
+import Utils from "@/js/Utils";
 
 export default {
     name: "Timeline",
@@ -70,7 +71,7 @@ export default {
             visualFragmentProgress = Math.max(Math.min(visualFragmentProgress / width, 1), 0);
             let fragmentProgress = visualFragment.start + visualFragmentProgress * (visualFragment.end - visualFragment.start);
             let {fragment} = visualFragment;
-            let videoProgress = fragment.start + fragmentProgress * fragment.portion;
+            let videoProgress = Utils.clamp(fragment.start + fragmentProgress * fragment.portion);
             this.$store.commit('activeFragment', fragment);
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
         },
@@ -91,10 +92,9 @@ export default {
         },
         calculateSeekPosition() {
             const fragmentProgress = this.activeFragment.progress;
-            const visualFragment = this.visualFragments.find(v => {
-                    return v.fragment === this.activeFragment &&
-                        v.start <= fragmentProgress && fragmentProgress <= v.end;
-                }
+            const visualFragment = this.visualFragments.find(v =>
+                v.fragment === this.activeFragment &&
+                v.start <= fragmentProgress && fragmentProgress <= v.end
             );
             if (visualFragment === undefined)
                 return;
@@ -103,7 +103,7 @@ export default {
             this.activeVisualFragment = visualFragment;
             let visualFragmentProgress = (fragmentProgress - visualFragment.start) / (visualFragment.end - visualFragment.start);
             this.seekLeft = Math.round(
-                visualFragmentProgress *
+                Utils.clamp(visualFragmentProgress) *
                 (visualFragment.width - margin) * 100
             ) / 100;
         },
@@ -208,7 +208,12 @@ export default {
         },
     },
     watch: {
-        progress(){
+        activeFragment() {
+            this.$nextTick(() => {
+                requestAnimationFrame(() => this.calculateSeekPosition());
+            });
+        },
+        progress() {
             requestAnimationFrame(() => this.calculateSeekPosition());
         },
         'activeFragment.end'() {

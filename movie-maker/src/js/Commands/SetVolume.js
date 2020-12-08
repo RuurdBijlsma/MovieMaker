@@ -2,7 +2,7 @@ import Command from "@/js/Commands/Command";
 
 export default class SetVolume extends Command {
     constructor(fragment, newVolume) {
-        super(true);
+        super(fragment);
         this.fragment = fragment;
         this.oldVolume = fragment.volume;
         this.newVolume = newVolume;

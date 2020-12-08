@@ -59,7 +59,6 @@ export default {
             if (this.$refs.videos) {
                 let activeVideo = this.activeFragment.video.element;
                 this.$store.commit('playing', !activeVideo.paused)
-                // console.log(this.activeFragment.progress);
                 let progress = this.progressAtFragmentProgress({
                     fragment: this.activeFragment,
                     progress: this.activeFragment.progress
@@ -98,7 +97,6 @@ export default {
         activeFragment(fragment, previousFragment) {
             if (previousFragment === null)
                 return;
-            console.log("Active video changed");
             if (fragment.video !== previousFragment.video) {
                 const wasPaused = previousFragment.video.element.paused;
                 previousFragment.reset();

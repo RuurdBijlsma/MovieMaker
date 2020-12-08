@@ -30,32 +30,42 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapActions, mapState} from "vuex";
 
 export default {
     name: "PlaybackRateSlider",
     data: () => ({
         rawPlaybackRate: 1,
+        commit: true,
     }),
     methods: {
-        wheelPbr(e) {
-            console.log(e.deltaY);
-            this.rawPlaybackRate -= e.deltaY * 0.00005;
-        },
-    },
-    watch: {
-        activeFragment() {
+        updateRawPbr(commit = true) {
             let pbr = this.activeFragment.playbackRate;
             if (pbr > 1)
                 pbr = 1 + (pbr - 1) / 7;
-            console.log(pbr);
+            this.commit = commit;
             this.rawPlaybackRate = pbr;
         },
+        wheelPbr(e) {
+            this.rawPlaybackRate -= e.deltaY * 0.00005;
+        },
+        ...mapActions(['setPlaybackRate']),
+    },
+    watch: {
+        'activeFragment.playbackRate'() {
+            this.updateRawPbr(false);
+        },
+        activeFragment() {
+            this.updateRawPbr(false);
+        },
         rawPlaybackRate() {
-            let pbr = this.rawPlaybackRate;
+            let playbackRate = this.rawPlaybackRate;
             if (this.rawPlaybackRate > 1)
-                pbr = 1 + (this.rawPlaybackRate - 1) * 7;
-            this.activeFragment.playbackRate = pbr;
+                playbackRate = 1 + (this.rawPlaybackRate - 1) * 7;
+            if (this.commit)
+                this.setPlaybackRate({playbackRate});
+            else
+                this.commit = true;
         },
     },
     computed: {

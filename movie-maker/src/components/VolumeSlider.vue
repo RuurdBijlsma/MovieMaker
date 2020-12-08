@@ -39,8 +39,16 @@ export default {
     data: () => ({
         prevVolume: 1,
         rawVolume: 1,
+        commit: true,
     }),
     methods: {
+        updateRawVolume(commit = true) {
+            let vol = this.activeFragment.volume;
+            if (vol > 1)
+                vol = 1 + (vol - 1) / 7;
+            this.commit = commit;
+            this.rawVolume = vol;
+        },
         toggleMute() {
             if (this.rawVolume > 0) {
                 this.prevVolume = this.rawVolume;
@@ -50,23 +58,25 @@ export default {
             }
         },
         wheelVolume(e) {
-            this.setVolume({volume: this.activeFragment.volume - e.deltaY * 0.0001});
+            this.rawVolume -= e.deltaY * 0.0001;
         },
         ...mapActions(['setVolume']),
     },
     watch: {
-        activeFragment() {
-            let vol = this.activeFragment.volume;
-            if (vol > 1)
-                vol = 1 + (vol - 1) / 7;
-            console.log(vol);
-            this.rawVolume = vol;
+        'activeFragment.volume'() {
+            this.updateRawVolume(false);
         },
-        rawVolume() {
+        activeFragment() {
+            this.updateRawVolume(false);
+        },
+        rawVolume(previousValue, newValue) {
             let volume = this.rawVolume;
             if (this.rawVolume > 1)
                 volume = 1 + (this.rawVolume - 1) * 7;
-            this.setVolume({volume});
+            if (this.commit)
+                this.setVolume({volume});
+            else
+                this.commit = true;
         },
     },
     computed: {

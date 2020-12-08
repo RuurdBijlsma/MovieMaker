@@ -4,7 +4,9 @@ import './registerServiceWorker'
 import router from './plugins/router'
 import store from './plugins/vuex/store'
 import vuetify from './plugins/vuetify';
+import Command from "@/js/Commands/Command";
 
+Command.setStore(store);
 
 Vue.config.productionTip = false
 

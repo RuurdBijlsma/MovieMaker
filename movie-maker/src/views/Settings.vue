@@ -7,16 +7,7 @@
 <script>
 
 export default {
-    name: "Home",
-    components: {},
-    data: () => ({}),
-    mounted() {
-    },
-    beforeDestroy() {
-    },
-    methods: {},
-    watch: {},
-    computed: {},
+    name: "Settings",
     beforeRouteLeave(to, from, next) {
 
     },

@@ -29,23 +29,25 @@
 // TODO: Features
 // Right click in explorer on video -> edit with ruurd movie maker
 // export to youtube with manual key input
-// lotta bugs with start and end time?
-// stop video playing when end of fragment is reached
 // do pcm reading in thread
 // theme color chooser in settings
 // add audio track (music) to video
-// dont allow seek when video is still loading
+// dont allow seek when video is still loading (show loading indicator somewhere when video is loading)
 // Stop merging images, display them separately
-// fix bugs with sometimes layout isn't updated hot reload issue maybe
-// when no redo is available, grey out redo button (hard to do maybe)
-// reposition seek when fragment is deleted
+// make getting ffmpeg path awaitable and wait when it's not retrieved yet
+// Next frame/ prev frame button
 // adjust width of player/timeline
-// can't undo last action (add fragment) maybe because it's still active?? idk
-// make volume change reactive (probably need to make entire undostack and command pattern a vuex module or somthin)
 // TODO: Check if video freeze but audio keeps going still happens (still happens when something other than opacity is used) (happens because of vue hot reload hopefully)
 // todo bug: memory pls
 
 // DONE TODO
+// stop video playing when end of fragment is reached
+// fix bugs with sometimes layout isn't updated hot reload issue maybe
+// reposition seek when fragment is deleted
+// when no redo is available, grey out redo button (hard to do maybe)
+// make volume change reactive (probably need to make entire undostack and command pattern a vuex module or somthin)
+// can't undo last action (add fragment) maybe because it's still active?? idk
+// lotta bugs with start and end time?
 // add command pattern (Ezpz lemon squeezy)
 // increase volume to >1
 // [top bar and context menu]: split/set start/set end/delete fragment/(un)mute fragment/more? Maybe add extra top bar for this? because no space there
@@ -72,7 +74,6 @@ export default {
     methods: {
         ...mapActions(['addSnack', 'initialize'])
     },
-    watch: {},
     computed: {
         cssProps() {
             console.log(this.$vuetify.theme);

@@ -5,7 +5,13 @@
             <v-icon class="no-data-icon" size="300">mdi-video-off-outline</v-icon>
             <h1>Import a video to start</h1>
             <p>Drag a video here or click the import videos button</p>
-            <v-btn @click="promptVideoInput" color="primary" rounded>Import videos</v-btn>
+            <v-btn @click="promptVideoInput" color="primary" rounded>
+                Import videos
+            </v-btn>
+            <v-btn @click="redo" text class="mt-2" v-if="undoStack.length > 0">
+                <v-icon small>mdi-redo</v-icon>
+                <span class="redo-button">Redo</span>
+            </v-btn>
         </div>
     </div>
 </template>
@@ -24,12 +30,12 @@ export default {
     beforeDestroy() {
     },
     methods: {
-        ...mapActions(['promptVideoInput']),
+        ...mapActions(['promptVideoInput', 'redo']),
     },
-    watch: {},
     computed: {
         ...mapState({
             activeFragment: state => state.activeFragment,
+            undoStack: state => state.command.undoStack,
         }),
     },
 }
@@ -61,5 +67,10 @@ export default {
 .no-data p {
     margin-bottom: 30px;
     opacity: 0.8;
+}
+
+.redo-button {
+    text-transform: uppercase;
+    margin-left: 10px;
 }
 </style>

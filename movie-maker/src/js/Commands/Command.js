@@ -1,26 +1,17 @@
-import UndoStack from "@/js/Commands/UndoStack";
-
 export default class Command {
-    constructor(batch = false) {
-        this.batch = batch;
-        Command.undoStack.push(this);
+    constructor(batchOn = false) {
+        this.batchOn = batchOn;
     }
 
-    static undo() {
-        Command.undoStack.undo();
-
-        console.log(Command.undoStack.toString());
+    static setStore(store) {
+        this.store = store;
     }
 
-    static redo() {
-        Command.undoStack.redo();
-
-        console.log(Command.undoStack.toString());
+    execute() {
+        throw new Error("Not implemented");
     }
 
-    static get undoStack() {
-        if (!Command._undoStack)
-            Command._undoStack = new UndoStack();
-        return Command._undoStack;
+    undo() {
+        throw new Error("Not implemented");
     }
 }

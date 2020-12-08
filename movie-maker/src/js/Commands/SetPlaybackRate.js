@@ -2,7 +2,7 @@ import Command from "@/js/Commands/Command";
 
 export default class SetPlaybackRate extends Command {
     constructor(fragment, rate) {
-        super(true);
+        super(fragment);
         this.fragment = fragment;
         this.oldSpeed = fragment.playbackRate;
         this.newSpeed = rate;
