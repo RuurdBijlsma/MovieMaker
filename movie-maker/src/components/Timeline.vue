@@ -61,6 +61,8 @@ export default {
             }
         },
         seekToProgress(e) {
+            if (!this.activeFragment.video.canPlay)
+                return;
             const visualFragment = this.visualFragments[this.fragmentIndex];
             const bounds = this.$refs.fragments[this.fragmentIndex].getBoundingClientRect();
             const leftMargin = visualFragment.continuesLeft ? 0 : 10;
@@ -117,31 +119,26 @@ export default {
                 const pcm = fragment.fragment.video.pcm;
                 if (pcm === undefined)
                     continue;
-
                 const canvas = this.$refs.audioCanvases[i];
                 const context = canvas.getContext('2d');
                 context.clearRect(0, 0, canvas.width, canvas.height);
 
-                const start = Math.floor(fragment.start * pcm.length)
-                const end = Math.floor(fragment.end * pcm.length)
+                const visFragStart = fragment.fragment.start + fragment.start * fragment.fragment.portion;
+                const visFragEnd = fragment.fragment.start + fragment.end * fragment.fragment.portion;
+                const startIndex = Math.floor(visFragStart * pcm.length)
+                const endIndex = Math.floor(visFragEnd * pcm.length)
 
                 context.fillStyle = this.themeColors.secondary;
                 context.strokeStyle = this.themeColors.primary;
-                const x = 0;
                 context.beginPath();
-                context.moveTo(x, canvas.height);
-                for (let x = 0; x < canvas.width; x++) {
-                    const index = start + Math.floor((end - start) * (x / canvas.width));
-                    const value = pcm[index] * canvas.height * fragment.fragment.volume * 1.6;
-                    context.lineTo(x++, canvas.height - value);
+                context.moveTo(0, canvas.height);
+                for (let j = startIndex; j < endIndex; j++) {
+                    let height = pcm[j] * canvas.height * fragment.fragment.volume;
+                    context.lineTo((j - startIndex) / (endIndex - startIndex) * canvas.width, canvas.height - height);
                 }
-                // for (let j = start; j < end; j++) {
-                //     let value = pcm[j] * canvas.height * fragment.fragment.volume;
-                //     context.lineTo(x++, canvas.height - value);
-                // }
-                context.stroke();
                 context.lineTo(canvas.width, canvas.height);
                 context.lineTo(0, canvas.height);
+                context.stroke();
                 context.fill();
             }
         },

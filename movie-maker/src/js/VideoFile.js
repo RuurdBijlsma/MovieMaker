@@ -9,8 +9,15 @@ export default class VideoFile extends EventEmitter {
         this.screenshots = screenshots;
         this.container = null;
 
-        this.pcm = new Float32Array(Math.ceil(this.audioStream.sample_rate * this.duration / 1000));
+        // 10 points per second
+        const avgWindowSize = this.audioStream.sample_rate / 10;
+        this.pcm = new Float32Array(Math.ceil(this.audioStream.sample_rate * this.duration / avgWindowSize));
         this._elCache = null;
+
+        this.canPlay = false;
+        this.on('canplay', () => {
+            this.canPlay = true;
+        });
 
         this.source = null;
         this.gainNode = null;
@@ -21,7 +28,6 @@ export default class VideoFile extends EventEmitter {
             ffmpeg: VideoFile.ffmpegPath,
         });
         let i = 0;
-        const avgWindowSize = 1000;
         this.pcmLoaded = false;
         stream.on('readable', () => {
             let avg = 0;

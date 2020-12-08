@@ -5,14 +5,14 @@ import Vuetify from '../vuetify'
 import electron from './electron-module'
 import ffmpeg from './ffmpeg-module'
 import VideoFragment from "@/js/VideoFragment";
-import SetStartPoint from "@/js/Commands/SetStartPoint";
-import SetEndPoint from "@/js/Commands/SetEndPoint";
-import SplitFragment from "@/js/Commands/SplitFragment";
-import AddFragment from "@/js/Commands/AddFragment";
-import DeleteFragment from "@/js/Commands/DeleteFragment";
-import MoveFragment from "@/js/Commands/MoveFragment";
-import SetPlaybackRate from "@/js/Commands/SetPlaybackRate";
-import SetVolume from "@/js/Commands/SetVolume";
+import SetStartPoint from "@/js/commands/SetStartPoint";
+import SetEndPoint from "@/js/commands/SetEndPoint";
+import SplitFragment from "@/js/commands/SplitFragment";
+import AddFragment from "@/js/commands/AddFragment";
+import DeleteFragment from "@/js/commands/DeleteFragment";
+import MoveFragment from "@/js/commands/MoveFragment";
+import SetPlaybackRate from "@/js/commands/SetPlaybackRate";
+import SetVolume from "@/js/commands/SetVolume";
 import command from './command-module'
 import Utils from "@/js/Utils";
 
@@ -25,6 +25,7 @@ export default new Vuex.Store({
         videosContainer: null,
         videoFiles: [],
         activeFragment: null,
+        importLoading: false,
         configTimeline: {
             minFragmentWidth: 120,
             widthPerSecond: 2.9,
@@ -36,6 +37,7 @@ export default new Vuex.Store({
         },
     },
     mutations: {
+        importLoading: (state, value) => state.importLoading = value,
         videosContainer: (state, container) => {
             state.videosContainer = container;
             state.videoFiles.forEach(v => v.container = container);
@@ -212,15 +214,16 @@ export default new Vuex.Store({
         async initialize({dispatch}) {
             await dispatch("initializeFfmpeg");
         },
-        promptVideoInput({dispatch}) {
+        promptVideoInput({dispatch, commit}) {
+            commit('importLoading', true);
             let element = document.createElement('input');
             element.setAttribute('type', 'file');
             element.setAttribute('accept', 'video/*');
             element.setAttribute('multiple', '');
             element.click();
-            element.onchange = () => {
-                for (let file of element.files)
-                    dispatch('importVideo', file.path);
+            element.onchange = async () => {
+                await Promise.all([...element.files].map(f => dispatch('importVideo', f.path)));
+                commit('importLoading', false);
             }
         },
         exportVideo({}) {

@@ -5,7 +5,7 @@
             <v-icon class="no-data-icon" size="300">mdi-video-off-outline</v-icon>
             <h1>Import a video to start</h1>
             <p>Drag a video here or click the import videos button</p>
-            <v-btn @click="promptVideoInput" color="primary" rounded>
+            <v-btn :loading="importLoading" @click="promptVideoInput" color="primary" rounded>
                 Import videos
             </v-btn>
             <v-btn @click="redo" text class="mt-2" v-if="undoStack.length > 0">
@@ -35,6 +35,7 @@ export default {
     computed: {
         ...mapState({
             activeFragment: state => state.activeFragment,
+            importLoading: state => state.importLoading,
             undoStack: state => state.command.undoStack,
         }),
     },

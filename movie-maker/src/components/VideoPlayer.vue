@@ -1,31 +1,32 @@
 <template>
     <div class="player" ref="player">
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
-            <video @ended="playNextFragment" ref="videos"
+            <video @ended="playNextFragment" @canplay="canPlay" ref="videos"
                    v-for="videoFile in videoFiles"
                    :key="videoFile.filePath" :id="videoFile.filePath"
                    :src="videoFile.filePath" :style="{
                         width: videoWidth + 'px',
                         height: videoWidth / videoFile.aspectRatio + 'px',
-                        opacity: videoFile === activeFragment.video ? 1 : 0.001,
+                        visibility: videoFile === activeFragment.video ? 'visible': 'hidden',
             }"></video>
         </div>
         <div class="controls">
-            <div class="time-control" v-if="videoFiles.length > 0">
+            <div class="time-control" v-if="videoFiles.length > 0"
+                 :style="{pointerEvents: activeFragment.video.canPlay ? 'all' : 'none'}">
                 <seek-bar class="seek-bar"></seek-bar>
                 <span class="seek-time">{{ toHms(progress * fullDuration) }} / {{ toHms(fullDuration) }}</span>
             </div>
             <div class="playback-controls" v-if="videoFiles.length > 0">
                 <v-spacer></v-spacer>
                 <div class="center-controls">
-                    <v-btn icon>
+                    <v-btn icon :disabled="!activeFragment.video.canPlay">
                         <v-icon>mdi-skip-previous</v-icon>
                     </v-btn>
-                    <v-btn icon x-large @click="togglePlay">
+                    <v-btn icon x-large @click="togglePlay" :loading="!activeFragment.video.canPlay">
                         <v-icon v-if="playing">mdi-pause</v-icon>
                         <v-icon v-else>mdi-play</v-icon>
                     </v-btn>
-                    <v-btn icon>
+                    <v-btn icon :disabled="!activeFragment.video.canPlay">
                         <v-icon>mdi-skip-next</v-icon>
                     </v-btn>
                 </div>
@@ -82,6 +83,11 @@ export default {
         window.removeEventListener('resize', this.windowResize);
     },
     methods: {
+        canPlay(e) {
+            let video = this.videoFiles.find(v => v.filePath === e.target.getAttribute('id'));
+            if (video)
+                video.emit('canplay');
+        },
         togglePlay() {
             if (this.playing)
                 this.pause();

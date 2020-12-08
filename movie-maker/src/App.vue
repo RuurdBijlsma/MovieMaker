@@ -29,19 +29,21 @@
 // TODO: Features
 // Right click in explorer on video -> edit with ruurd movie maker
 // export to youtube with manual key input
-// do pcm reading in thread
 // theme color chooser in settings
 // add audio track (music) to video
-// dont allow seek when video is still loading (show loading indicator somewhere when video is loading)
 // Stop merging images, display them separately
-// make getting ffmpeg path awaitable and wait when it's not retrieved yet
 // Next frame/ prev frame button
 // adjust width of player/timeline
 // remove windows media control notification (add setting?)
-// TODO: Check if video freeze but audio keeps going still happens (still happens when something other than opacity is used) (happens because of vue hot reload hopefully)
+// dont show move right when not possible
+// undo history window
+// click footer file name to open folder that file is in
 // todo bug: memory pls
 
 // DONE TODO
+// do pcm reading in thread
+// make getting ffmpeg path awaitable and wait when it's not retrieved yet
+// dont allow seek when video is still loading (show loading indicator somewhere when video is loading)
 // stop video playing when end of fragment is reached
 // fix bugs with sometimes layout isn't updated hot reload issue maybe
 // reposition seek when fragment is deleted
@@ -49,7 +51,7 @@
 // make volume change reactive (probably need to make entire undostack and command pattern a vuex module or somthin)
 // can't undo last action (add fragment) maybe because it's still active?? idk
 // lotta bugs with start and end time?
-// add command pattern (Ezpz lemon squeezy)
+// add command pattern
 // increase volume to >1
 // [top bar and context menu]: split/set start/set end/delete fragment/(un)mute fragment/more? Maybe add extra top bar for this? because no space there
 // when no video is loaded, show big thing in screen "No videos loaded, click here to import some videos or drag them here"

@@ -30,4 +30,9 @@ export default class Utils {
     static baseFileName(filePath) {
         return path.basename(filePath);
     }
+
+
+    static async waitSleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 }

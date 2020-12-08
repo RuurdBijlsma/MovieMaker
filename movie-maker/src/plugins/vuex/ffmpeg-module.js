@@ -5,6 +5,8 @@ import Directories from "../../js/Directories";
 import VideoFile from "../../js/VideoFile";
 import Vue from 'vue'
 import path from 'path';
+import fs from "fs";
+import Utils from "@/js/Utils";
 
 
 export default {
@@ -12,6 +14,7 @@ export default {
         paths: false,
         downloadEvent: new EventEmitter(),
         downloading: false,
+        ffmpegReady: false,
         videoFileCache: {},
     },
     mutations: {
@@ -26,6 +29,17 @@ export default {
             ffmpeg.setFfmpegPath(state.paths.ffmpeg);
             ffmpeg.setFfprobePath(state.paths.ffprobe);
             console.log("ffmpeg and ffprobe have been retrieved", {ffmpeg});
+            setTimeout(() => {
+                state.ffmpegReady = true;
+                state.downloadEvent.emit('ffmpegReady');
+            }, 500);
+        },
+        async waitForFfmpeg({state}) {
+            return new Promise(resolve => {
+                if (state.ffmpegReady)
+                    resolve();
+                state.downloadEvent.once('ffmpegReady', resolve);
+            });
         },
         getImageFromUrl({}, url) {
             return new Promise(((resolve, reject) => {
@@ -49,12 +63,14 @@ export default {
                 x += image.width;
             }
 
-            return new Promise(((resolve, reject) => {
+            return new Promise(((resolve) => {
                 canvas.toBlob(b => resolve(URL.createObjectURL(b)), 'image/jpg');
             }))
         },
         async loadMetadata({state, commit, dispatch}, file) {
             if (!state.videoFileCache.hasOwnProperty(file)) {
+                // Wait for getPaths to be done
+                await dispatch('waitForFfmpeg');
                 let result = await ffmpeg.ffprobe(file);
                 let duration = result.format.duration;
 
@@ -93,6 +109,36 @@ export default {
                     state.downloading = false;
                 });
             });
-        }
+        },
+        async waitForFileUnlock({dispatch}, {filePath, timeout = 10000}) {
+            let startTime = performance.now();
+            while (true) {
+                if (performance.now() > startTime + timeout)
+                    throw "Timeout waiting for file to unlock";
+                let isFileLocked = await dispatch('isFileLocked', filePath);
+                console.log("is file locked?", isFileLocked);
+                if (!isFileLocked)
+                    return true;
+                await Utils.waitSleep(150);
+            }
+        },
+        async isFileLocked({dispatch}, filePath) {
+            return new Promise((resolve, reject) => {
+                fs.open(filePath, 'r+', (err, fd) => {
+                    console.log(err, fd);
+                    if (err && err.code === 'EBUSY') {
+                        resolve(true);
+                    } else if (err && err.code === 'ENOENT') {
+                        reject("File does not exist");
+                    } else {
+                        fs.close(fd, err => {
+                            if (err)
+                                return reject(err);
+                            resolve(false);
+                        })
+                    }
+                });
+            })
+        },
     },
 }

@@ -69,7 +69,7 @@ export default {
         activeFragment() {
             this.updateRawVolume(false);
         },
-        rawVolume(previousValue, newValue) {
+        rawVolume() {
             let volume = this.rawVolume;
             if (this.rawVolume > 1)
                 volume = 1 + (this.rawVolume - 1) * 7;

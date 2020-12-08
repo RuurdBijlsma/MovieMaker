@@ -6,7 +6,7 @@
             </div>
             <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="promptVideoInput" v-bind="attrs" v-on="on">
+                    <v-btn :loading="importLoading" class="no-drag" icon @click="promptVideoInput" v-bind="attrs" v-on="on">
                         <v-icon>mdi-import</v-icon>
                     </v-btn>
                 </template>
@@ -82,8 +82,7 @@ import PlaybackRateSlider from "@/components/PlaybackRateSlider";
 export default {
     name: "CustomHeader",
     components: {PlaybackRateSlider, VolumeSlider},
-    data: () => ({
-    }),
+    data: () => ({}),
     mounted() {
 
     },
@@ -98,6 +97,7 @@ export default {
     computed: {
         ...mapState({
             activeFragment: state => state.activeFragment,
+            importLoading: state => state.importLoading,
         }),
     },
 }

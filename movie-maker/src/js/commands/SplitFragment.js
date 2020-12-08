@@ -1,4 +1,4 @@
-import Command from "@/js/Commands/Command";
+import Command from "@/js/commands/Command";
 import VideoFragment from "@/js/VideoFragment";
 
 export default class SplitFragment extends Command {

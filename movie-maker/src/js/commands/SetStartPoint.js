@@ -1,4 +1,4 @@
-import Command from "@/js/Commands/Command";
+import Command from "@/js/commands/Command";
 
 export default class SetStartPoint extends Command {
     constructor(fragment, newPoint) {
