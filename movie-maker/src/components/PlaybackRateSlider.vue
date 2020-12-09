@@ -43,8 +43,10 @@ export default {
             let pbr = this.activeFragment.playbackRate;
             if (pbr > 1)
                 pbr = 1 + (pbr - 1) / 7;
-            this.commit = commit;
-            this.rawPlaybackRate = pbr;
+            if (pbr !== this.rawPlaybackRate) {
+                this.commit = commit;
+                this.rawPlaybackRate = pbr;
+            }
         },
         wheelPbr(e) {
             this.rawPlaybackRate -= e.deltaY * 0.00005;

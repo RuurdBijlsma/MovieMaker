@@ -29,26 +29,28 @@
 // TODO: Features
 // Right click in explorer on video -> edit with ruurd movie maker
 // export to youtube with manual key input
-// theme color chooser in settings
+// youtube api key input in settings + yt account in settings + logout
 // add audio track (music) to video
 // Stop merging images, display them separately
-// Next frame/ prev frame button
 // adjust width of player/timeline
 // remove windows media control notification (add setting?)
-// dont show move right when not possible
 // undo history window
-// click footer file name to open folder that file is in
+// try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // todo bug: memory pls
 
 // DONE TODO
+// Next frame/ prev frame button
+// theme color chooser in settings
+// click footer file name to open folder that file is in
 // do pcm reading in thread
+// dont show move right when not possible
 // make getting ffmpeg path awaitable and wait when it's not retrieved yet
 // dont allow seek when video is still loading (show loading indicator somewhere when video is loading)
 // stop video playing when end of fragment is reached
 // fix bugs with sometimes layout isn't updated hot reload issue maybe
 // reposition seek when fragment is deleted
 // when no redo is available, grey out redo button (hard to do maybe)
-// make volume change reactive (probably need to make entire undostack and command pattern a vuex module or somthin)
+// make volume change reactive
 // can't undo last action (add fragment) maybe because it's still active?? idk
 // lotta bugs with start and end time?
 // add command pattern
@@ -69,7 +71,7 @@ export default {
     data: () => ({}),
     async mounted() {
         await this.initialize();
-        console.log("Store", this.$store);
+        console.log(this.$store);
     },
     beforeDestroy() {
 

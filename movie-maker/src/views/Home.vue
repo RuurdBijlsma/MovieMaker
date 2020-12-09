@@ -5,20 +5,26 @@
             <v-icon class="no-data-icon" size="300">mdi-video-off-outline</v-icon>
             <h1>Import a video to start</h1>
             <p>Drag a video here or click the import videos button</p>
-            <v-btn :loading="importLoading" @click="promptVideoInput" color="primary" rounded>
+            <v-btn :loading="importVideoLoading" @click="promptVideoInput" color="primary" rounded>
                 Import videos
             </v-btn>
-            <v-btn @click="redo" text class="mt-2" v-if="undoStack.length > 0">
-                <v-icon small>mdi-redo</v-icon>
-                <span class="redo-button">Redo</span>
-            </v-btn>
+            <div class="undo-redo mt-3">
+                <v-btn @click="undo" text v-if="canUndo">
+                    <v-icon small>mdi-undo</v-icon>
+                    <span class="redo-button">Undo</span>
+                </v-btn>
+                <v-btn @click="redo" text v-if="canRedo">
+                    <v-icon small>mdi-redo</v-icon>
+                    <span class="redo-button">Redo</span>
+                </v-btn>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
 
-import {mapActions, mapState} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import Editor from "@/components/Editor";
 
 export default {
@@ -30,13 +36,13 @@ export default {
     beforeDestroy() {
     },
     methods: {
-        ...mapActions(['promptVideoInput', 'redo']),
+        ...mapActions(['promptVideoInput', 'redo', 'undo']),
     },
     computed: {
+        ...mapGetters(['canRedo', 'canUndo']),
         ...mapState({
             activeFragment: state => state.activeFragment,
-            importLoading: state => state.importLoading,
-            undoStack: state => state.command.undoStack,
+            importVideoLoading: state => state.loading.videoImport,
         }),
     },
 }

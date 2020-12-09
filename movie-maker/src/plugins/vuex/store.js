@@ -25,7 +25,10 @@ export default new Vuex.Store({
         videosContainer: null,
         videoFiles: [],
         activeFragment: null,
-        importLoading: false,
+        loading: {
+            videoImport: false,
+            audioImport: false,
+        },
         configTimeline: {
             minFragmentWidth: 120,
             widthPerSecond: 2.9,
@@ -37,7 +40,8 @@ export default new Vuex.Store({
         },
     },
     mutations: {
-        importLoading: (state, value) => state.importLoading = value,
+        importVideoLoading: (state, value) => state.loading.videoImport = value,
+        importAudioLoading: (state, value) => state.loading.audioImport = value,
         videosContainer: (state, container) => {
             state.videosContainer = container;
             state.videoFiles.forEach(v => v.container = container);
@@ -85,6 +89,8 @@ export default new Vuex.Store({
                 state.timeline.push(fragment)
             else
                 state.timeline.splice(index, 0, fragment);
+            if (state.activeFragment === null)
+                state.activeFragment = fragment;
         },
         activeFragment: (state, fragment) => state.activeFragment = fragment,
         progress: (state, progress) => state.player.progress = progress,
@@ -130,7 +136,11 @@ export default new Vuex.Store({
             if (hms.startsWith('00'))
                 return hms.substr(3);
             return hms;
-        }
+        },
+        canMoveLeft: state => state.timeline.indexOf(state.activeFragment) > 0,
+        canMoveRight: state => state.timeline.indexOf(state.activeFragment) < state.timeline.length - 1,
+        canSkipFrameLeft: state => state.player.progress > 0,
+        canSkipFrameRight: state => state.player.progress < 1,
     },
     actions: {
         undo({commit, dispatch}) {
@@ -165,6 +175,15 @@ export default new Vuex.Store({
         }) {
             console.log("Split at", split);
             dispatch('executeCommand', new SplitFragment(fragment, split));
+        },
+        async skipFrames({state, getters, commit}, n) {
+            let duration = n / state.activeFragment.video.fps;
+            let currentTime = state.player.progress * getters.fullDuration;
+            let newProgress = Utils.clamp((currentTime + duration) / getters.fullDuration);
+            let {fragment, videoProgress} = getters.fragmentAtProgress(newProgress);
+            commit('activeFragment', fragment);
+            fragment.video.element.pause();
+            fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
         },
         async importVideo({dispatch}, path) {
             let videoFile = await dispatch('loadMetadata', path);
@@ -214,8 +233,8 @@ export default new Vuex.Store({
         async initialize({dispatch}) {
             await dispatch("initializeFfmpeg");
         },
-        promptVideoInput({dispatch, commit}) {
-            commit('importLoading', true);
+        promptAudioInput({dispatch, commit}) {
+            commit('importAudioLoading', true);
             let element = document.createElement('input');
             element.setAttribute('type', 'file');
             element.setAttribute('accept', 'video/*');
@@ -223,7 +242,19 @@ export default new Vuex.Store({
             element.click();
             element.onchange = async () => {
                 await Promise.all([...element.files].map(f => dispatch('importVideo', f.path)));
-                commit('importLoading', false);
+                commit('importAudioLoading', false);
+            }
+        },
+        promptVideoInput({dispatch, commit}) {
+            commit('importVideoLoading', true);
+            let element = document.createElement('input');
+            element.setAttribute('type', 'file');
+            element.setAttribute('accept', 'video/*');
+            element.setAttribute('multiple', '');
+            element.click();
+            element.onchange = async () => {
+                await Promise.all([...element.files].map(f => dispatch('importVideo', f.path)));
+                commit('importVideoLoading', false);
             }
         },
         exportVideo({}) {

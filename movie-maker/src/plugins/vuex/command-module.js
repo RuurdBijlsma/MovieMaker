@@ -6,7 +6,7 @@ export default {
     },
     mutations: {
         addCommand: (state, command) => {
-            console.log("Command added to stack", command);
+            // console.log("Command added to stack", command);
             // Erase stack after stackIndex
             state.undoStack.splice(++state.stackIndex);
             state.undoStack.push(command);
@@ -54,7 +54,7 @@ export default {
                     result += ' : ' + batch;
                 result += '\n';
             }
-            console.log(result, 'stackIndex: ' + state.stackIndex);
+            // console.log(result, 'stackIndex: ' + state.stackIndex);
         },
     },
 }

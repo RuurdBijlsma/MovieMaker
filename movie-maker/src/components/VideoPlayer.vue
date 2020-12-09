@@ -3,12 +3,15 @@
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
             <video @ended="playNextFragment" @canplay="canPlay" ref="videos"
                    v-for="videoFile in videoFiles"
-                   :key="videoFile.filePath" :id="videoFile.filePath"
-                   :src="videoFile.filePath" :style="{
+                   :key="videoFile.filePath"
+                   :id="videoFile.filePath"
+                   :src="videoFile.filePath"
+                   :style="{
                         width: videoWidth + 'px',
                         height: videoWidth / videoFile.aspectRatio + 'px',
                         visibility: videoFile === activeFragment.video ? 'visible': 'hidden',
-            }"></video>
+                   }"
+            ></video>
         </div>
         <div class="controls">
             <div class="time-control" v-if="videoFiles.length > 0"
@@ -19,14 +22,14 @@
             <div class="playback-controls" v-if="videoFiles.length > 0">
                 <v-spacer></v-spacer>
                 <div class="center-controls">
-                    <v-btn icon :disabled="!activeFragment.video.canPlay">
+                    <v-btn icon :disabled="!activeFragment.video.canPlay || !canSkipFrameLeft" @click="skipFrames(-1)">
                         <v-icon>mdi-skip-previous</v-icon>
                     </v-btn>
                     <v-btn icon x-large @click="togglePlay" :loading="!activeFragment.video.canPlay">
                         <v-icon v-if="playing">mdi-pause</v-icon>
                         <v-icon v-else>mdi-play</v-icon>
                     </v-btn>
-                    <v-btn icon :disabled="!activeFragment.video.canPlay">
+                    <v-btn icon :disabled="!activeFragment.video.canPlay || !canSkipFrameRight" @click="skipFrames(1)">
                         <v-icon>mdi-skip-next</v-icon>
                     </v-btn>
                 </div>
@@ -97,7 +100,7 @@ export default {
         windowResize() {
             this.bounds = this.$refs.player.getBoundingClientRect();
         },
-        ...mapActions(['play', 'pause', 'playNextFragment'])
+        ...mapActions(['play', 'pause', 'playNextFragment', 'skipFrames'])
     },
     watch: {
         activeFragment(fragment, previousFragment) {
@@ -122,7 +125,7 @@ export default {
             let maxRatio = this.videoFiles.reduce((a, b) => Math.min(a, b.aspectRatio), 3);
             return this.videoWidth / maxRatio;
         },
-        ...mapGetters(['fullDuration', 'toHms', 'progressAtFragmentProgress']),
+        ...mapGetters(['fullDuration', 'toHms', 'progressAtFragmentProgress', 'canSkipFrameLeft', 'canSkipFrameRight']),
         ...mapState({
             videoFiles: state => state.videoFiles,
             activeFragment: state => state.activeFragment,

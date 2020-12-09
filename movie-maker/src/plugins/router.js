@@ -13,7 +13,7 @@ const routes = [
     {
         path: '/settings',
         name: 'Settings',
-        component: () => import('../views/Home')
+        component: () => import('../views/Settings')
     },
 ]
 

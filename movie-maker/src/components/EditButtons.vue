@@ -24,11 +24,11 @@
                 <v-icon small>mdi-delete</v-icon>
             </v-btn>
             <div class="two-way-buttons">
-                <v-btn small icon @click="shiftFragment({shift: -1})">
+                <v-btn :disabled="!canMoveLeft" small icon @click="shiftFragment({shift: -1})">
                     <v-icon small>mdi-chevron-left</v-icon>
                 </v-btn>
                 <span class="button-caption two-way-caption">Move</span>
-                <v-btn small icon @click="shiftFragment({shift: 1})">
+                <v-btn :disabled="!canMoveRight" small icon @click="shiftFragment({shift: 1})">
                     <v-icon small>mdi-chevron-right</v-icon>
                 </v-btn>
             </div>
@@ -59,7 +59,7 @@ export default {
         ...mapActions(['split', 'setStartPoint', 'setEndPoint', 'removeFragment', 'shiftFragment', 'undo', 'redo']),
     },
     computed: {
-        ...mapGetters(['canUndo', 'canRedo'])
+        ...mapGetters(['canUndo', 'canRedo', 'canMoveRight', 'canMoveLeft'])
     },
 }
 </script>

@@ -46,8 +46,10 @@ export default {
             let vol = this.activeFragment.volume;
             if (vol > 1)
                 vol = 1 + (vol - 1) / 7;
-            this.commit = commit;
-            this.rawVolume = vol;
+            if (vol !== this.rawVolume) {
+                this.commit = commit;
+                this.rawVolume = vol;
+            }
         },
         toggleMute() {
             if (this.rawVolume > 0) {
@@ -73,10 +75,13 @@ export default {
             let volume = this.rawVolume;
             if (this.rawVolume > 1)
                 volume = 1 + (this.rawVolume - 1) * 7;
-            if (this.commit)
+            if (this.commit) {
+                console.log('commiting')
                 this.setVolume({volume});
-            else
+            } else {
+                console.log("Not committing")
                 this.commit = true;
+            }
         },
     },
     computed: {

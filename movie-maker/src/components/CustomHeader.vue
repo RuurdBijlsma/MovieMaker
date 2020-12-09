@@ -6,7 +6,7 @@
             </div>
             <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn :loading="importLoading" class="no-drag" icon @click="promptVideoInput" v-bind="attrs" v-on="on">
+                    <v-btn :loading="importVideoLoading" class="no-drag" icon @click="promptVideoInput" v-bind="attrs" v-on="on">
                         <v-icon>mdi-import</v-icon>
                     </v-btn>
                 </template>
@@ -62,6 +62,14 @@
                             <v-switch dense inset v-model="$vuetify.theme.dark"></v-switch>
                         </v-list-item-action>
                     </v-list-item>
+                    <v-list-item color="primary" to="/settings">
+                        <v-list-item-icon>
+                            <v-icon>mdi-cog</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                            <v-list-item-title>Settings</v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
                 </v-list>
             </v-menu>
             <v-btn class="no-drag" icon @click="$store.dispatch('minimizeWindow')">
@@ -97,7 +105,8 @@ export default {
     computed: {
         ...mapState({
             activeFragment: state => state.activeFragment,
-            importLoading: state => state.importLoading,
+            importVideoLoading: state => state.loading.videoImport,
+            importAudioLoading: state => state.loading.audioImport,
         }),
     },
 }
