@@ -4,7 +4,7 @@ module.exports = {
             "nodeIntegration": true,
             "experimentalNativeDepCheck": true,
             "externals": ['express', 'fluent-ffmpeg'],
-            "build": {
+            "builderOptions": {
                 "appId": "dev.ruurd.moviemaker",
                 "productName": "Ruurd Movie Maker",
                 "fileAssociations": {
