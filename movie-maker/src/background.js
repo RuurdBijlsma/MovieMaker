@@ -11,7 +11,8 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+let win;
+let quitAllowed = false;
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -84,16 +85,23 @@ function createWindow() {
         win = null
     })
 
-    win.once('close', event => {
-        event.preventDefault();
-        //Clean temp directory
-        try {
-            win.webContents.send('before-close');
-        } catch (e) {
-            //sad
+    win.on('close', event => {
+        if(!quitAllowed){
+            event.preventDefault();
+            //Clean temp directory
+            try {
+                win.webContents.send('before-close');
+            } catch (e) {
+                //sad
+            }
         }
     });
 }
+
+ipcMain.on('quit', (event, arg) => {
+    quitAllowed = true;
+    app.quit();
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

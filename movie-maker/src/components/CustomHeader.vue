@@ -14,7 +14,7 @@
             </v-tooltip>
             <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="addAudioTrack" v-bind="attrs" v-on="on">
+                    <v-btn :loading="importAudioLoading" class="no-drag" icon @click="addAudioTrack" v-bind="attrs" v-on="on">
                         <v-icon>mdi-music-note</v-icon>
                     </v-btn>
                 </template>
@@ -75,7 +75,7 @@
             <v-btn class="no-drag" icon @click="$store.dispatch('minimizeWindow')">
                 <v-icon>mdi-minus</v-icon>
             </v-btn>
-            <v-btn class="no-drag close-button" icon @click="$store.dispatch('closeWindow')">
+            <v-btn class="no-drag close-button" icon @click="secureClose">
                 <v-icon>mdi-close</v-icon>
             </v-btn>
         </div>
@@ -95,7 +95,7 @@ export default {
 
     },
     methods: {
-        ...mapActions(['promptVideoInput', 'exportToYouTube', 'exportVideo', 'addAudioTrack']),
+        ...mapActions(['promptVideoInput', 'exportToYouTube', 'exportVideo', 'addAudioTrack','secureClose']),
     },
     watch: {
         '$vuetify.theme.dark'() {
@@ -118,9 +118,8 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: calc(100% + 32px);
-    height: calc(100% + 8px);
-    margin: -4px -16px;
+    width:100%;
+    height:100%;
     padding: 0 1em;
 }
 
@@ -157,7 +156,7 @@ export default {
     align-items: center;
 }
 
-.close-button:hover, .close-button:active {
+.close-button:active {
     color: maroon !important;
 }
 </style>

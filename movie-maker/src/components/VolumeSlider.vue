@@ -76,10 +76,8 @@ export default {
             if (this.rawVolume > 1)
                 volume = 1 + (this.rawVolume - 1) * 7;
             if (this.commit) {
-                console.log('commiting')
                 this.setVolume({volume});
             } else {
-                console.log("Not committing")
                 this.commit = true;
             }
         },

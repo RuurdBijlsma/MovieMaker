@@ -4,15 +4,15 @@ export default class SetPlaybackRate extends Command {
     constructor(fragment, rate) {
         super(fragment);
         this.fragment = fragment;
-        this.oldSpeed = fragment.playbackRate;
-        this.newSpeed = rate;
+        this.oldRate = fragment.playbackRate;
+        this.newRate = rate;
     }
 
     execute() {
-        this.fragment.playbackRate = this.newSpeed;
+        this.fragment.playbackRate = this.newRate;
     }
 
     undo() {
-        this.fragment.playbackRate = this.oldSpeed;
+        this.fragment.playbackRate = this.oldRate;
     }
 }

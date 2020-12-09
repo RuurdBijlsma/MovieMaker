@@ -16,7 +16,9 @@ export default {
                 let toUndo = state.undoStack[state.stackIndex--];
                 toUndo.undo();
                 let nextToUndo = state.undoStack[state.stackIndex];
-                if (toUndo.batchOn === false || toUndo.batchOn !== nextToUndo?.batchOn)
+                if (toUndo.batchOn === false ||
+                    toUndo.batchOn !== nextToUndo?.batchOn ||
+                    toUndo.constructor.name !== nextToUndo.constructor.name)
                     break;
             }
         },
@@ -26,7 +28,9 @@ export default {
                 let toRedo = state.undoStack[++state.stackIndex];
                 toRedo.execute();
                 let nextToRedo = state.undoStack[state.stackIndex + 1];
-                if (toRedo.batchOn === false || toRedo.batchOn !== nextToRedo?.batchOn)
+                if (toRedo.batchOn === false ||
+                    toRedo.batchOn !== nextToRedo?.batchOn ||
+                    toRedo.constructor.name !== nextToRedo.constructor.name)
                     break;
             }
         },

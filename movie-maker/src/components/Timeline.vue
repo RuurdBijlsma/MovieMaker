@@ -306,7 +306,7 @@ export default {
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     width: 100%;
     height: 100%;
-    background-color: grey;
+    background-color: var(--soft-background);
     background-repeat: repeat;
     background-size: auto 100%;
     background-position: left;
@@ -314,6 +314,8 @@ export default {
 
 .active {
     box-shadow: inset 0 -4px 10px 0 #5b5b5b;
+    /*box-shadow: inset 0 -8px 15px -5px var(--secondary);*/
+    /*box-shadow: inset 0 -8px 15px -5px #5b5b5b;*/
 }
 
 .continues-right .fragment-background, .continues-right .audio-wave, .continues-right.fragment {

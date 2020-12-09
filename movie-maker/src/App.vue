@@ -9,6 +9,23 @@
             <router-view class="router-view"></router-view>
         </v-main>
 
+        <v-dialog v-model="$store.state.electron.showClosePrompt" width="500">
+            <v-card>
+                <v-card-title> Are you sure you want to close?</v-card-title>
+                <v-card-text>There may be unsaved changes!</v-card-text>
+                <v-divider></v-divider>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text @click="$store.commit('showClosePrompt', false)">
+                        Cancel
+                    </v-btn>
+                    <v-btn color="error" text @click="closeWindow">
+                        Close
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <v-snackbar v-for="snack in $store.state.snackbars" app v-model="snack.open" :timeout="snack.timeout"
                     :outlined="!$vuetify.theme.dark" color="primary">
             {{ snack.text }}
@@ -34,11 +51,11 @@
 // Stop merging images, display them separately
 // adjust width of player/timeline
 // remove windows media control notification (add setting?)
-// undo history window
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // todo bug: memory pls
 
 // DONE TODO
+// undo history window
 // Next frame/ prev frame button
 // theme color chooser in settings
 // click footer file name to open folder that file is in
@@ -72,12 +89,17 @@ export default {
     async mounted() {
         await this.initialize();
         console.log(this.$store);
+
+        let electron = window.require('electron');
+        electron.ipcRenderer.on('before-close', async () => {
+            await this.$store.dispatch('secureClose');
+        });
     },
     beforeDestroy() {
 
     },
     methods: {
-        ...mapActions(['addSnack', 'initialize'])
+        ...mapActions(['addSnack', 'initialize', 'closeWindow'])
     },
     computed: {
         cssProps() {

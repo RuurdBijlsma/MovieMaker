@@ -1,50 +1,51 @@
 <template>
-    <v-sheet color="softBackground" class="edit-buttons">
-        <div class="flow-buttons">
-            <v-btn small rounded text @click="split">
-                <span class="button-caption button-layout">Split</span>
-                <v-icon small>mdi-arrow-split-vertical</v-icon>
-            </v-btn>
-            <v-btn small rounded text @click="setStartPoint">
-                <span class="button-caption button-layout">Set start</span>
-                <v-icon small>mdi-contain-start</v-icon>
-            </v-btn>
-            <v-btn small rounded text @click="setEndPoint">
-                <span class="button-caption button-layout">Set end</span>
-                <v-icon small>mdi-contain-end</v-icon>
-            </v-btn>
-        </div>
-        <div class="sliders">
-            <volume-slider></volume-slider>
-            <playback-rate-slider></playback-rate-slider>
-        </div>
-        <div class="flow-buttons fb2">
-            <v-btn small rounded text @click="removeFragment()">
-                <span class="button-caption button-layout">Delete</span>
-                <v-icon small>mdi-delete</v-icon>
-            </v-btn>
-            <div class="two-way-buttons">
-                <v-btn :disabled="!canMoveLeft" small icon @click="shiftFragment({shift: -1})">
-                    <v-icon small>mdi-chevron-left</v-icon>
+    <div class="edit-container">
+        <v-sheet class="edit-buttons">
+            <div class="flow-buttons">
+                <v-btn small rounded text @click="split">
+                    <span class="button-caption button-layout">Split</span>
+                    <v-icon small>mdi-arrow-split-vertical</v-icon>
                 </v-btn>
-                <span class="button-caption two-way-caption">Move</span>
-                <v-btn :disabled="!canMoveRight" small icon @click="shiftFragment({shift: 1})">
-                    <v-icon small>mdi-chevron-right</v-icon>
+                <v-btn small rounded text @click="setStartPoint">
+                    <span class="button-caption button-layout">Set start</span>
+                    <v-icon small>mdi-contain-start</v-icon>
+                </v-btn>
+                <v-btn small rounded text @click="setEndPoint">
+                    <span class="button-caption button-layout">Set end</span>
+                    <v-icon small>mdi-contain-end</v-icon>
                 </v-btn>
             </div>
-            <div class="two-way-buttons">
-                <v-btn :disabled="!canUndo" small icon @click="undo">
-                    <v-icon small>mdi-undo</v-icon>
-                </v-btn>
-                <span class="button-caption two-way-caption">Undo</span>
-                <v-btn :disabled="!canRedo" small icon @click="redo">
-                    <v-icon small>mdi-redo</v-icon>
-                </v-btn>
+            <div class="sliders">
+                <volume-slider></volume-slider>
+                <playback-rate-slider></playback-rate-slider>
             </div>
-        </div>
-        <div class="move-buttons">
-        </div>
-    </v-sheet>
+            <div class="flow-buttons fb2">
+                <v-btn small rounded text @click="removeFragment()">
+                    <span class="button-caption button-layout">Delete</span>
+                    <v-icon small>mdi-delete</v-icon>
+                </v-btn>
+                <div class="two-way-buttons">
+                    <v-btn :disabled="!canMoveLeft" small icon @click="shiftFragment({shift: -1})">
+                        <v-icon small>mdi-chevron-left</v-icon>
+                    </v-btn>
+                    <span class="button-caption two-way-caption">Move</span>
+                    <v-btn :disabled="!canMoveRight" small icon @click="shiftFragment({shift: 1})">
+                        <v-icon small>mdi-chevron-right</v-icon>
+                    </v-btn>
+                </div>
+                <div class="two-way-buttons">
+                    <v-btn :disabled="!canUndo" small icon @click="undo">
+                        <v-icon small>mdi-undo</v-icon>
+                    </v-btn>
+                    <span class="button-caption two-way-caption">Undo</span>
+                    <v-btn :disabled="!canRedo" small icon @click="redo">
+                        <v-icon small>mdi-redo</v-icon>
+                    </v-btn>
+                </div>
+            </div>
+        </v-sheet>
+        <v-divider></v-divider>
+    </div>
 </template>
 
 <script>
@@ -65,7 +66,14 @@ export default {
 </script>
 
 <style scoped>
+.edit-container {
+    display: flex;
+    flex-direction: column;
+}
+
 .edit-buttons {
+    height: 100%;
+    width: 100%;
     display: flex;
     padding: 0 25px;
     justify-content: space-evenly;
