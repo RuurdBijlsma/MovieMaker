@@ -5,6 +5,7 @@
             <div class="left-panel">
                 <video-player></video-player>
             </div>
+            <v-divider vertical></v-divider>
             <div class="right-panel">
                 <timeline class="timeline"></timeline>
             </div>
@@ -43,7 +44,7 @@ export default {
 }
 
 .left-panel {
-    border-right: 1px solid rgba(128, 128, 128, 0.5);
+    /*border-right: 1px solid rgba(128, 128, 128, 0.5);*/
     width: 50%;
 }
 

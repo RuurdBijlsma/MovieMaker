@@ -3,7 +3,7 @@
         <v-divider vertical></v-divider>
         <perfect-scrollbar class="history">
             <h4 class="text-center mb-2 mt-3">History</h4>
-            <v-divider></v-divider>
+<!--            <v-divider></v-divider>-->
             <v-list color="transparent" dense rounded>
                 <v-list-item class="command" :class="{'active-command': command.active}"
                              v-for="(command, i) in visualCommands" :key="i"
