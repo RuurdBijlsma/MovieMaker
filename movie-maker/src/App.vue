@@ -53,6 +53,7 @@
 // remove windows media control notification (add setting?)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // set max height of Home to be 100vw - something, then use percentages in children
+// dont allow set end point when seek is at 0, dont allow set start point when seek is at 1
 // todo bug: memory pls
 
 // DONE TODO
