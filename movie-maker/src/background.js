@@ -35,7 +35,7 @@ function registerLocalResourceProtocol() {
 
 function createWindow() {
     // Create the browser window.
-    let icon = path.join(__static, process.env.WEBPACK_DEV_SERVER_URL ? 'img/icon.png' : 'img/icon.png');
+    let icon = path.join(__static, process.env.WEBPACK_DEV_SERVER_URL ? 'img/icon-dev.png' : 'img/icon.png');
     let splash = path.join(__static, 'splash.html');
     let windowConfig = {
         width: 1400,
@@ -74,6 +74,9 @@ function createWindow() {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
         if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
+
+        win.webContents.openDevTools()
+
         createProtocol('app')
         // Load the index.html when not in development
         let url = 'app://./index.html';
