@@ -1,9 +1,24 @@
 <template>
     <div class="video-info">
-        <span @click="openFolder(video.filePath)" v-ripple class="clickable not-uppercase">{{ video.fileName }}</span>
-        <span>resolution: {{ video.width }}<span class="not-uppercase">x</span>{{ video.height }}</span>
-        <span>fps: {{ video.fps }}</span>
-        <span>bitrate: <span class="not-uppercase">{{ readableBitrate(video.bitrate) }}</span></span>
+        <div class="info-text">
+            <span @click="openFolder(video.filePath)" v-ripple class="clickable not-uppercase">{{
+                    video.fileName
+                }}</span>
+            <span>resolution: {{ video.width }}<span class="not-uppercase">x</span>{{ video.height }}</span>
+            <span>fps: {{ video.fps }}</span>
+            <span>bitrate: <span class="not-uppercase">{{ readableBitrate(video.bitrate) }}</span></span>
+        </div>
+        <v-slider hide-details
+                  class="zoom-slider"
+                  @click:prepend="rawWps = 2.2"
+                  dense
+                  min="0.1"
+                  @wheel.native="wheel"
+                  max="5"
+                  step="0.01"
+                  prepend-icon="mdi-magnify-plus-outline"
+                  v-model="rawWps"
+        ></v-slider>
     </div>
 </template>
 
@@ -13,11 +28,39 @@ import Utils from "@/js/Utils";
 
 export default {
     name: "VideoInfoFooter",
+    data: () => ({
+        rawWps: 2.9,
+    }),
+    mounted() {
+        this.setRawWps();
+    },
     methods: {
         readableBitrate(bitrate) {
             return Utils.readableBytes(bitrate, true) + '/s';
         },
+        wheel(e) {
+            this.rawWps -= e.deltaY * 0.0001;
+        },
+        setRawWps() {
+            let wps = this.widthPerSecond;
+            let centerValue = 2;
+            if (wps > centerValue)
+                wps = centerValue + (wps - centerValue) / 5;
+            console.log(`from wps ${this.widthPerSecond} to raw: ${wps}`);
+            this.rawWps = wps;
+        },
         ...mapActions(['openFolder']),
+    },
+    watch: {
+        rawWps() {
+            let centerValue = 2;
+            let wps = this.rawWps;
+            if (wps > centerValue) {
+                wps = centerValue + (wps - centerValue) * 5;
+            }
+            console.log(`from raw ${this.rawWps} to wps: ${wps}`);
+            this.$store.commit('widthPerSecond', wps);
+        },
     },
     computed: {
         video() {
@@ -25,6 +68,7 @@ export default {
         },
         ...mapState({
             activeFragment: state => state.activeFragment,
+            widthPerSecond: state => state.configTimeline.widthPerSecond,
         }),
     }
 }
@@ -32,12 +76,23 @@ export default {
 
 <style scoped>
 .video-info {
-    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
 }
 
-.video-info > span {
+.info-text {
+    height: 100%;
+    line-height: 22px;
+    vertical-align: middle;
+    width: calc(100% - 135px);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.info-text > span {
     opacity: 0.7;
     text-transform: uppercase;
     font-size: 12px;
@@ -55,5 +110,10 @@ export default {
     cursor: pointer;
     text-shadow: 0 0 10px transparent;
     transition: text-shadow 0.15s;
+}
+
+.zoom-slider {
+    min-width: 130px;
+    max-width: 130px;
 }
 </style>

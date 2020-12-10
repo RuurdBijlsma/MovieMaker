@@ -209,6 +209,9 @@ export default {
         activeFragment() {
             requestAnimationFrame(() => this.calculateSeekPosition());
         },
+        widthPerSecond() {
+            requestAnimationFrame(() => this.updateFragmentsLayout());
+        },
         progress() {
             requestAnimationFrame(() => this.calculateSeekPosition());
         },

@@ -4,7 +4,7 @@
             <div class="left-panel">
                 <editor class="editor" v-if="activeFragment"></editor>
                 <div v-else class="no-data">
-                    <v-icon class="no-data-icon" :size="windowWidth / 10">mdi-video-off-outline</v-icon>
+                    <v-icon class="no-data-icon" :size="windowWidth / 5">mdi-video-off-outline</v-icon>
                     <h1>Import a video to start</h1>
                     <p>Drag a video here or click the import videos button</p>
                     <v-btn :loading="importVideoLoading" @click="promptVideoInput" color="primary" rounded>
@@ -80,7 +80,7 @@ export default {
 
 .home-no-foot {
     display: flex;
-    height: calc(100% - 40px);
+    height: calc(100% - 44px);
 }
 
 .left-panel {

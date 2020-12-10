@@ -46,13 +46,14 @@
 // ffmpeg output video
 
 // when at start of a 2nd part of split fragment and press next frame it breaks
-// player volume
 // Stop merging images, display them separately
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // save project to file? maybe
 // todo bug: memory pls
 
 // DONE TODO
+// zoom on timeline
+// player volume
 // save player and timeline config to localStorage
 // dont allow set end point when seek is at 0, dont allow set start point when seek is at 1
 // adjust width of player/timeline
@@ -153,7 +154,7 @@ export default {
 @import url('https://cdn.materialdesignicons.com/5.0.45/css/materialdesignicons.min.css');
 
 html, body {
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 h1 {

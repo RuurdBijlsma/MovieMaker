@@ -20,6 +20,28 @@
                 <span class="seek-time">{{ toHms(progress * fullDuration) }} / {{ toHms(fullDuration) }}</span>
             </div>
             <div class="playback-controls" v-if="videoFiles.length > 0">
+                <v-menu open-on-hover :close-on-content-click="false">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                            v-bind="attrs"
+                            v-on="on"
+                            small>
+                            {{ volumeIcon }}
+                        </v-icon>
+                    </template>
+                    <v-list class="player-volume-container">
+                        <v-slider
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            v-model="$store.state.player.volume"
+                            @click:prepend="toggleMute"
+                            class="player-volume"
+                            dense
+                            hide-details
+                            :prepend-icon="volumeIcon"></v-slider>
+                    </v-list>
+                </v-menu>
                 <v-spacer></v-spacer>
                 <div class="center-controls">
                     <v-btn icon :disabled="!activeFragment.video.canPlay || !canSkipFrameLeft" @click="skipFrames(-1)">
@@ -54,6 +76,7 @@ export default {
     data: () => ({
         bounds: null,
         timeInterval: -1,
+        prevVolume: 1,
     }),
     mounted() {
         this.$store.commit('videosContainer', this.$refs.videosContainer);
@@ -71,7 +94,7 @@ export default {
                     this.$store.commit('progress', progress);
 
                 // console.log(this.$store.getters.computedProgress);
-                if (this.activeFragment.progress >= 1 && !activeVideo.paused || this.activeFragment.progress > 1){
+                if (this.activeFragment.progress >= 1 && !activeVideo.paused || this.activeFragment.progress > 1) {
                     // console.log('play next fragment');
                     this.playNextFragment();
                 }
@@ -79,8 +102,9 @@ export default {
                 if (activeVideo.playbackRate !== this.activeFragment.playbackRate)
                     activeVideo.playbackRate = this.activeFragment.playbackRate;
                 const gainNode = this.activeFragment.video.gainNode;
-                if (gainNode && gainNode.gain.value !== this.activeFragment.volume)
-                    gainNode.gain.value = this.activeFragment.volume;
+                let updatedGain = this.activeFragment.volume * this.playerVolume;
+                if (gainNode && gainNode.gain.value !== updatedGain)
+                    gainNode.gain.value = updatedGain;
             }
         }, 1000 / 60);
     },
@@ -89,6 +113,14 @@ export default {
         window.removeEventListener('resize', this.windowResize);
     },
     methods: {
+        toggleMute() {
+            if (this.playerVolume > 0) {
+                this.prevVolume = this.playerVolume;
+                this.$store.commit('playerVolume', 0);
+            } else {
+                this.$store.commit('playerVolume', this.prevVolume);
+            }
+        },
         canPlay(e) {
             let video = this.videoFiles.find(v => v.filePath === e.target.getAttribute('id'));
             if (video)
@@ -106,6 +138,9 @@ export default {
         ...mapActions(['play', 'pause', 'playNextFragment', 'skipFrames'])
     },
     watch: {
+        playerVolume() {
+            localStorage.playerVolume = this.playerVolume;
+        },
         playerWidth() {
             this.windowResize();
         },
@@ -122,6 +157,18 @@ export default {
         }
     },
     computed: {
+        volumeIcon() {
+            switch (true) {
+                case this.playerVolume === 0:
+                    return 'mdi-volume-mute';
+                case this.playerVolume < 0.5:
+                    return 'mdi-volume-medium';
+                case this.playerVolume < 4:
+                    return 'mdi-volume-high';
+                default:
+                    return 'mdi-volume-vibrate';
+            }
+        },
         videoWidth() {
             if (this.bounds === null)
                 return 0;
@@ -139,6 +186,7 @@ export default {
             playing: state => state.player.playing,
             timeline: state => state.timeline,
             playerWidth: state => state.player.widthPercent,
+            playerVolume: state => state.player.volume,
         }),
     },
 }
@@ -176,6 +224,7 @@ export default {
 .playback-controls {
     display: flex;
     place-content: center;
+    align-items: center;
 }
 
 .center-controls > * {
@@ -185,5 +234,14 @@ export default {
 .right-controls {
     align-items: center;
     display: flex;
+}
+
+.player-volume-container {
+    overflow: hidden;
+    padding: 5px 10px;
+}
+
+.player-volume {
+    width: 120px;
 }
 </style>
