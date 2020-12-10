@@ -2,15 +2,18 @@
     <v-sheet class="history-container">
         <v-divider vertical></v-divider>
         <perfect-scrollbar class="history">
-            <h4 class="text-center mb-2 mt-3">History</h4>
-<!--            <v-divider></v-divider>-->
+            <h4 class="text-center mt-3">History</h4>
             <v-list color="transparent" dense rounded>
-                <v-list-item class="command" :class="{'active-command': command.active}"
+                <v-list-item ref="commands" class="command"
+                             :class="{
+                                'executed-command': command.active,
+                                'active-command': i === visualIndex - 1,
+                             }"
                              v-for="(command, i) in visualCommands" :key="i"
                              @click="revertHistory(i)">
-                    <v-list-item-icon>
-                        <v-icon>{{ getIcon(command) }}</v-icon>
-                    </v-list-item-icon>
+                    <v-list-item-avatar>
+                        <v-icon :color="i === visualIndex - 1 ? 'primary' : ''">{{ getIcon(command) }}</v-icon>
+                    </v-list-item-avatar>
                     <v-list-item-content>
                         <v-list-item-title>
                             {{ command.name }}
@@ -27,6 +30,7 @@
 
 <script>
 import {mapActions, mapState} from "vuex";
+import Utils from "@/js/Utils";
 
 export default {
     name: "History",
@@ -44,10 +48,7 @@ export default {
     }),
     methods: {
         revertHistory(index) {
-            let visualIndex = this.visualCommands.findIndex(c => !c.active);
-            visualIndex = visualIndex === -1 ? this.visualCommands.length : visualIndex;
-            let count = index - visualIndex + 1;
-            console.log(count);
+            let count = index - this.visualIndex + 1;
             if (count < 0)
                 for (let i = 0; i > count; i--)
                     this.undo();
@@ -84,7 +85,19 @@ export default {
         },
         ...mapActions(['undo', 'redo']),
     },
+    watch: {
+        visualIndex() {
+            let commandIndex = Utils.clamp(this.visualIndex - 1, 0, this.visualCommands.length - 1);
+            let element = this.$refs.commands[commandIndex];
+            if (element?.$el)
+                element.$el.scrollIntoViewIfNeeded();
+        },
+    },
     computed: {
+        visualIndex() {
+            let visualIndex = this.visualCommands.findIndex(c => !c.active);
+            return visualIndex === -1 ? this.visualCommands.length : visualIndex;
+        },
         visualCommands() {
             let visualCommands = [];
             for (let i = 0; i < this.undoStack.length; i++) {
@@ -121,6 +134,7 @@ export default {
 .history-container {
     display: flex;
     max-height: 100%;
+    height: 100%;
     min-width: 240px;
     max-width: 240px;
     position: relative;
@@ -128,16 +142,19 @@ export default {
 
 .history {
     width: 100%;
-    height: 100%;
     overflow-y: auto;
     position: relative;
 }
 
 .command {
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .active-command {
+    /*background-color: red;*/
+}
+
+.executed-command {
     opacity: 1;
 }
 </style>

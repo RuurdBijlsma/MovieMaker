@@ -36,28 +36,29 @@
                 </v-btn>
             </template>
         </v-snackbar>
-        <v-footer v-if="activeFragment">
-            <video-info-footer></video-info-footer>
-        </v-footer>
     </v-app>
 </template>
 
 <script>
 // TODO: Features
-// Right click in explorer on video -> edit with ruurd movie maker
 // export to youtube with manual key input
 // youtube api key input in settings + yt account in settings + logout
-// add audio track (music) to video
+// ffmpeg output video
+
+// player volume
 // Stop merging images, display them separately
-// adjust width of player/timeline
-// remove windows media control notification (add setting?)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
-// set max height of Home to be 100vw - something, then use percentages in children
-// dont allow set end point when seek is at 0, dont allow set start point when seek is at 1
-// support small width UI
+// save project to file? maybe
 // todo bug: memory pls
 
 // DONE TODO
+// save player and timeline config to localStorage
+// dont allow set end point when seek is at 0, dont allow set start point when seek is at 1
+// adjust width of player/timeline
+// support small width UI
+// set max height of Home to be 100vw - something, then use percentages in children
+// remove windows media control notification (add setting?)
+// Right click in explorer on video -> edit with ruurd movie maker
 // undo history window
 // Next frame/ prev frame button
 // theme color chooser in settings
@@ -84,12 +85,17 @@
 import {mapActions, mapGetters, mapState} from "vuex";
 import CustomHeader from "@/components/CustomHeader";
 import VideoInfoFooter from "@/components/VideoInfoFooter";
+import electron from "electron";
 
 export default {
     name: 'App',
     components: {VideoInfoFooter, CustomHeader},
     data: () => ({}),
     async mounted() {
+        this.$store.commit('importVideoLoading', location.href.includes('file=true'));
+        window.addEventListener('resize', this.setWindowWidth, false);
+        document.addEventListener('keypress', this.devListener, false);
+
         await this.initialize();
         console.log(this.$store);
 
@@ -97,11 +103,30 @@ export default {
         electron.ipcRenderer.on('before-close', async () => {
             await this.$store.dispatch('secureClose');
         });
+        electron.ipcRenderer.on('open-file', async (e, args) => {
+            electron.ipcRenderer.send('received-file');
+            // args = ['C:\\Users\\Ruurd\\Videos\\soep.mp4'];
+            if (args.length > 0) {
+                this.$store.commit('importVideoLoading', true);
+                await Promise.all(args.map(p => this.$store.dispatch('importVideo', p)));
+                this.$store.commit('importVideoLoading', false);
+            }
+        });
     },
     beforeDestroy() {
-
+        document.removeEventListener('keypress', this.devListener);
+        window.removeEventListener('resize', this.setWindowWidth);
     },
     methods: {
+        setWindowWidth() {
+            this.$store.commit('windowWidth', window.innerWidth)
+        },
+        devListener(e) {
+            if (e.key === '`')
+                this.$store.dispatch('openDevTools');
+            if (e.key === 'r' && e.ctrlKey)
+                location.reload();
+        },
         ...mapActions(['addSnack', 'initialize', 'closeWindow'])
     },
     computed: {

@@ -1,5 +1,5 @@
 <template>
-    <div class="player" ref="player">
+    <perfect-scrollbar class="player" ref="player">
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
             <video @ended="playNextFragment" @canplay="canPlay" ref="videos"
                    v-for="videoFile in videoFiles"
@@ -41,7 +41,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </perfect-scrollbar>
 </template>
 
 <script>
@@ -98,11 +98,14 @@ export default {
                 this.play();
         },
         windowResize() {
-            this.bounds = this.$refs.player.getBoundingClientRect();
+            this.bounds = this.$refs.player.$el.getBoundingClientRect();
         },
         ...mapActions(['play', 'pause', 'playNextFragment', 'skipFrames'])
     },
     watch: {
+        playerWidth() {
+            this.windowResize();
+        },
         activeFragment(fragment, previousFragment) {
             if (previousFragment === null)
                 return;
@@ -132,6 +135,7 @@ export default {
             progress: state => state.player.progress,
             playing: state => state.player.playing,
             timeline: state => state.timeline,
+            playerWidth: state => state.player.widthPercent,
         }),
     },
 }
@@ -140,6 +144,8 @@ export default {
 <style scoped>
 .player {
     width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
 }
 
 .player video {

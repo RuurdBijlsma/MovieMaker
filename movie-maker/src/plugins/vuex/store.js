@@ -20,6 +20,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
+        windowWidth: window.innerWidth,
         snackbars: [],
         timeline: [],
         videosContainer: null,
@@ -27,21 +28,21 @@ export default new Vuex.Store({
         activeFragment: null,
         loading: {
             videoImport: false,
-            audioImport: false,
         },
         configTimeline: {
             minFragmentWidth: 120,
-            widthPerSecond: 2.9,
+            widthPerSecond: +(localStorage.getItem('widthPerSecond') ?? 2.9),
         },
         player: {
+            widthPercent: +(localStorage.getItem('playerWidth') ?? 0.5),
             progress: 0,
-            volume: 0,
+            volume: +(localStorage.getItem('playerVolume') ?? 0),
             playing: false,
         },
     },
     mutations: {
+        windowWidth: (state, value) => state.windowWidth = value,
         importVideoLoading: (state, value) => state.loading.videoImport = value,
-        importAudioLoading: (state, value) => state.loading.audioImport = value,
         videosContainer: (state, container) => {
             state.videosContainer = container;
             state.videoFiles.forEach(v => v.container = container);
@@ -95,8 +96,28 @@ export default new Vuex.Store({
         activeFragment: (state, fragment) => state.activeFragment = fragment,
         progress: (state, progress) => state.player.progress = progress,
         playing: (state, playing) => state.player.playing = playing,
+        playerWidth: (state, percent) =>
+            state.player.widthPercent = localStorage.playerWidth = Utils.clamp(percent, 0.1, 0.9),
+        playerVolume: (state, volume) =>
+            state.player.volume = localStorage.playerVolume = Utils.clamp(volume),
+        widthPerSecond: (state, pixels) =>
+            state.configTimeline.widthPerSecond = localStorage.widthPerSecond = pixels,
     },
     getters: {
+        scale: state => {
+            switch (true) {
+                case state.windowWidth > 1100:
+                    return 4;
+                case state.windowWidth > 900:
+                    return 3;
+                case state.windowWidth > 700:
+                    return 2;
+                case state.windowWidth > 400:
+                    return 1;
+                default:
+                    return 0;
+            }
+        },
         themeColors() {
             return Vuetify.framework.theme.themes[Vuetify.framework.theme.isDark ? 'dark' : 'light'];
         },
@@ -119,7 +140,11 @@ export default new Vuex.Store({
                 if (beforeParts + fragmentPart >= progress - 0.0001) {
                     let fragmentProgress = (progress - beforeParts) / fragmentPart;
                     let fragmentCut = fragment.end - fragment.start;
-                    return {fragment, videoProgress: Utils.clamp(fragment.start + fragmentProgress * fragmentCut)};
+                    return {
+                        fragment,
+                        videoProgress: Utils.clamp(fragment.start + fragmentProgress * fragmentCut),
+                        fragmentProgress: Utils.clamp(fragmentProgress),
+                    };
                 }
                 beforeParts += fragmentPart;
             }
@@ -141,6 +166,8 @@ export default new Vuex.Store({
         canMoveRight: state => state.timeline.indexOf(state.activeFragment) < state.timeline.length - 1,
         canSkipFrameLeft: state => state.player.progress > 0,
         canSkipFrameRight: state => state.player.progress < 1,
+        canSetStart: (state, getters) => getters.fragmentAtProgress(state.player.progress).fragmentProgress > 0,
+        canSetEnd: (state, getters) => getters.fragmentAtProgress(state.player.progress).fragmentProgress < 1,
     },
     actions: {
         undo({commit, dispatch}) {
@@ -185,25 +212,19 @@ export default new Vuex.Store({
             fragment.video.element.pause();
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
         },
-        async importVideo({dispatch}, path) {
-            let videoFile = await dispatch('loadMetadata', path);
-            let fragment = new VideoFragment(videoFile);
-            dispatch('executeCommand', new AddFragment(fragment));
-        },
-        removeFragment({state, dispatch}, fragment = state.activeFragment) {
-            dispatch('executeCommand', new DeleteFragment(fragment));
-        },
         shiftFragment({state, dispatch}, {fragment = state.activeFragment, shift = 1}) {
             let newIndex = state.timeline.indexOf(fragment) + shift;
             if (newIndex < 0 || newIndex >= state.timeline.length)
                 return;
             dispatch('executeCommand', new MoveFragment(fragment, newIndex));
         },
-        addAudioTrack({}) {
-
+        removeFragment({state, dispatch}, fragment = state.activeFragment) {
+            dispatch('executeCommand', new DeleteFragment(fragment));
         },
-        removeAudioTrack({}) {
-
+        async importVideo({dispatch}, path) {
+            let videoFile = await dispatch('loadMetadata', path);
+            let fragment = new VideoFragment(videoFile);
+            dispatch('executeCommand', new AddFragment(fragment));
         },
         async seek({state, commit, getters}, progress) {
             let {fragment, videoProgress} = getters.fragmentAtProgress(progress);
@@ -213,10 +234,13 @@ export default new Vuex.Store({
             if (state.player.playing && fragment.video.element.paused)
                 fragment.video.element.play();
         },
-        async playNextFragment({state, commit}) {
+        async playNextFragment({state, commit, dispatch}) {
             let currentIndex = state.timeline.indexOf(state.activeFragment);
-            if (currentIndex >= state.timeline.length - 1)
+            if (currentIndex >= state.timeline.length - 1) {
+                state.activeFragment.video.element.pause();
+                dispatch('skipFrames', 1);
                 return;
+            }
             let nextFragment = state.timeline[currentIndex + 1];
             let element = nextFragment.video.element;
             element.currentTime = nextFragment.start * nextFragment.video.duration;
@@ -224,7 +248,11 @@ export default new Vuex.Store({
                 element.play().then();
             commit('activeFragment', nextFragment);
         },
-        async play({state}) {
+        async play({state, commit}) {
+            if (state.player.progress === 1) {
+                commit('activeFragment', state.timeline[0]);
+                state.activeFragment.reset();
+            }
             await state.activeFragment.video.element.play();
         },
         pause({state}) {
@@ -233,26 +261,14 @@ export default new Vuex.Store({
         async initialize({dispatch}) {
             await dispatch("initializeFfmpeg");
         },
-        promptAudioInput({dispatch, commit}) {
-            commit('importAudioLoading', true);
-            let element = document.createElement('input');
-            element.setAttribute('type', 'file');
-            element.setAttribute('accept', 'video/*');
-            element.setAttribute('multiple', '');
-            element.click();
-            element.onchange = async () => {
-                await Promise.all([...element.files].map(f => dispatch('importVideo', f.path)));
-                commit('importAudioLoading', false);
-            }
-        },
         promptVideoInput({dispatch, commit}) {
-            commit('importVideoLoading', true);
             let element = document.createElement('input');
             element.setAttribute('type', 'file');
             element.setAttribute('accept', 'video/*');
             element.setAttribute('multiple', '');
             element.click();
             element.onchange = async () => {
+                commit('importVideoLoading', true);
                 await Promise.all([...element.files].map(f => dispatch('importVideo', f.path)));
                 commit('importVideoLoading', false);
             }

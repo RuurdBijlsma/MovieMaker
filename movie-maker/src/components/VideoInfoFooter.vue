@@ -32,7 +32,9 @@ export default {
 
 <style scoped>
 .video-info {
-
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .video-info > span {

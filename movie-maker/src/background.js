@@ -38,6 +38,8 @@ function createWindow() {
     let icon = path.join(__static, process.env.WEBPACK_DEV_SERVER_URL ? 'img/icon-dev.png' : 'img/icon.png');
     let splash = path.join(__static, 'splash.html');
     let windowConfig = {
+        minWidth: 640,
+        minHeight: 470,
         width: 1400,
         height: 900,
         frame: false,
@@ -68,28 +70,40 @@ function createWindow() {
     };
     win = Splashscreen.initSplashScreen(splashConfig);
 
+    let openFiles;
     if (process.env.WEBPACK_DEV_SERVER_URL) {
+        openFiles = process.argv.slice(2);
         // Load the url of the dev server if in development mode
         // win.loadURL(`file://${__dirname}/dist/index.html`);
-        win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
+        win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + `?file=${openFiles.length > 0}`);
         if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
+        openFiles = process.argv.slice(1);
 
         win.webContents.openDevTools()
 
         createProtocol('app')
         // Load the index.html when not in development
         let url = 'app://./index.html';
-        win.loadURL(url)
+        win.loadURL(url + `?file=${openFiles.length > 0}`)
         // win.webContents.openDevTools()
     }
+
+    let receivedFile = false;
+    ipcMain.on('received-file', () => receivedFile = true);
+    let sendInterval = setInterval(() => {
+        if (receivedFile)
+            clearInterval(sendInterval);
+        else
+            win.webContents.send('open-file', openFiles);
+    });
 
     win.on('closed', () => {
         win = null
     })
 
     win.on('close', event => {
-        if(!quitAllowed){
+        if (!quitAllowed) {
             event.preventDefault();
             //Clean temp directory
             try {
@@ -120,6 +134,7 @@ app.on('activate', () => {
     }
 })
 
+app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,MediaSessionService');
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.

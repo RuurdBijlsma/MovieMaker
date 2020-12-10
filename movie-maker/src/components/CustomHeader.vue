@@ -12,14 +12,6 @@
                 </template>
                 <span>Import video</span>
             </v-tooltip>
-            <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn :loading="importAudioLoading" class="no-drag" icon @click="addAudioTrack" v-bind="attrs" v-on="on">
-                        <v-icon>mdi-music-note</v-icon>
-                    </v-btn>
-                </template>
-                <span>Add audio track</span>
-            </v-tooltip>
         </div>
         <div class="center-content">
             <div v-if="activeFragment" class="fragment-controls">
@@ -95,7 +87,7 @@ export default {
 
     },
     methods: {
-        ...mapActions(['promptVideoInput', 'exportToYouTube', 'exportVideo', 'addAudioTrack','secureClose']),
+        ...mapActions(['promptVideoInput', 'exportToYouTube', 'exportVideo', 'secureClose']),
     },
     watch: {
         '$vuetify.theme.dark'() {
@@ -106,7 +98,6 @@ export default {
         ...mapState({
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
-            importAudioLoading: state => state.loading.audioImport,
         }),
     },
 }

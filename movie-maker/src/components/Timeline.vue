@@ -1,28 +1,30 @@
 <template>
-    <div ref="timeline">
-        <div class="fragment" v-for="(fragment, i) in visualFragments" :style="{
+    <perfect-scrollbar class="timeline">
+        <div class="timeline-inner" ref="timeline">
+            <div class="fragment" v-for="(fragment, i) in visualFragments" :style="{
                 width: fragment.width + 'px',
             }" :class="{
                 'continues-right': fragment.continuesRight,
                 'continues-left': fragment.continuesLeft,
                 'active': fragment.fragment === activeFragment,
             }"
-             ref="fragments"
-             @mousemove="switchFragment($event, i)"
-             @mousedown="moveStart($event, i)">
-            <div class="visual-fragment">
-                <div class="fragment-background"
-                     :style="{
+                 ref="fragments"
+                 @mousemove="switchFragment($event, i)"
+                 @mousedown="moveStart($event, i)">
+                <div class="visual-fragment">
+                    <div class="fragment-background"
+                         :style="{
                 backgroundImage: `url(${fragment.screenshots.merged})`,
                 backgroundPositionX: (-1 * fragment.leftPixels) + 'px'
             }"></div>
-                <canvas class="audio-wave" ref="audioCanvases"></canvas>
-            </div>
-            <div v-show="activeVisualFragment === fragment" :style="{
+                    <canvas class="audio-wave" ref="audioCanvases"></canvas>
+                </div>
+                <div v-show="activeVisualFragment === fragment" :style="{
                 left: seekLeft + 'px',
             }" class="seek-thumb"></div>
+            </div>
         </div>
-    </div>
+    </perfect-scrollbar>
 </template>
 
 <script>
@@ -48,8 +50,7 @@ export default {
     mounted() {
         this.windowResize();
         window.addEventListener('resize', this.windowResize, false);
-        requestAnimationFrame(() => this.updateFragmentsLayout());
-        this.renderAudioInterval = setInterval(() => requestAnimationFrame(this.updateFragmentsLayout), 500);
+        this.renderAudioInterval = setInterval(() => this.windowResize(), 500);
         document.addEventListener('mousemove', this.move, false);
         document.addEventListener('mouseup', this.moveEnd, false);
     },
@@ -192,49 +193,39 @@ export default {
                         canvas.height = bounds.height;
                     }
                     this.renderAudio();
-                    this.timelineVideos.filter(v => !v.pcmLoaded).forEach(v => v.on('pcm', () => this.renderAudio()));
                 }
             });
             this.visualFragments = visualFragments;
         },
         windowResize() {
             this.bounds = this.$refs.timeline.getBoundingClientRect();
-            this.$nextTick(() => {
-                requestAnimationFrame(() => this.updateFragmentsLayout());
-            });
+            requestAnimationFrame(() => this.updateFragmentsLayout());
         },
     },
     watch: {
+        playerWidth() {
+            this.windowResize();
+        },
         activeFragment() {
-            this.$nextTick(() => {
-                requestAnimationFrame(() => this.calculateSeekPosition());
-            });
+            requestAnimationFrame(() => this.calculateSeekPosition());
         },
         progress() {
             requestAnimationFrame(() => this.calculateSeekPosition());
         },
         'activeFragment.end'() {
-            this.$nextTick(() => {
-                requestAnimationFrame(() => this.updateFragmentsLayout());
-            });
+            requestAnimationFrame(() => this.updateFragmentsLayout());
         },
         'activeFragment.start'() {
-            this.$nextTick(() => {
-                requestAnimationFrame(() => this.updateFragmentsLayout());
-            });
+            requestAnimationFrame(() => this.updateFragmentsLayout());
         },
         'activeFragment.playbackRate'() {
-            this.$nextTick(() => {
-                requestAnimationFrame(() => this.updateFragmentsLayout());
-            });
+            requestAnimationFrame(() => this.updateFragmentsLayout());
         },
         'activeFragment.volume'() {
             requestAnimationFrame(() => this.renderAudio());
         },
         timeline() {
-            this.$nextTick(() => {
-                requestAnimationFrame(() => this.updateFragmentsLayout());
-            });
+            requestAnimationFrame(() => this.updateFragmentsLayout());
         },
     },
     computed: {
@@ -261,6 +252,7 @@ export default {
             minFragmentWidth: state => state.configTimeline.minFragmentWidth,
             widthPerSecond: state => state.configTimeline.widthPerSecond,
             progress: state => state.player.progress,
+            playerWidth: state => state.player.widthPercent,
         }),
     },
 }
@@ -269,6 +261,9 @@ export default {
 <style scoped>
 .timeline {
     --border-radius: 10px;
+    max-height: 100%;
+    padding: 10px;
+    overflow-y: auto;
 }
 
 .fragment {
