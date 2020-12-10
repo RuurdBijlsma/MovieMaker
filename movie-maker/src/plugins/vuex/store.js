@@ -162,12 +162,13 @@ export default new Vuex.Store({
                 return hms.substr(3);
             return hms;
         },
+        computedProgress: (state, getters) => getters.fragmentAtProgress(state.player.progress),
         canMoveLeft: state => state.timeline.indexOf(state.activeFragment) > 0,
         canMoveRight: state => state.timeline.indexOf(state.activeFragment) < state.timeline.length - 1,
         canSkipFrameLeft: state => state.player.progress > 0,
         canSkipFrameRight: state => state.player.progress < 1,
-        canSetStart: (state, getters) => getters.fragmentAtProgress(state.player.progress).fragmentProgress > 0,
-        canSetEnd: (state, getters) => getters.fragmentAtProgress(state.player.progress).fragmentProgress < 1,
+
+        canCut: (state, getters) => getters.computedProgress.fragmentProgress > 0 && getters.computedProgress.fragmentProgress < 1,
     },
     actions: {
         undo({commit, dispatch}) {
@@ -209,6 +210,7 @@ export default new Vuex.Store({
             let newProgress = Utils.clamp((currentTime + duration) / getters.fullDuration);
             let {fragment, videoProgress} = getters.fragmentAtProgress(newProgress);
             commit('activeFragment', fragment);
+            console.log("skip to", videoProgress, videoProgress * fragment.video.element.duration)
             fragment.video.element.pause();
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
         },
@@ -244,6 +246,7 @@ export default new Vuex.Store({
             let nextFragment = state.timeline[currentIndex + 1];
             let element = nextFragment.video.element;
             element.currentTime = nextFragment.start * nextFragment.video.duration;
+            console.log(state.activeFragment.progress, nextFragment.progress);
             if (!state.activeFragment.video.element.paused)
                 element.play().then();
             commit('activeFragment', nextFragment);

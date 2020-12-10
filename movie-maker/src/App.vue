@@ -45,6 +45,7 @@
 // youtube api key input in settings + yt account in settings + logout
 // ffmpeg output video
 
+// when at start of a 2nd part of split fragment and press next frame it breaks
 // player volume
 // Stop merging images, display them separately
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)

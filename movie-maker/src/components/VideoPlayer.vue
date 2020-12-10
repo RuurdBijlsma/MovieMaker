@@ -70,8 +70,11 @@ export default {
                 if (!isNaN(progress))
                     this.$store.commit('progress', progress);
 
-                if (this.activeFragment.progress >= 1)
+                // console.log(this.$store.getters.computedProgress);
+                if (this.activeFragment.progress >= 1 && !activeVideo.paused || this.activeFragment.progress > 1){
+                    // console.log('play next fragment');
                     this.playNextFragment();
+                }
 
                 if (activeVideo.playbackRate !== this.activeFragment.playbackRate)
                     activeVideo.playbackRate = this.activeFragment.playbackRate;

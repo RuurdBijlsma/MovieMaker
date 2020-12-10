@@ -2,15 +2,15 @@
     <div class="edit-container">
         <v-sheet class="edit-buttons">
             <div class="flow-buttons">
-                <v-btn :disabled="!canSetEnd || !canSetStart" small rounded text @click="split">
+                <v-btn :disabled="!canCut" small rounded text @click="split">
                     <span class="button-caption button-layout">Split</span>
                     <v-icon small>mdi-arrow-split-vertical</v-icon>
                 </v-btn>
-                <v-btn :disabled="!canSetStart" small rounded text @click="setStartPoint">
+                <v-btn :disabled="!canCut" small rounded text @click="setStartPoint">
                     <span class="button-caption button-layout">Set start</span>
                     <v-icon small>mdi-contain-start</v-icon>
                 </v-btn>
-                <v-btn :disabled="!canSetEnd" small rounded text @click="setEndPoint">
+                <v-btn :disabled="!canCut" small rounded text @click="setEndPoint">
                     <span class="button-caption button-layout">Set end</span>
                     <v-icon small>mdi-contain-end</v-icon>
                 </v-btn>
@@ -60,7 +60,7 @@ export default {
         ...mapActions(['split', 'setStartPoint', 'setEndPoint', 'removeFragment', 'shiftFragment', 'undo', 'redo']),
     },
     computed: {
-        ...mapGetters(['canUndo', 'canRedo', 'canMoveRight', 'canMoveLeft', 'canSetStart', 'canSetEnd'])
+        ...mapGetters(['canUndo', 'canRedo', 'canMoveRight', 'canMoveLeft', 'canCut'])
     },
 }
 </script>
