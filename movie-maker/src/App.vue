@@ -49,6 +49,7 @@
 // Stop merging images, display them separately
 // save project to file? maybe
 // In build version history list is broken
+// check startup without splash screen
 
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // todo bug: memory pls
