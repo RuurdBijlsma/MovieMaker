@@ -1,13 +1,16 @@
 <template>
     <perfect-scrollbar class="timeline">
         <div class="timeline-inner" ref="timeline">
-            <div class="fragment" v-for="(fragment, i) in visualFragments" :style="{
-                width: fragment.width + 'px',
-            }" :class="{
-                'continues-right': fragment.continuesRight,
-                'continues-left': fragment.continuesLeft,
-                'active': fragment.fragment === activeFragment,
-            }"
+            <div :title="fragment.fragment.video.fileName"
+                 class="fragment"
+                 v-for="(fragment, i) in visualFragments" :style="{
+                     width: fragment.width + 'px',
+                 }"
+                 :class="{
+                     'continues-right': fragment.continuesRight,
+                     'continues-left': fragment.continuesLeft,
+                     'active': fragment.fragment === activeFragment,
+                 }"
                  ref="fragments"
                  @mousemove="switchFragment($event, i)"
                  @mousedown="moveStart($event, i)">

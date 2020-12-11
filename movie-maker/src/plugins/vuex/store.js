@@ -14,6 +14,7 @@ import MoveFragment from "@/js/commands/MoveFragment";
 import SetPlaybackRate from "@/js/commands/SetPlaybackRate";
 import SetVolume from "@/js/commands/SetVolume";
 import command from './command-module'
+import auth from './auth-module'
 import Utils from "@/js/Utils";
 
 Vue.use(Vuex)
@@ -171,6 +172,10 @@ export default new Vuex.Store({
         canCut: (state, getters) => getters.computedProgress.fragmentProgress > 0 && getters.computedProgress.fragmentProgress < 1,
     },
     actions: {
+        async initialize({dispatch, getters}) {
+            await dispatch("initializeFfmpeg");
+            await dispatch("initializeAuth");
+        },
         undo({commit, dispatch}) {
             commit('undoCommand');
             dispatch('printUndoStack');
@@ -210,7 +215,6 @@ export default new Vuex.Store({
             let newProgress = Utils.clamp((currentTime + duration) / getters.fullDuration);
             let {fragment, videoProgress} = getters.fragmentAtProgress(newProgress);
             commit('activeFragment', fragment);
-            console.log("skip to", videoProgress, videoProgress * fragment.video.element.duration)
             fragment.video.element.pause();
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
         },
@@ -246,7 +250,6 @@ export default new Vuex.Store({
             let nextFragment = state.timeline[currentIndex + 1];
             let element = nextFragment.video.element;
             element.currentTime = nextFragment.start * nextFragment.video.duration;
-            console.log(state.activeFragment.progress, nextFragment.progress);
             if (!state.activeFragment.video.element.paused)
                 element.play().then();
             commit('activeFragment', nextFragment);
@@ -260,9 +263,6 @@ export default new Vuex.Store({
         },
         pause({state}) {
             state.activeFragment.video.element.pause();
-        },
-        async initialize({dispatch}) {
-            await dispatch("initializeFfmpeg");
         },
         promptVideoInput({dispatch, commit}) {
             let element = document.createElement('input');
@@ -293,5 +293,5 @@ export default new Vuex.Store({
             });
         },
     },
-    modules: {electron, ffmpeg, command}
+    modules: {electron, ffmpeg, command, auth}
 })

@@ -46,7 +46,6 @@ export default {
             let centerValue = 2;
             if (wps > centerValue)
                 wps = centerValue + (wps - centerValue) / 5;
-            console.log(`from wps ${this.widthPerSecond} to raw: ${wps}`);
             this.rawWps = wps;
         },
         ...mapActions(['openFolder']),
@@ -55,10 +54,8 @@ export default {
         rawWps() {
             let centerValue = 2;
             let wps = this.rawWps;
-            if (wps > centerValue) {
+            if (wps > centerValue)
                 wps = centerValue + (wps - centerValue) * 5;
-            }
-            console.log(`from raw ${this.rawWps} to wps: ${wps}`);
             this.$store.commit('widthPerSecond', wps);
         },
     },

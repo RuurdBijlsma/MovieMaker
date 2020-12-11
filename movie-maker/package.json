@@ -33,7 +33,8 @@
     "vue-router": "^3.4.9",
     "vue2-perfect-scrollbar": "^1.5.0",
     "vuetify": "^2.3.18",
-    "vuex": "^3.4.0"
+    "vuex": "^3.4.0",
+    "youtube-api": "^3.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.5.9",

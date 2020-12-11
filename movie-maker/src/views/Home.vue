@@ -1,10 +1,12 @@
 <template>
-    <div class="home">
+    <div class="home" @dragenter="dragEnter" @dragover="dragOver" @dragleave="dragLeave" @drop="drop">
         <div class="home-no-foot">
             <div class="left-panel">
                 <editor class="editor" v-if="activeFragment"></editor>
                 <div v-else class="no-data">
-                    <v-icon class="no-data-icon" :size="windowWidth / 5">mdi-video-off-outline</v-icon>
+                    <v-icon class="no-data-icon" :size="windowWidth / 5">
+                        {{ fileHover ? 'mdi-file-plus' : 'mdi-video-off-outline' }}
+                    </v-icon>
                     <h1>Import a video to start</h1>
                     <p>Drag a video here or click the import videos button</p>
                     <v-btn :loading="importVideoLoading" @click="promptVideoInput" color="primary" rounded>
@@ -24,8 +26,9 @@
             </div>
             <history v-if="undoStack.length > 0 && scale > 2" class="right-panel"></history>
         </div>
-        <v-footer v-if="activeFragment">
-            <video-info-footer></video-info-footer>
+        <v-footer class="app-footer">
+            <video-info-footer v-if="activeFragment"></video-info-footer>
+            <span v-else class="caption text-uppercase">Ruurd Movie Maker</span>
         </v-footer>
     </div>
 </template>
@@ -40,12 +43,37 @@ import VideoInfoFooter from "@/components/VideoInfoFooter";
 export default {
     name: "Home",
     components: {VideoInfoFooter, History, Editor},
-    data: () => ({}),
+    data: () => ({
+        fileHover: false,
+    }),
     mounted() {
     },
     beforeDestroy() {
     },
     methods: {
+        dragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.fileHover = true;
+        },
+        dragEnter(e) {
+            this.fileHover = true;
+            e.preventDefault();
+        },
+        dragLeave(e) {
+            this.fileHover = false;
+            e.preventDefault();
+        },
+        async drop(e) {
+            e.preventDefault();
+            this.fileHover = false;
+            console.log('drop', e.dataTransfer.files[0].path);
+            this.$store.commit('importVideoLoading', true);
+            await Promise.all(
+                [...e.dataTransfer.files].map(f => this.$store.dispatch('importVideo', f.path))
+            );
+            this.$store.commit('importVideoLoading', false);
+        },
         ...mapActions(['promptVideoInput', 'redo', 'undo']),
     },
     computed: {
@@ -54,7 +82,7 @@ export default {
             undoStack: state => state.command.undoStack,
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
-            windowWidth: state=>state.windowWidth,
+            windowWidth: state => state.windowWidth,
         }),
     },
 }
@@ -73,7 +101,12 @@ export default {
         height: calc(100vh - 56px);
         max-height: calc(100vh - 56px);
     }
-    .no-data{
+
+    .no-data {
+        height: 100% !important;
+    }
+
+    .drop-file {
         height: 100% !important;
     }
 }
@@ -89,6 +122,13 @@ export default {
     height: 100%;
     max-height: 100%;
     flex-grow: 1;
+}
+
+.drop-file {
+    height: 70%;
+    width: 100%;
+    display: flex;
+    place-content: center;
 }
 
 .no-data {
@@ -115,5 +155,9 @@ export default {
 .redo-button {
     text-transform: uppercase;
     margin-left: 10px;
+}
+
+.app-footer {
+    height: 44px;
 }
 </style>

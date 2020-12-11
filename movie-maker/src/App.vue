@@ -45,13 +45,16 @@
 // youtube api key input in settings + yt account in settings + logout
 // ffmpeg output video
 
-// when at start of a 2nd part of split fragment and press next frame it breaks
+// check if auth get user still works tomorrow (how does refresh token handling work??)
 // Stop merging images, display them separately
-// try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // save project to file? maybe
+
+// try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // todo bug: memory pls
+// when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// drag to import
 // zoom on timeline
 // player volume
 // save player and timeline config to localStorage
