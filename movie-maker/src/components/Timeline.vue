@@ -83,6 +83,8 @@ export default {
         },
         moveStart(e, fragmentIndex) {
             this.fragmentIndex = fragmentIndex;
+            if (this.activeFragment.video.canPlay)
+                this.$store.commit('showContextMenu', true);
             this.seekToProgress(e);
         },
         move(e) {

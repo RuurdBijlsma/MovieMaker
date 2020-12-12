@@ -3,7 +3,7 @@ module.exports = {
         "electronBuilder": {
             "nodeIntegration": true,
             "experimentalNativeDepCheck": true,
-            "externals": ['express', 'fluent-ffmpeg'],
+            "externals": ['express', 'fluent-ffmpeg', 'electron-context-menu'],
             "builderOptions": {
                 "appId": "dev.ruurd.moviemaker",
                 "productName": "Ruurd Movie Maker",

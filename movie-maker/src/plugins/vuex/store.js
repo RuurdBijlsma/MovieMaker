@@ -26,6 +26,7 @@ export default new Vuex.Store({
         timeline: [],
         videosContainer: null,
         videoFiles: [],
+        showContextMenu: false,
         activeFragment: null,
         loading: {
             videoImport: false,
@@ -42,6 +43,7 @@ export default new Vuex.Store({
         },
     },
     mutations: {
+        showContextMenu: (state, value) => state.showContextMenu = value,
         windowWidth: (state, value) => state.windowWidth = value,
         importVideoLoading: (state, value) => state.loading.videoImport = value,
         videosContainer: (state, container) => {
@@ -169,10 +171,14 @@ export default new Vuex.Store({
         canSkipFrameLeft: state => state.player.progress > 0,
         canSkipFrameRight: state => state.player.progress < 1,
 
+        canCutAt: (state, getters) => progress => {
+            let v = getters.fragmentAtProgress(progress)?.fragmentProgress;
+            return v > 0 && v < 1;
+        },
         canCut: (state, getters) => getters.computedProgress.fragmentProgress > 0 && getters.computedProgress.fragmentProgress < 1,
     },
     actions: {
-        async initialize({dispatch, getters}) {
+        async initialize({dispatch}) {
             await dispatch("initializeFfmpeg");
             await dispatch("initializeAuth");
         },
@@ -194,22 +200,28 @@ export default new Vuex.Store({
             fragment = state.activeFragment,
             start = getters.fragmentAtProgress(state.player.progress).videoProgress
         }) {
+            if (!getters.canCutAt(start)) return;
             dispatch('executeCommand', new SetStartPoint(fragment, start));
         },
         setEndPoint({state, getters, dispatch}, {
             fragment = state.activeFragment,
             end = getters.fragmentAtProgress(state.player.progress).videoProgress
         }) {
+            if (!getters.canCutAt(end)) return;
             dispatch('executeCommand', new SetEndPoint(fragment, end));
         },
         split({state, getters, dispatch}, {
             fragment = state.activeFragment,
             split = getters.fragmentAtProgress(state.player.progress).videoProgress
         }) {
-            console.log("Split at", split);
+            if (!getters.canCutAt(split)) return;
             dispatch('executeCommand', new SplitFragment(fragment, split));
         },
         async skipFrames({state, getters, commit}, n) {
+            if (n > 0 && !getters.canSkipFrameRight)
+                return;
+            if (n < 0 && !getters.canSkipFrameLeft)
+                return;
             let duration = n / state.activeFragment.video.fps;
             let currentTime = state.player.progress * getters.fullDuration;
             let newProgress = Utils.clamp((currentTime + duration) / getters.fullDuration);

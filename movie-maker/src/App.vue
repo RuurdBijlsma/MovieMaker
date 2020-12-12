@@ -41,21 +41,24 @@
 
 <script>
 // TODO: Features
-// export to youtube with manual key input
-// youtube api key input in settings + yt account in settings + logout
 // ffmpeg output video
+// youtube output video
 
-// check if auth get user still works tomorrow (how does refresh token handling work??)
 // Stop merging images, display them separately
 // save project to file? maybe
 // In build version history list is broken
-// check startup without splash screen
+// fullscreen keybind + button
 
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // todo bug: memory pls
 // when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// youtube api key input in settings + yt account in settings + logout
+// key binds
+// context menu
+// check startup without splash screen
+// check if auth get user still works tomorrow (how does refresh token handling work??)
 // drag to import
 // zoom on timeline
 // player volume
@@ -93,15 +96,18 @@ import {mapActions, mapGetters, mapState} from "vuex";
 import CustomHeader from "@/components/CustomHeader";
 import VideoInfoFooter from "@/components/VideoInfoFooter";
 import electron from "electron";
+import contextMenu from "electron-context-menu";
 
 export default {
     name: 'App',
     components: {VideoInfoFooter, CustomHeader},
-    data: () => ({}),
+    data: () => ({
+        disposeContextMenu: null,
+    }),
     async mounted() {
         this.$store.commit('importVideoLoading', location.href.includes('file=true'));
         window.addEventListener('resize', this.setWindowWidth, false);
-        document.addEventListener('keypress', this.devListener, false);
+        document.addEventListener('keydown', this.keyListener, false);
 
         await this.initialize();
         console.log(this.$store);
@@ -119,22 +125,135 @@ export default {
                 this.$store.commit('importVideoLoading', false);
             }
         });
+
+        this.disposeContextMenu = this.createContextMenu();
     },
     beforeDestroy() {
-        document.removeEventListener('keypress', this.devListener);
+        this.disposeContextMenu?.()
+        document.removeEventListener('keydown', this.keyListener);
         window.removeEventListener('resize', this.setWindowWidth);
     },
     methods: {
+        createContextMenu() {
+            console.log(contextMenu);
+            return contextMenu({
+                prepend: () => [
+                    {
+                        label: "Set start point",
+                        click: () => this.setStartPoint({})
+                    },
+                    {
+                        label: "Set end point",
+                        click: () => this.setEndPoint({})
+                    },
+                    {
+                        label: "Split video",
+                        click: () => this.split({})
+                    },
+                ],
+                append: () => [
+                    {
+                        label: "Delete",
+                        click: () => this.removeFragment()
+                    },
+                ],
+                shouldShowMenu: (e, params) => {
+                    let value = this.showContextMenu;
+                    this.$store.commit('showContextMenu', false);
+                    return value;
+                },
+                showInspectElement: false,
+            });
+        },
         setWindowWidth() {
             this.$store.commit('windowWidth', window.innerWidth)
         },
-        devListener(e) {
-            if (e.key === '`')
-                this.$store.dispatch('openDevTools');
-            if (e.key === 'r' && e.ctrlKey)
-                location.reload();
+        keyListener(e) {
+            console.log(e.key);
+            switch (true) {
+                case e.key === ' ':
+                    if (this.playing) this.pause();
+                    else this.play();
+                    break;
+                case e.key === 'e' && e.ctrlKey:
+                    this.exportVideo()
+                    break;
+                case e.key === 'i' && e.ctrlKey:
+                    this.promptVideoInput()
+                    break;
+                case e.key === 'ArrowLeft':
+                    this.skipFrames(-this.activeFragment.video.fps * 5);
+                    break;
+                case e.key === 'ArrowRight':
+                    this.skipFrames(this.activeFragment.video.fps * 5);
+                    break;
+                case e.key === 'm':
+                    if (this.activeFragment.volume === 0)
+                        this.setVolume({volume: 1});
+                    else
+                        this.setVolume({volume: 0});
+                    break;
+                case e.key === 'ArrowUp':
+                    let volumeHigh = this.activeFragment.volume * 1.2;
+                    this.setVolume({volume: volumeHigh});
+                    break;
+                case e.key === 'ArrowDown':
+                    let volumeLow = this.activeFragment.volume / 1.2;
+                    this.setVolume({volume: volumeLow});
+                    break;
+                case e.key === '-':
+                    let pbrHigh = this.activeFragment.playbackRate / 1.2;
+                    this.setPlaybackRate({playbackRate: pbrHigh});
+                    break;
+                case e.key === '+':
+                case e.key === '=':
+                    let pbrLow = this.activeFragment.playbackRate * 1.2;
+                    this.setPlaybackRate({playbackRate: pbrLow});
+                    break;
+                case e.key === ',':
+                    this.shiftFragment({shift: -1});
+                    break;
+                case e.key === '.':
+                    this.shiftFragment({shift: 1});
+                    break;
+                case e.key === 'Backspace':
+                case e.key === 'Delete':
+                    this.removeFragment();
+                    break;
+                case e.key === '\\':
+                    this.split({})
+                    break;
+                case e.key === '[':
+                    this.setStartPoint({})
+                    break;
+                case e.key === ']':
+                    this.setEndPoint({})
+                    break;
+                case e.key === 'y' && e.ctrlKey:
+                case e.key === 'Z' && e.ctrlKey && e.shiftKey:
+                    this.redo();
+                    break;
+                case e.key === 'z' && e.ctrlKey:
+                    this.undo();
+                    break;
+                case e.key === 'r' && e.ctrlKey:
+                    location.reload();
+                    break;
+                case e.key === '`':
+                    this.$store.dispatch('openDevTools');
+                    break;
+                case !isNaN(+e.key):
+                    let progress = (+e.key) / 10;
+                    this.seek(progress);
+                    break;
+            }
         },
-        ...mapActions(['addSnack', 'initialize', 'closeWindow'])
+        ...mapActions(['addSnack', 'initialize', 'closeWindow',
+            'split', 'setStartPoint', 'setEndPoint',
+            'removeFragment', 'redo', 'undo', 'promptVideoInput',
+            'exportVideo', 'play', 'pause', 'seek',
+            'skipFrames', 'shiftFragment', 'setVolume', 'setPlaybackRate'
+        ])
     },
     computed: {
         cssProps() {
@@ -150,6 +269,8 @@ export default {
         ...mapGetters(['themeColors']),
         ...mapState({
             activeFragment: state => state.activeFragment,
+            showContextMenu: state => state.showContextMenu,
+            playing: state => state.player.playing,
         })
     }
 };

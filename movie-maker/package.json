@@ -25,6 +25,7 @@
   "dependencies": {
     "@trodi/electron-splashscreen": "^1.0.0",
     "core-js": "^3.7.0",
+    "electron-context-menu": "^2.3.0",
     "ffbinaries": "^1.1.4",
     "fluent-ffmpeg": "^2.1.2",
     "pcm-extract": "github:ruurdbijlsma/pcm-extract",

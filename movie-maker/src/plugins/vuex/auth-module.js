@@ -75,6 +75,7 @@ export default {
             let result = await Youtube.channels.list({part: 'snippet', mine: true});
             let userInfo = result.data.items?.[0]?.snippet;
             commit("userInfo", userInfo);
+            console.log(Youtube);
         },
         resetYtLogin({state, commit}) {
             if (state.server !== null) {

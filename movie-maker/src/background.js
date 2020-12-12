@@ -62,8 +62,8 @@ function createWindow() {
         splashScreenOpts: {
             fullscreenable: false,
             maximizable: false,
-            width: 425,
-            height: 305,
+            width: 500,
+            height: 320,
             icon,
             transparent: true,
         },
