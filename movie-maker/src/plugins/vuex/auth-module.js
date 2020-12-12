@@ -1,8 +1,7 @@
 import electron, {remote} from "electron";
-
-const express = window.require('express')
 import http from "http";
 import Youtube from "youtube-api";
+import express from "express";
 
 export default {
     state: {
