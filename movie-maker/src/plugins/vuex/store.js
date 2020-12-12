@@ -38,7 +38,7 @@ export default new Vuex.Store({
         player: {
             widthPercent: +(localStorage.getItem('playerWidth') ?? 0.5),
             progress: 0,
-            volume: +(localStorage.getItem('playerVolume') ?? 0),
+            volume: +(localStorage.getItem('playerVolume') ?? 1),
             playing: false,
         },
     },

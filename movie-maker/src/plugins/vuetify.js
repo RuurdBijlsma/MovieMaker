@@ -1,11 +1,15 @@
 import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
 
+let dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+if (localStorage.getItem('darkTheme') !== null)
+    dark = localStorage.darkTheme === 'true';
+
 Vue.use(Vuetify);
 
 export default new Vuetify({
     theme: {
-        dark: localStorage.darkTheme === 'true',
+        dark,
         themes: {
             dark: {
                 primary: localStorage.getItem('primaryColor') ?? '#ed4b83',

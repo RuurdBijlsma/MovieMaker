@@ -3,7 +3,7 @@ import VideoFragment from "@/js/VideoFragment";
 
 export default class SplitFragment extends Command {
     constructor(fragment, splitPoint) {
-        super();
+        super("Split fragment");
         this.fragment = fragment;
         this.splitPoint = splitPoint;
 

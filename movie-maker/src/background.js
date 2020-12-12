@@ -80,7 +80,7 @@ function createWindow() {
     } else {
         openFiles = process.argv.slice(1);
 
-        win.webContents.openDevTools()
+        // win.webContents.openDevTools()
 
         createProtocol('app')
         // Load the index.html when not in development

@@ -2,7 +2,7 @@ import Command from "@/js/commands/Command";
 
 export default class MoveFragment extends Command {
     constructor(fragment, newIndex) {
-        super();
+        super("Move fragment");
         this.fragment = fragment;
         this.newIndex = newIndex;
         this.oldIndex = Command.store.state.timeline.indexOf(fragment);

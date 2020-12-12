@@ -36,14 +36,14 @@ export default {
     name: "History",
     data: () => ({
         historyIcons: {
-            AddFragment: 'mdi-import',
-            DeleteFragment: 'mdi-delete',
-            MoveFragment: 'mdi-chevron-right',
-            SetEndPoint: 'mdi-contain-end',
-            SetPlaybackRate: 'mdi-speedometer',
-            SetStartPoint: 'mdi-contain-start',
-            SetVolume: 'mdi-volume-high',
-            SplitFragment: 'mdi-arrow-split-vertical',
+            'Add fragment': 'mdi-import',
+            'Delete fragment': 'mdi-delete',
+            'Move fragment': 'mdi-chevron-right',
+            'Set end point': 'mdi-contain-end',
+            'Set playback rate': 'mdi-speedometer',
+            'Set start point': 'mdi-contain-start',
+            'Set volume': 'mdi-volume-high',
+            'Split fragment': 'mdi-arrow-split-vertical',
         },
     }),
     methods: {
@@ -59,7 +59,7 @@ export default {
         getIcon(visualCommand) {
             let {name, command} = visualCommand;
             switch (true) {
-                case name === "MoveFragment":
+                case name === "Move fragment":
                     return command.newIndex - command.oldIndex > 0 ? 'mdi-chevron-right' : 'mdi-chevron-left';
                 case name in this.historyIcons:
                     return this.historyIcons[name];
@@ -68,16 +68,16 @@ export default {
             }
         },
         getValue(command) {
-            switch (command.constructor.name) {
-                case "AddFragment":
+            switch (command.name) {
+                case "Add fragment":
                     return command.fragment.video.fileName;
-                case "DeleteFragment":
+                case "Delete fragment":
                     return command.fragment.video.fileName;
-                case "MoveFragment":
+                case "Move fragment":
                     return command.newIndex - command.oldIndex > 0 ? 'Right' : 'Left';
-                case "SetPlaybackRate":
+                case "Set playback rate":
                     return command.newRate.toFixed(2) + 'x';
-                case "SetVolume":
+                case "Set volume":
                     return (command.newVolume * 100).toFixed(0) + '%';
                 default:
                     return false;
@@ -105,14 +105,14 @@ export default {
                 let prevCommand = this.undoStack[i - 1];
                 if (command.batchOn !== false &&
                     command.batchOn === prevCommand?.batchOn &&
-                    command.constructor.name === prevCommand.constructor.name) {
+                    command.name === prevCommand.name) {
                     let previous = visualCommands[visualCommands.length - 1];
                     previous.batchCount++;
                     previous.value = this.getValue(command);
                 } else {
                     // for (let j = 0; j < 30; j++)
                     visualCommands.push({
-                        name: command.constructor.name,
+                        name: command.name,
                         batchCount: 1,
                         active: i <= this.stackIndex,
                         value: this.getValue(command),

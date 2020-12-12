@@ -2,7 +2,7 @@ import Command from "@/js/commands/Command";
 
 export default class DeleteFragment extends Command {
     constructor(fragment) {
-        super();
+        super("Delete fragment");
         this.fragment = fragment;
         this.index = Command.store.state.timeline.indexOf(fragment);
     }

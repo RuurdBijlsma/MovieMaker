@@ -1,6 +1,7 @@
 export default class Command {
-    constructor(batchOn = false) {
+    constructor(name = this.constructor.name, batchOn = false) {
         this.batchOn = batchOn;
+        this.name = name;
     }
 
     static setStore(store) {

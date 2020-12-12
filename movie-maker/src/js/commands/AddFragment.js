@@ -2,7 +2,7 @@ import Command from "@/js/commands/Command";
 
 export default class AddFragment extends Command {
     constructor(fragment) {
-        super();
+        super("Add fragment");
         this.fragment = fragment;
     }
 
