@@ -191,7 +191,7 @@ export default {
         keyListener(e) {
             console.log(e.key);
             switch (true) {
-Addd                case e.key === 'n' && e.ctrlKey:
+                case e.key === 'n' && e.ctrlKey:
                     this.newProject();
                     break;
                 case e.key === 'o' && e.ctrlKey:
