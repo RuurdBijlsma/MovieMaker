@@ -191,6 +191,18 @@ export default {
         keyListener(e) {
             console.log(e.key);
             switch (true) {
+Addd                case e.key === 'n' && e.ctrlKey:
+                    this.newProject();
+                    break;
+                case e.key === 'o' && e.ctrlKey:
+                    this.promptProjectInput();
+                    break;
+                case e.key === 'S' && e.ctrlKey && e.shiftKey:
+                    this.saveProjectAs();
+                    break;
+                case e.key === 's' && e.ctrlKey:
+                    this.saveProject();
+                    break;
                 case e.key === 'Escape':
                     e.preventDefault();
                     if (this.fullscreen)
@@ -284,7 +296,8 @@ export default {
             'split', 'setStartPoint', 'setEndPoint', 'importVideo',
             'removeFragment', 'redo', 'undo', 'promptVideoInput',
             'exportVideo', 'play', 'pause', 'seek', 'importProjectByPath',
-            'skipFrames', 'shiftFragment', 'setVolume', 'setPlaybackRate'
+            'skipFrames', 'shiftFragment', 'setVolume', 'setPlaybackRate',
+            'newProject', 'promptProjectInput', 'saveProjectAs','saveProject'
         ])
     },
     computed: {

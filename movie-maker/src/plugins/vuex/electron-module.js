@@ -37,8 +37,7 @@ export default {
                     dispatch("addSnack", {text: "Could not open project"});
                     return;
                 }
-                let fileName = path.basename(filePath);
-                commit('projectFileName', fileName);
+                commit('projectFilePath', filePath);
                 dispatch('importProject', data);
             });
         },
@@ -54,9 +53,29 @@ export default {
                 dispatch('importProjectByPath', filePaths[0]);
             }
         },
-        async saveProjectAs({dispatch, getters, commit}) {
+        async saveProjectToFile({getters, dispatch, commit}, filePath) {
             if (!getters.hasProject)
                 return;
+            console.log("Saving project to file", filePath);
+            let project = await dispatch('exportProject');
+            fs.writeFile(filePath, project, err => {
+                if (err) {
+                    console.warn("save file err", err);
+                    dispatch("addSnack", {text: "Could not save project"}).then();
+                    return;
+                }
+                commit('projectFilePath', filePath);
+                dispatch("addSnack", {text: "Project saved!"}).then();
+            });
+        },
+        async saveProject({rootState, dispatch}) {
+            if (rootState.projectFilePath !== '') {
+                await dispatch('saveProjectToFile', rootState.projectFilePath);
+            } else {
+                await dispatch('saveProjectAs');
+            }
+        },
+        async saveProjectAs({dispatch}) {
             let defaultPath = remote.app.getPath('videos');
             let {canceled, filePath} = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
                 title: "Save project as...",
@@ -64,17 +83,7 @@ export default {
                 filters: [{name: "Ruurd Movie Maker Project", extensions: ["rmm"]}],
             });
             if (!canceled) {
-                let project = await dispatch('exportProject');
-                fs.writeFile(filePath, project, err => {
-                    if (err) {
-                        console.warn("save file err", err);
-                        dispatch("addSnack", {text: "Could not save project"}).then();
-                        return;
-                    }
-                    let fileName = path.basename(filePath);
-                    commit('projectFileName', fileName);
-                    dispatch("addSnack", {text: "Project saved!"}).then();
-                });
+                await dispatch('saveProjectToFile', filePath);
             }
         },
         secureClose({commit, rootState, dispatch}) {

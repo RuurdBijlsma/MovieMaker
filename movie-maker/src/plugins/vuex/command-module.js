@@ -74,16 +74,18 @@ export default {
             console.log("export projectString", result);
             return JSON.stringify(result);
         },
-        newProject({commit}) {
+        newProject({commit}, overwriteFilePath = true) {
             commit('activeFragment', null);
             commit('resetCommands');
             commit('timeline', []);
             commit('progress', 0);
+            if (overwriteFilePath)
+                commit('projectFilePath', '');
             commit('videosContainer', null);
         },
         async importProject({dispatch, commit, state}, projectString) {
             commit('importProjectLoading', true);
-            await dispatch('newProject');
+            await dispatch('newProject', false);
             let {videos, fragments, index, commands} = JSON.parse(projectString);
             let videoFiles = await Promise.all(videos.map(v => dispatch('loadMetadata', v)));
             const recreateFragment = f => VideoFragment.fromObject(

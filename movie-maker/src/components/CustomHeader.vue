@@ -139,12 +139,11 @@ export default {
         },
     },
     computed: {
-        ...mapGetters(['hasProject']),
+        ...mapGetters(['hasProject', 'projectFileName']),
         ...mapState({
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
             importProjectLoading: state => state.loading.projectImport,
-            projectFileName: state => state.projectFileName,
         }),
     },
 }
@@ -187,6 +186,10 @@ export default {
     flex-grow: 1;
     display: flex;
     justify-content: center;
+    max-width: calc(100% - 320px - 206px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .grey-file {

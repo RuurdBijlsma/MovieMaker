@@ -16,13 +16,14 @@ import SetVolume from "@/js/commands/SetVolume";
 import command from './command-module'
 import auth from './auth-module'
 import Utils from "@/js/Utils";
+import path from 'path';
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
         windowWidth: window.innerWidth,
-        projectFileName: '',
+        projectFilePath: '',
         snackbars: [],
         timeline: [],
         videosContainer: null,
@@ -47,7 +48,10 @@ export default new Vuex.Store({
     },
     mutations: {
         timeline: (state, fragments) => state.timeline = fragments,
-        projectFileName: (state, name) => state.projectFileName = name,
+        projectFilePath: (state, p) => {
+            console.log("Setting project file path to", p);
+            state.projectFilePath = p
+        },
         fullscreen: (state, value) => state.player.fullscreen = value,
         showContextMenu: (state, value) => state.showContextMenu = value,
         windowWidth: (state, value) => state.windowWidth = value,
@@ -114,6 +118,7 @@ export default new Vuex.Store({
             state.configTimeline.widthPerSecond = localStorage.widthPerSecond = pixels,
     },
     getters: {
+        projectFileName: state => path.basename(state.projectFilePath),
         scale: state => {
             switch (true) {
                 case state.windowWidth > 1100:
