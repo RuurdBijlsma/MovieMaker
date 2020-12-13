@@ -76,6 +76,8 @@ export default {
             if (files.length === 1 && Utils.isProjectFile(files[0].path)) {
                 console.log("IMPORT PROJECT");
 
+                if (!(await this.discardChangesPrompt()))
+                    return;
                 this.$store.commit('importProjectLoading', true);
                 await this.importProjectByPath(files[0].path);
                 this.$store.commit('importProjectLoading', false);
@@ -90,7 +92,7 @@ export default {
 
             }
         },
-        ...mapActions(['promptVideoInput', 'redo', 'undo', 'importVideo', 'importProjectByPath']),
+        ...mapActions(['promptVideoInput', 'redo', 'undo', 'importVideo', 'importProjectByPath', 'discardChangesPrompt']),
     },
     computed: {
         ...mapGetters(['canRedo', 'canUndo', 'scale']),

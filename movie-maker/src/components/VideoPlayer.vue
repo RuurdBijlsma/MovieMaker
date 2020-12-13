@@ -78,6 +78,11 @@ export default {
         timeInterval: -1,
         prevVolume: 1,
     }),
+    beforeDestroy() {
+        clearInterval(this.timeInterval);
+        window.removeEventListener('resize', this.windowResize);
+        this.$store.commit('videosContainer', null);
+    },
     mounted() {
         this.$store.commit('videosContainer', this.$refs.videosContainer);
         this.windowResize();
@@ -107,10 +112,6 @@ export default {
                     gainNode.gain.value = updatedGain;
             }
         }, 1000 / 60);
-    },
-    beforeDestroy() {
-        clearInterval(this.timeInterval);
-        window.removeEventListener('resize', this.windowResize);
     },
     methods: {
         toggleMute() {

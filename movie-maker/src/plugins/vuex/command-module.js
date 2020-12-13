@@ -6,8 +6,10 @@ export default {
         //Stack index always points to index of command that would be undone
         stackIndex: -1,
         undoStack: [],
+        hasUnsavedAction: false,
     },
     mutations: {
+        hasUnsavedAction: (state, value) => state.hasUnsavedAction = value,
         stackIndex: (state, index) => state.stackIndex = index,
         undoStack: (state, commands) => state.undoStack = commands,
         resetCommands: state => {
@@ -50,6 +52,12 @@ export default {
         hasProject: state => state.undoStack.length > 0,
     },
     actions: {
+        async discardChangesPrompt({dispatch, state}) {
+            if (state.hasUnsavedAction) {
+                return await dispatch('showPrompt', {});
+            }
+            return true;
+        },
         exportProject({state}) {
             let commands = JSON.parse(JSON.stringify(state.undoStack));
             commands.forEach(c => delete c.batchOn);
@@ -74,18 +82,23 @@ export default {
             console.log("export projectString", result);
             return JSON.stringify(result);
         },
-        newProject({commit}, overwriteFilePath = true) {
+        async newProject({commit, state, dispatch}, overwriteFilePath = true) {
+            if (await dispatch('discardChangesPrompt'))
+                dispatch('clearProject', overwriteFilePath);
+        },
+        clearProject({commit, state}, overwriteFilePath = true) {
             commit('activeFragment', null);
             commit('resetCommands');
             commit('timeline', []);
             commit('progress', 0);
+            commit('hasUnsavedAction', false);
             if (overwriteFilePath)
                 commit('projectFilePath', '');
             commit('videosContainer', null);
         },
         async importProject({dispatch, commit, state}, projectString) {
             commit('importProjectLoading', true);
-            await dispatch('newProject', false);
+            await dispatch('clearProject', false);
             let {videos, fragments, index, commands} = JSON.parse(projectString);
             let videoFiles = await Promise.all(videos.map(v => dispatch('loadMetadata', v)));
             const recreateFragment = f => VideoFragment.fromObject(
@@ -108,8 +121,10 @@ export default {
                 dispatch('redo');
             }
             commit('importProjectLoading', false);
+            commit('hasUnsavedAction', false);
         },
         executeCommand({commit, dispatch}, command) {
+            commit('hasUnsavedAction', true);
             commit('addCommand', command);
             command.execute();
             dispatch('printUndoStack');

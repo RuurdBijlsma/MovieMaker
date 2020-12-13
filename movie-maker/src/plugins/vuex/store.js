@@ -59,7 +59,10 @@ export default new Vuex.Store({
         importProjectLoading: (state, value) => state.loading.projectImport = value,
         videosContainer: (state, container) => {
             state.videosContainer = container;
-            state.videoFiles.forEach(v => v.container = container);
+            state.videoFiles.forEach(v => {
+                v.container = container;
+                v._elCache = null;
+            });
         },
         addSnackObject: (state, snack) => state.snackbars.push(snack),
         removeSnack: (state, snack) => state.snackbars.splice(state.snackbars.indexOf(snack), 1),
@@ -195,10 +198,12 @@ export default new Vuex.Store({
             await dispatch("initializeAuth");
         },
         undo({commit, dispatch}) {
+            commit('hasUnsavedAction', true);
             commit('undoCommand');
             dispatch('printUndoStack');
         },
         redo({commit, dispatch}) {
+            commit('hasUnsavedAction', true);
             commit('redoCommand');
             dispatch('printUndoStack');
         },

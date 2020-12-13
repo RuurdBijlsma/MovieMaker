@@ -211,7 +211,7 @@ export default {
         playerWidth() {
             this.windowResize();
         },
-        fullscreen(){
+        fullscreen() {
             this.windowResize();
         },
         activeFragment() {
@@ -285,7 +285,7 @@ export default {
     display: inline-block;
     margin-bottom: 10px;
     padding: 10px;
-    border-radius: calc(var(--border-radius) * 1.5);
+    border-radius: calc(var(--border-radius) * 2);
     cursor: pointer;
     box-shadow: inset 0 0px 0px 0 #5b5b5b;
     transition: box-shadow 0.3s;
@@ -322,9 +322,22 @@ export default {
 }
 
 .active {
-    box-shadow: inset 0 -4px 10px 0 #5b5b5b;
+    /*box-shadow: inset 0 -4px 10px 0 #5b5b5b;*/
     /*box-shadow: inset 0 -8px 15px -5px var(--secondary);*/
     /*box-shadow: inset 0 -8px 15px -5px #5b5b5b;*/
+    box-shadow: inset 0 0 0 2px var(--softer-background);
+}
+
+.continues-right.active {
+    clip-path: inset(0px 5px 0px 0px);
+}
+
+.continues-left.active {
+    clip-path: inset(0px 0px 0px 5px);
+}
+
+.continues-left.continues-right.active {
+    clip-path: inset(0px 5px 0px 5px);
 }
 
 .continues-right .fragment-background, .continues-right .audio-wave, .continues-right.fragment {

@@ -1,5 +1,5 @@
 <template>
-    <v-sheet class="header" color="secondary">
+    <div class="header">
         <div class="left-content">
             <div class="logo mr-4">
                 <div class="logo-icon" :style="{backgroundImage: `url(img/favicon.png)`}"></div>
@@ -48,12 +48,34 @@
             <span class="caption" v-if="projectFileName !== ''">
                 <span>{{ projectFileName.split('.')[0] }}</span>
                 <span class="grey-file">.{{ projectFileName.split('.')[1] }}</span>
+                <span class="unsaved" v-if="hasUnsavedAction">*</span>
             </span>
         </div>
         <div class="right-content">
-            <v-tooltip bottom v-if="hasProject">
+            <v-menu open-on-hover close-delay="200" v-if="hasProject && projectFileName !== ''">
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="saveProjectAs" v-bind="attrs" v-on="on">
+                    <v-btn class="no-drag" icon v-bind="attrs" v-on="on">
+                        <v-icon>mdi-content-save-outline</v-icon>
+                    </v-btn>
+                </template>
+                <v-list dense>
+                    <v-list-item @click="saveProject">
+                        <v-list-item-icon>
+                            <v-icon>mdi-content-save-outline</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Save</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="saveProjectAs">
+                        <v-list-item-icon>
+                            <v-icon>mdi-plus</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Save as...</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+            <v-tooltip bottom v-else-if="hasProject">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn @click="saveProject" class="no-drag" icon v-bind="attrs" v-on="on">
                         <v-icon>mdi-content-save-outline</v-icon>
                     </v-btn>
                 </template>
@@ -112,7 +134,7 @@
                 <v-icon>mdi-close</v-icon>
             </v-btn>
         </div>
-    </v-sheet>
+    </div>
 </template>
 
 <script>
@@ -130,7 +152,7 @@ export default {
     methods: {
         ...mapActions([
             'promptVideoInput', 'exportToYouTube', 'exportVideo', 'secureClose',
-            'promptProjectInput', 'saveProjectAs', 'newProject',
+            'promptProjectInput', 'saveProjectAs', 'newProject', 'saveProject',
         ]),
     },
     watch: {
@@ -144,6 +166,7 @@ export default {
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
             importProjectLoading: state => state.loading.projectImport,
+            hasUnsavedAction: state => state.command.hasUnsavedAction,
         }),
     },
 }
@@ -194,6 +217,10 @@ export default {
 
 .grey-file {
     opacity: 0.7;
+}
+
+.unsaved{
+    color: var(--primary);
 }
 
 .fragment-controls {

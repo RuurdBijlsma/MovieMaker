@@ -1,7 +1,7 @@
 <template>
     <v-app class="app" :style="cssProps">
 
-        <v-app-bar color="secondary" app elevation="0">
+        <v-app-bar app elevation="1">
             <custom-header></custom-header>
         </v-app-bar>
 
@@ -9,22 +9,7 @@
             <router-view class="router-view"></router-view>
         </v-main>
 
-        <v-dialog v-model="$store.state.electron.showClosePrompt" width="500">
-            <v-card>
-                <v-card-title> Are you sure you want to close?</v-card-title>
-                <v-card-text>There may be unsaved changes!</v-card-text>
-                <v-divider></v-divider>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn text @click="$store.commit('showClosePrompt', false)">
-                        Cancel
-                    </v-btn>
-                    <v-btn color="error" text @click="closeWindow">
-                        Close
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
+        <custom-dialog></custom-dialog>
 
         <v-snackbar v-for="snack in $store.state.snackbars" app v-model="snack.open" :timeout="snack.timeout"
                     :outlined="!$vuetify.theme.dark" color="primary">
@@ -44,18 +29,17 @@
 // ffmpeg output video
 // youtube output video
 
-// clear temp folder on close
-// add regular save (show menu on top left icon when 2 options are available) (save as/ save)
-// remember if there is unsaved stuff and indicate with star next to name in toolbar
-// check if user wants to save before clearing anything (new project, import project, closing the app)
-// does video element still work (not frozen) after coming back from settings?
-// TODO: ^^^^ IT DOES FREEZE, PROBABLY CHANGE SETTINGS TO DIALOG??????? HOW ELSE???
 
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
-// todo bug: memory pls
 // when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// does video element still work (not frozen) after coming back from settings?
+// check if user wants to save before clearing anything (new project, import project, closing the app)
+// remember if there is unsaved stuff and indicate with star next to name in toolbar
+// make dialog prompt into action somewhere for ease
+// add regular save (show menu on top left icon when 2 options are available) (save as/ save)
+// clear temp folder on close
 // new project button
 // during project importing dont allow user to import video
 // save project to file? maybe
@@ -107,10 +91,11 @@ import electron from "electron";
 import contextMenu from "electron-context-menu";
 import path from 'path'
 import Utils from "@/js/Utils";
+import CustomDialog from "@/components/CustomDialog";
 
 export default {
     name: 'App',
-    components: {VideoInfoFooter, CustomHeader},
+    components: {CustomDialog, VideoInfoFooter, CustomHeader},
     data: () => ({
         disposeContextMenu: null,
     }),
@@ -292,12 +277,12 @@ export default {
                     break;
             }
         },
-        ...mapActions(['addSnack', 'initialize', 'closeWindow',
+        ...mapActions(['addSnack', 'initialize',
             'split', 'setStartPoint', 'setEndPoint', 'importVideo',
             'removeFragment', 'redo', 'undo', 'promptVideoInput',
             'exportVideo', 'play', 'pause', 'seek', 'importProjectByPath',
             'skipFrames', 'shiftFragment', 'setVolume', 'setPlaybackRate',
-            'newProject', 'promptProjectInput', 'saveProjectAs','saveProject'
+            'newProject', 'promptProjectInput', 'saveProjectAs', 'saveProject'
         ])
     },
     computed: {
@@ -308,6 +293,7 @@ export default {
                 '--foreground': this.themeColors.foreground,
                 '--soft-foreground': this.themeColors.softForeground,
                 '--soft-background': this.themeColors.softBackground,
+                '--softer-background': this.themeColors.softerBackground,
                 '--secondary': this.themeColors.secondary,
             }
         },
@@ -317,7 +303,7 @@ export default {
             showContextMenu: state => state.showContextMenu,
             playing: state => state.player.playing,
             fullscreen: state => state.player.fullscreen,
-        })
+        }),
     }
 };
 </script>

@@ -1,6 +1,6 @@
 <template>
     <div class="edit-container">
-        <v-sheet class="edit-buttons">
+        <v-sheet class="edit-buttons" color="softBackground">
             <div class="flow-buttons">
                 <v-btn :disabled="!canCut" small rounded text @click="split">
                     <span class="button-caption button-layout">Split</span>

@@ -1,21 +1,63 @@
 import electron, {remote} from 'electron'
 import path from 'path';
-import fs from "fs";
+import ofs from 'fs';
+import Directories from "@/js/Directories";
 
+const fs = ofs.promises;
 const currentWindow = remote.getCurrentWindow();
 
 export default {
     state: {
-        type: 'electron',
-        showClosePrompt: false,
+        prompt: {
+            show: false,
+            title: '',
+            subtitle: '',
+            cancelText: '',
+            confirmText: '',
+            onConfirm: () => 0,
+            onCancel: () => 0,
+        },
     },
     mutations: {
-        showClosePrompt: (state, value) => state.showClosePrompt = value,
+        hidePrompt: state => state.prompt.show = false,
+        showPrompt: (state, {
+            title = 'Are you sure?',
+            subtitle = 'There may be unsaved changes',
+            cancelText = 'Cancel',
+            confirmText = 'Confirm',
+            onConfirm = () => 0,
+            onCancel = () => 0,
+        }) => {
+            state.prompt.show = true;
+            state.prompt.title = title;
+            state.prompt.subtitle = subtitle;
+            state.prompt.cancelText = cancelText;
+            state.prompt.confirmText = confirmText;
+            state.prompt.onConfirm = onConfirm;
+            state.prompt.onCancel = onCancel;
+        },
     },
     getters: {},
     actions: {
+        async showPrompt({commit}, {
+            title = 'Are you sure?',
+            subtitle = 'This will discard all unsaved changes',
+            cancelText = 'Cancel',
+            confirmText = 'Confirm',
+        }) {
+            return new Promise((resolve => {
+                commit('showPrompt', {
+                    title,
+                    subtitle,
+                    cancelText,
+                    confirmText,
+                    onConfirm: () => resolve(true),
+                    onCancel: () => resolve(false),
+                })
+            }));
+        },
         async promptVideoInput({dispatch, commit}) {
-            let defaultPath = remote.app.getPath('videos');
+            let defaultPath = Directories.videos;
             let {canceled, filePaths} = await remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
                 title: "Import video",
                 defaultPath,
@@ -32,17 +74,18 @@ export default {
             }
         },
         async importProjectByPath({dispatch, commit}, filePath) {
-            fs.readFile(filePath, (err, data) => {
-                if (err) {
-                    dispatch("addSnack", {text: "Could not open project"});
-                    return;
-                }
+            try {
+                let data = await fs.readFile(filePath);
                 commit('projectFilePath', filePath);
                 dispatch('importProject', data);
-            });
+            } catch (e) {
+                dispatch("addSnack", {text: "Could not open project"});
+            }
         },
         async promptProjectInput({dispatch}) {
-            let defaultPath = remote.app.getPath('videos');
+            if (!(await dispatch('discardChangesPrompt')))
+                return;
+            let defaultPath = Directories.videos;
             let {canceled, filePaths} = await remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
                 title: "Open project",
                 defaultPath,
@@ -58,15 +101,15 @@ export default {
                 return;
             console.log("Saving project to file", filePath);
             let project = await dispatch('exportProject');
-            fs.writeFile(filePath, project, err => {
-                if (err) {
-                    console.warn("save file err", err);
-                    dispatch("addSnack", {text: "Could not save project"}).then();
-                    return;
-                }
+            try {
+                await fs.writeFile(filePath, project);
                 commit('projectFilePath', filePath);
+                commit('hasUnsavedAction', false);
                 dispatch("addSnack", {text: "Project saved!"}).then();
-            });
+            } catch (e) {
+                console.warn("save file err", e);
+                dispatch("addSnack", {text: "Could not save project"}).then();
+            }
         },
         async saveProject({rootState, dispatch}) {
             if (rootState.projectFilePath !== '') {
@@ -76,7 +119,7 @@ export default {
             }
         },
         async saveProjectAs({dispatch}) {
-            let defaultPath = remote.app.getPath('videos');
+            let defaultPath = Directories.videos;
             let {canceled, filePath} = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
                 title: "Save project as...",
                 defaultPath,
@@ -86,10 +129,24 @@ export default {
                 await dispatch('saveProjectToFile', filePath);
             }
         },
-        secureClose({commit, rootState, dispatch}) {
-            if (rootState.timeline.length > 0) {
+        async clearDirectory({dispatch}, directory) {
+            try {
+                let files = await fs.readdir(directory);
+                await Promise.all(
+                    files.map(f => fs.unlink(path.join(directory, f)))
+                );
+            } catch (e) {
+            }
+        },
+        async secureClose({commit, rootState, dispatch}) {
+            if (rootState.command.hasUnsavedAction) {
                 currentWindow.focus();
-                commit('showClosePrompt', true);
+                commit('showPrompt', {
+                    title: 'Are you sure you want to close?',
+                    subtitle: 'You may have unsaved changes',
+                    confirmText: 'Close',
+                    onConfirm: () => dispatch('closeWindow'),
+                });
             } else {
                 dispatch('closeWindow');
             }
@@ -102,10 +159,11 @@ export default {
                 require('child_process').exec('start "" "' + folder + '"');
             }
         },
-        openDevTools: async ({}) => {
+        async openDevTools({}) {
             currentWindow.openDevTools();
         },
-        closeWindow: async ({}) => {
+        async closeWindow({dispatch}) {
+            await dispatch('clearDirectory', Directories.temp);
             console.log("Sent quit event");
             electron.ipcRenderer.send('quit');
         },

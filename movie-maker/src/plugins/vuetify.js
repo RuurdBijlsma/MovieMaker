@@ -16,6 +16,7 @@ export default new Vuetify({
                 foreground: '#ffffff',
                 softForeground: '#d6d6d6',
                 softBackground: '#212122',
+                softerBackground: '#393939',
                 secondary: localStorage.getItem('secondaryColor') ?? '#5f46ff',
             },
             light: {
@@ -23,6 +24,7 @@ export default new Vuetify({
                 foreground: '#17181a',
                 softForeground: '#353535',
                 softBackground: '#f1efef',
+                softerBackground: '#cdcdcd',
                 secondary: localStorage.getItem('secondaryColor') ?? '#7e6de5',
             },
         },
