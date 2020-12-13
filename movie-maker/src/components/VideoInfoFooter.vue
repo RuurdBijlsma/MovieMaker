@@ -10,7 +10,7 @@
         </div>
         <v-slider hide-details
                   class="zoom-slider"
-                  @click:prepend="rawWps = 2.2"
+                  @click:prepend="rawWps = 2.85"
                   dense
                   min="0.1"
                   @wheel.native="wheel"
@@ -52,7 +52,7 @@ export default {
     },
     watch: {
         rawWps() {
-            let centerValue = 2;
+            let centerValue = 2.85;
             let wps = this.rawWps;
             if (wps > centerValue)
                 wps = centerValue + (wps - centerValue) * 5;

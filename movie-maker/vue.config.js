@@ -7,17 +7,29 @@ module.exports = {
             "builderOptions": {
                 "appId": "dev.ruurd.moviemaker",
                 "productName": "Ruurd Movie Maker",
-                "fileAssociations": {
-                    "ext": [
-                        "mp4",
-                        "webm",
-                        "ogg"
-                    ],
-                    "name": "Edit video",
-                    "description": "Edit video with Ruurd Movie Maker.",
-                    "icon": "open.ico",
-                    "role": "Editor"
-                },
+                "fileAssociations": [
+                    {
+                        "ext": [
+                            "mp4",
+                            "webm",
+                            "ogg"
+                        ],
+                        "name": "Edit video",
+                        "description": "Edit video with Ruurd Movie Maker.",
+                        "icon": "open.ico",
+                        "role": "Editor"
+                    },
+                    {
+                        "ext": [
+                            "rmm",
+                            "RMM",
+                        ],
+                        "name": "Open project",
+                        "description": "Open project file with Ruurd Movie Maker.",
+                        "icon": "open.ico",
+                        "role": "Editor"
+                    },
+                ],
             },
         }
     },

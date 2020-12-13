@@ -1,6 +1,11 @@
 import path from 'path';
 
 export default class Utils {
+    static isProjectFile(filePath) {
+        let ext = path.extname(filePath);
+        return ext === '.rmm' || ext === '.RMM';
+    }
+
     static readableBytes(bytes, si = false, dp = 1) {
         const thresh = si ? 1000 : 1024;
 

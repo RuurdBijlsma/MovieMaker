@@ -5,6 +5,7 @@ import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import path from 'path'
 import * as Splashscreen from "@trodi/electron-splashscreen";
+import Utils from "@/js/Utils";
 
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -79,13 +80,21 @@ function createWindow() {
         if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
         openFiles = process.argv.slice(1);
+        let query = '?file=';
+        if (openFiles.length === 1 && Utils.isProjectFile(openFiles[0])) {
+            query += 'project';
+        } else if (openFiles.length === 0) {
+            query += 'none';
+        } else {
+            query += 'video';
+        }
 
         // win.webContents.openDevTools()
 
         createProtocol('app')
         // Load the index.html when not in development
         let url = 'app://./index.html';
-        win.loadURL(url + `?file=${openFiles.length > 0}`)
+        win.loadURL(url + query)
         // win.webContents.openDevTools()
     }
 

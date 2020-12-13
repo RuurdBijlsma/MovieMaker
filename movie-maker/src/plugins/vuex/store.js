@@ -22,6 +22,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         windowWidth: window.innerWidth,
+        projectFileName: '',
         snackbars: [],
         timeline: [],
         videosContainer: null,
@@ -30,22 +31,28 @@ export default new Vuex.Store({
         activeFragment: null,
         loading: {
             videoImport: false,
+            projectImport: false,
         },
         configTimeline: {
             minFragmentWidth: 120,
-            widthPerSecond: +(localStorage.getItem('widthPerSecond') ?? 2.9),
+            widthPerSecond: +(localStorage.getItem('widthPerSecond') ?? 2.85),
         },
         player: {
             widthPercent: +(localStorage.getItem('playerWidth') ?? 0.5),
             progress: 0,
             volume: +(localStorage.getItem('playerVolume') ?? 1),
             playing: false,
+            fullscreen: false,
         },
     },
     mutations: {
+        timeline: (state, fragments) => state.timeline = fragments,
+        projectFileName: (state, name) => state.projectFileName = name,
+        fullscreen: (state, value) => state.player.fullscreen = value,
         showContextMenu: (state, value) => state.showContextMenu = value,
         windowWidth: (state, value) => state.windowWidth = value,
         importVideoLoading: (state, value) => state.loading.videoImport = value,
+        importProjectLoading: (state, value) => state.loading.projectImport = value,
         videosContainer: (state, container) => {
             state.videosContainer = container;
             state.videoFiles.forEach(v => v.container = container);
@@ -175,7 +182,7 @@ export default new Vuex.Store({
             let v = getters.fragmentAtProgress(progress)?.fragmentProgress;
             return v > 0 && v < 1;
         },
-        canCut: (state, getters) => getters.computedProgress.fragmentProgress > 0 && getters.computedProgress.fragmentProgress < 1,
+        canCut: (state, getters) => getters.computedProgress?.fragmentProgress > 0 && getters.computedProgress?.fragmentProgress < 1,
     },
     actions: {
         async initialize({dispatch}) {
@@ -275,18 +282,6 @@ export default new Vuex.Store({
         },
         pause({state}) {
             state.activeFragment.video.element.pause();
-        },
-        promptVideoInput({dispatch, commit}) {
-            let element = document.createElement('input');
-            element.setAttribute('type', 'file');
-            element.setAttribute('accept', 'video/*');
-            element.setAttribute('multiple', '');
-            element.click();
-            element.onchange = async () => {
-                commit('importVideoLoading', true);
-                await Promise.all([...element.files].map(f => dispatch('importVideo', f.path)));
-                commit('importVideoLoading', false);
-            }
         },
         exportVideo({}) {
 

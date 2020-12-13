@@ -54,6 +54,8 @@ export default class VideoFile extends EventEmitter {
             return null;
         if (this._elCache === null) {
             let el = [...this.container.children].find(c => c.getAttribute('id') === this.filePath);
+            if (el === undefined)
+                return null;
             this.source = VideoFile.audioContext.createMediaElementSource(el);
             if (this.gainNode)
                 this.gainNode.disconnect();
@@ -109,6 +111,10 @@ export default class VideoFile extends EventEmitter {
 
     get duration() {
         return this.probe.format.duration;
+    }
+
+    toJSON() {
+        return this.filePath;
     }
 }
 VideoFile.ffmpegPath = 'ffmpeg';

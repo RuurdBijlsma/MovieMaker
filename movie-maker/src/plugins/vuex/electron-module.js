@@ -1,5 +1,6 @@
 import electron, {remote} from 'electron'
 import path from 'path';
+import fs from "fs";
 
 const currentWindow = remote.getCurrentWindow();
 
@@ -13,6 +14,69 @@ export default {
     },
     getters: {},
     actions: {
+        async promptVideoInput({dispatch, commit}) {
+            let defaultPath = remote.app.getPath('videos');
+            let {canceled, filePaths} = await remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
+                title: "Import video",
+                defaultPath,
+                filters: [
+                    {name: "Videos", extensions: ['mp4', 'ogg', 'webm']},
+                    {name: "All Files", extensions: ['*']},
+                ],
+                properties: ['openFile', 'multiSelections'],
+            });
+            if (!canceled) {
+                commit('importVideoLoading', true);
+                await Promise.all(filePaths.map(f => dispatch('importVideo', f)));
+                commit('importVideoLoading', false);
+            }
+        },
+        async importProjectByPath({dispatch, commit}, filePath) {
+            fs.readFile(filePath, (err, data) => {
+                if (err) {
+                    dispatch("addSnack", {text: "Could not open project"});
+                    return;
+                }
+                let fileName = path.basename(filePath);
+                commit('projectFileName', fileName);
+                dispatch('importProject', data);
+            });
+        },
+        async promptProjectInput({dispatch}) {
+            let defaultPath = remote.app.getPath('videos');
+            let {canceled, filePaths} = await remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
+                title: "Open project",
+                defaultPath,
+                filters: [{name: "Ruurd Movie Maker Project", extensions: ["rmm"]}],
+                properties: ["openFile"],
+            });
+            if (!canceled) {
+                dispatch('importProjectByPath', filePaths[0]);
+            }
+        },
+        async saveProjectAs({dispatch, getters, commit}) {
+            if (!getters.hasProject)
+                return;
+            let defaultPath = remote.app.getPath('videos');
+            let {canceled, filePath} = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
+                title: "Save project as...",
+                defaultPath,
+                filters: [{name: "Ruurd Movie Maker Project", extensions: ["rmm"]}],
+            });
+            if (!canceled) {
+                let project = await dispatch('exportProject');
+                fs.writeFile(filePath, project, err => {
+                    if (err) {
+                        console.warn("save file err", err);
+                        dispatch("addSnack", {text: "Could not save project"}).then();
+                        return;
+                    }
+                    let fileName = path.basename(filePath);
+                    commit('projectFileName', fileName);
+                    dispatch("addSnack", {text: "Project saved!"}).then();
+                });
+            }
+        },
         secureClose({commit, rootState, dispatch}) {
             if (rootState.timeline.length > 0) {
                 currentWindow.focus();

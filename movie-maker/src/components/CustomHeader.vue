@@ -1,12 +1,43 @@
 <template>
     <v-sheet class="header" color="secondary">
         <div class="left-content">
-            <div class="logo">
+            <div class="logo mr-4">
                 <div class="logo-icon" :style="{backgroundImage: `url(img/favicon.png)`}"></div>
             </div>
+            <v-tooltip bottom v-if="hasProject">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn :disabled="importVideoLoading || importProjectLoading"
+                           class="no-drag"
+                           icon
+                           @click="newProject"
+                           v-bind="attrs" v-on="on">
+                        <v-icon>mdi-file-outline</v-icon>
+                    </v-btn>
+                </template>
+                <span>New project</span>
+            </v-tooltip>
             <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn :loading="importVideoLoading" class="no-drag" icon @click="promptVideoInput" v-bind="attrs" v-on="on">
+                    <v-btn :loading="importProjectLoading"
+                           :disabled="importVideoLoading"
+                           class="no-drag"
+                           icon
+                           @click="promptProjectInput"
+                           v-bind="attrs" v-on="on">
+                        <v-icon>mdi-movie-open-outline</v-icon>
+                    </v-btn>
+                </template>
+                <span>Open project</span>
+            </v-tooltip>
+            <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn :disabled="importProjectLoading"
+                           :loading="importVideoLoading"
+                           class="no-drag"
+                           icon
+                           @click="promptVideoInput"
+                           v-bind="attrs"
+                           v-on="on">
                         <v-icon>mdi-import</v-icon>
                     </v-btn>
                 </template>
@@ -14,11 +45,21 @@
             </v-tooltip>
         </div>
         <div class="center-content">
-            <div v-if="activeFragment" class="fragment-controls">
-            </div>
+            <span class="caption" v-if="projectFileName !== ''">
+                <span>{{ projectFileName.split('.')[0] }}</span>
+                <span class="grey-file">.{{ projectFileName.split('.')[1] }}</span>
+            </span>
         </div>
         <div class="right-content">
-            <v-tooltip bottom>
+            <v-tooltip bottom v-if="hasProject">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn class="no-drag" icon @click="saveProjectAs" v-bind="attrs" v-on="on">
+                        <v-icon>mdi-content-save-outline</v-icon>
+                    </v-btn>
+                </template>
+                <span>Save project</span>
+            </v-tooltip>
+            <v-tooltip bottom v-if="hasProject">
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn class="no-drag" icon @click="exportVideo" v-bind="attrs" v-on="on">
                         <v-icon>mdi-export</v-icon>
@@ -26,9 +67,9 @@
                 </template>
                 <span>Export video</span>
             </v-tooltip>
-            <v-tooltip bottom>
+            <v-tooltip bottom v-if="hasProject">
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="exportToYouTube" v-bind="attrs" v-on="on">
+                    <v-btn class="no-drag mr-8" icon @click="exportToYouTube" v-bind="attrs" v-on="on">
                         <v-icon>mdi-youtube</v-icon>
                     </v-btn>
                 </template>
@@ -75,7 +116,7 @@
 </template>
 
 <script>
-import {mapActions, mapState} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import VolumeSlider from "@/components/VolumeSlider";
 import PlaybackRateSlider from "@/components/PlaybackRateSlider";
 
@@ -87,7 +128,10 @@ export default {
 
     },
     methods: {
-        ...mapActions(['promptVideoInput', 'exportToYouTube', 'exportVideo', 'secureClose']),
+        ...mapActions([
+            'promptVideoInput', 'exportToYouTube', 'exportVideo', 'secureClose',
+            'promptProjectInput', 'saveProjectAs', 'newProject',
+        ]),
     },
     watch: {
         '$vuetify.theme.dark'() {
@@ -95,9 +139,12 @@ export default {
         },
     },
     computed: {
+        ...mapGetters(['hasProject']),
         ...mapState({
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
+            importProjectLoading: state => state.loading.projectImport,
+            projectFileName: state => state.projectFileName,
         }),
     },
 }
@@ -109,8 +156,8 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width:100%;
-    height:100%;
+    width: 100%;
+    height: 100%;
     padding: 0 1em;
 }
 
@@ -138,6 +185,12 @@ export default {
 
 .center-content {
     flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.grey-file {
+    opacity: 0.7;
 }
 
 .fragment-controls {

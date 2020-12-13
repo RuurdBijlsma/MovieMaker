@@ -1,5 +1,5 @@
 export default class Command {
-    constructor(name = this.constructor.name, batchOn = false) {
+    constructor(name, batchOn = false) {
         this.batchOn = batchOn;
         this.name = name;
     }

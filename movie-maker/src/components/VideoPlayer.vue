@@ -13,7 +13,7 @@
                    }"
             ></video>
         </div>
-        <div class="controls">
+        <div class="controls" :class="{fullscreen}">
             <div class="time-control" v-if="videoFiles.length > 0"
                  :style="{pointerEvents: activeFragment.video.canPlay ? 'all' : 'none'}">
                 <seek-bar class="seek-bar"></seek-bar>
@@ -57,7 +57,7 @@
                 </div>
                 <v-spacer></v-spacer>
                 <div class="right-controls">
-                    <v-btn icon>
+                    <v-btn icon @click="toggleFullScreen">
                         <v-icon>mdi-fullscreen</v-icon>
                     </v-btn>
                 </div>
@@ -121,6 +121,13 @@ export default {
                 this.$store.commit('playerVolume', this.prevVolume);
             }
         },
+        toggleFullScreen() {
+            if (this.fullscreen) {
+                this.$store.commit('fullscreen', false);
+            } else {
+                this.$store.commit('fullscreen', true);
+            }
+        },
         canPlay(e) {
             let video = this.videoFiles.find(v => v.filePath === e.target.getAttribute('id'));
             if (video)
@@ -135,9 +142,25 @@ export default {
         windowResize() {
             this.bounds = this.$refs.player.$el.getBoundingClientRect();
         },
-        ...mapActions(['play', 'pause', 'playNextFragment', 'skipFrames'])
+        ...mapActions(['play', 'pause', 'playNextFragment', 'skipFrames', 'addSnack'])
     },
     watch: {
+        async fullscreen() {
+            if (this.fullscreen) {
+                try {
+                    await this.$refs.player.$el.requestFullscreen();
+                } catch (e) {
+                    this.addSnack({text: "Full screen failed"}).then();
+                }
+            } else {
+                try {
+                    await document.exitFullscreen();
+                } catch (e) {
+                    this.addSnack({text: "Exiting full screen failed"}).then();
+                }
+            }
+            this.windowResize();
+        },
         playerVolume() {
             localStorage.playerVolume = this.playerVolume;
         },
@@ -187,6 +210,7 @@ export default {
             timeline: state => state.timeline,
             playerWidth: state => state.player.widthPercent,
             playerVolume: state => state.player.volume,
+            fullscreen: state => state.player.fullscreen,
         }),
     },
 }
@@ -205,9 +229,17 @@ export default {
 }
 
 .controls {
-    margin: 20px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
+}
+
+.controls.fullscreen {
+    position: fixed;
+    width: 100%;
+    z-index: 4;
+    bottom: 0;
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 150%);
 }
 
 .time-control {

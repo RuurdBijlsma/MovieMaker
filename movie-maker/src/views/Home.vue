@@ -9,7 +9,10 @@
                     </v-icon>
                     <h1>Import a video to start</h1>
                     <p>Drag a video here or click the import videos button</p>
-                    <v-btn :loading="importVideoLoading" @click="promptVideoInput" color="primary" rounded>
+                    <v-btn :disabled="importProjectLoading"
+                           :loading="importVideoLoading"
+                           @click="promptVideoInput"
+                           color="primary" rounded>
                         Import videos
                     </v-btn>
                     <div class="undo-redo mt-3">
@@ -39,6 +42,8 @@ import {mapActions, mapGetters, mapState} from "vuex";
 import Editor from "@/components/Editor";
 import History from "@/components/History";
 import VideoInfoFooter from "@/components/VideoInfoFooter";
+import path from 'path'
+import Utils from "@/js/Utils";
 
 export default {
     name: "Home",
@@ -67,14 +72,25 @@ export default {
         async drop(e) {
             e.preventDefault();
             this.fileHover = false;
-            console.log('drop', e.dataTransfer.files[0].path);
-            this.$store.commit('importVideoLoading', true);
-            await Promise.all(
-                [...e.dataTransfer.files].map(f => this.$store.dispatch('importVideo', f.path))
-            );
-            this.$store.commit('importVideoLoading', false);
+            let files = e.dataTransfer.files;
+            if (files.length === 1 && Utils.isProjectFile(files[0].path)) {
+                console.log("IMPORT PROJECT");
+
+                this.$store.commit('importProjectLoading', true);
+                await this.importProjectByPath(files[0].path);
+                this.$store.commit('importProjectLoading', false);
+
+            } else {
+
+                this.$store.commit('importVideoLoading', true);
+                await Promise.all(
+                    [...e.dataTransfer.files].map(f => this.importVideo(f.path))
+                );
+                this.$store.commit('importVideoLoading', false);
+
+            }
         },
-        ...mapActions(['promptVideoInput', 'redo', 'undo']),
+        ...mapActions(['promptVideoInput', 'redo', 'undo', 'importVideo', 'importProjectByPath']),
     },
     computed: {
         ...mapGetters(['canRedo', 'canUndo', 'scale']),
@@ -82,6 +98,7 @@ export default {
             undoStack: state => state.command.undoStack,
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
+            importProjectLoading: state => state.loading.projectImport,
             windowWidth: state => state.windowWidth,
         }),
     },

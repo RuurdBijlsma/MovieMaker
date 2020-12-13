@@ -18,7 +18,7 @@
                     <div class="fragment-background"
                          :style="{
                 backgroundImage: `url(${fragment.screenshots.merged})`,
-                backgroundPositionX: (-1 * fragment.leftPixels) + 'px'
+                backgroundPositionX: (-1 * (fragment.startPixel + fragment.leftPixels)) + 'px'
             }"></div>
                     <canvas class="audio-wave" ref="audioCanvases"></canvas>
                 </div>
@@ -211,6 +211,9 @@ export default {
         playerWidth() {
             this.windowResize();
         },
+        fullscreen(){
+            this.windowResize();
+        },
         activeFragment() {
             requestAnimationFrame(() => this.calculateSeekPosition());
         },
@@ -240,6 +243,7 @@ export default {
         fragments() {
             return this.timeline.map(fragment => {
                 const pixelWidth = Math.max(fragment.adjustedDuration * this.widthPerSecond, this.minFragmentWidth);
+                const videoWidth = this.widthPerSecond * fragment.video.duration;
                 return {
                     fragment,
                     fullWidth: pixelWidth,
@@ -250,6 +254,7 @@ export default {
                     start: 0,
                     end: 1,
                     leftPixels: 0,
+                    startPixel: fragment.start * videoWidth,
                 };
             });
         },
@@ -261,6 +266,7 @@ export default {
             widthPerSecond: state => state.configTimeline.widthPerSecond,
             progress: state => state.player.progress,
             playerWidth: state => state.player.widthPercent,
+            fullscreen: state => state.player.fullscreen,
         }),
     },
 }

@@ -44,16 +44,24 @@
 // ffmpeg output video
 // youtube output video
 
-// Stop merging images, display them separately
-// save project to file? maybe
-// In build version history list is broken
-// fullscreen keybind + button
+// clear temp folder on close
+// add regular save (show menu on top left icon when 2 options are available) (save as/ save)
+// remember if there is unsaved stuff and indicate with star next to name in toolbar
+// check if user wants to save before clearing anything (new project, import project, closing the app)
+// does video element still work (not frozen) after coming back from settings?
+// TODO: ^^^^ IT DOES FREEZE, PROBABLY CHANGE SETTINGS TO DIALOG??????? HOW ELSE???
 
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // todo bug: memory pls
 // when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// new project button
+// during project importing dont allow user to import video
+// save project to file? maybe
+// Stop merging images, display them separately
+// In build version history list is broken
+// fullscreen keybind + button
 // youtube api key input in settings + yt account in settings + logout
 // key binds
 // context menu
@@ -97,6 +105,8 @@ import CustomHeader from "@/components/CustomHeader";
 import VideoInfoFooter from "@/components/VideoInfoFooter";
 import electron from "electron";
 import contextMenu from "electron-context-menu";
+import path from 'path'
+import Utils from "@/js/Utils";
 
 export default {
     name: 'App',
@@ -105,7 +115,11 @@ export default {
         disposeContextMenu: null,
     }),
     async mounted() {
-        this.$store.commit('importVideoLoading', location.href.includes('file=true'));
+        if (location.search.includes('file=video')) {
+            this.$store.commit('importVideoLoading', true);
+        } else if (location.search.includes('file=project')) {
+            this.$store.commit('importProjectLoading', true);
+        }
         window.addEventListener('resize', this.setWindowWidth, false);
         document.addEventListener('keydown', this.keyListener, false);
 
@@ -118,11 +132,18 @@ export default {
         });
         electron.ipcRenderer.on('open-file', async (e, args) => {
             electron.ipcRenderer.send('received-file');
-            // args = ['C:\\Users\\Ruurd\\Videos\\soep.mp4'];
-            if (args.length > 0) {
+            if (args.length === 1 && Utils.isProjectFile(args[0])) {
+
+                this.$store.commit('importProjectLoading', true);
+                await this.importProjectByPath(args[0]);
+                this.$store.commit('importProjectLoading', false);
+
+            } else if (args.length > 0) {
+
                 this.$store.commit('importVideoLoading', true);
-                await Promise.all(args.map(p => this.$store.dispatch('importVideo', p)));
+                await Promise.all(args.map(p => this.importVideo(p)));
                 this.$store.commit('importVideoLoading', false);
+
             }
         });
 
@@ -135,7 +156,6 @@ export default {
     },
     methods: {
         createContextMenu() {
-            console.log(contextMenu);
             return contextMenu({
                 prepend: () => [
                     {
@@ -171,6 +191,18 @@ export default {
         keyListener(e) {
             console.log(e.key);
             switch (true) {
+                case e.key === 'Escape':
+                    e.preventDefault();
+                    if (this.fullscreen)
+                        this.$store.commit('fullscreen', false);
+                    break;
+                case e.key === 'F11':
+                    e.preventDefault();
+                    if (this.fullscreen)
+                        this.$store.commit('fullscreen', false);
+                    else
+                        this.$store.commit('fullscreen', true);
+                    break;
                 case e.key === ' ':
                     if (this.playing) this.pause();
                     else this.play();
@@ -249,9 +281,9 @@ export default {
             }
         },
         ...mapActions(['addSnack', 'initialize', 'closeWindow',
-            'split', 'setStartPoint', 'setEndPoint',
+            'split', 'setStartPoint', 'setEndPoint', 'importVideo',
             'removeFragment', 'redo', 'undo', 'promptVideoInput',
-            'exportVideo', 'play', 'pause', 'seek',
+            'exportVideo', 'play', 'pause', 'seek', 'importProjectByPath',
             'skipFrames', 'shiftFragment', 'setVolume', 'setPlaybackRate'
         ])
     },
@@ -271,6 +303,7 @@ export default {
             activeFragment: state => state.activeFragment,
             showContextMenu: state => state.showContextMenu,
             playing: state => state.player.playing,
+            fullscreen: state => state.player.fullscreen,
         })
     }
 };
