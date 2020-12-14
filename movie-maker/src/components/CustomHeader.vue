@@ -52,6 +52,24 @@
             </span>
         </div>
         <div class="right-content">
+            <v-tooltip bottom v-if="hasProject">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn class="no-drag" icon
+                           @click="exportVideo('C:\\Users\\Ruurd\\Videos\\exportTest.mp4')"
+                           v-bind="attrs" v-on="on">
+                        <v-icon>mdi-export</v-icon>
+                    </v-btn>
+                </template>
+                <span>Export video</span>
+            </v-tooltip>
+            <v-tooltip bottom v-if="hasProject">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn class="no-drag" icon @click="exportToYouTube" v-bind="attrs" v-on="on">
+                        <v-icon>mdi-youtube</v-icon>
+                    </v-btn>
+                </template>
+                <span>Export video to YouTube</span>
+            </v-tooltip>
             <v-menu open-on-hover close-delay="200" v-if="hasProject && projectFileName !== ''">
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn class="no-drag" icon v-bind="attrs" v-on="on">
@@ -81,25 +99,10 @@
                 </template>
                 <span>Save project</span>
             </v-tooltip>
-            <v-tooltip bottom v-if="hasProject">
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="exportVideo" v-bind="attrs" v-on="on">
-                        <v-icon>mdi-export</v-icon>
-                    </v-btn>
-                </template>
-                <span>Export video</span>
-            </v-tooltip>
-            <v-tooltip bottom v-if="hasProject">
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag mr-8" icon @click="exportToYouTube" v-bind="attrs" v-on="on">
-                        <v-icon>mdi-youtube</v-icon>
-                    </v-btn>
-                </template>
-                <span>Export video to YouTube</span>
-            </v-tooltip>
+
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon v-bind="attrs" v-on="on">
+                    <v-btn class="no-drag ml-8" icon v-bind="attrs" v-on="on">
                         <v-icon>mdi-cog</v-icon>
                     </v-btn>
                 </template>
@@ -219,7 +222,7 @@ export default {
     opacity: 0.7;
 }
 
-.unsaved{
+.unsaved {
     color: var(--primary);
 }
 

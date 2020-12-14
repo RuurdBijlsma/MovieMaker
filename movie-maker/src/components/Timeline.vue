@@ -285,7 +285,7 @@ export default {
     display: inline-block;
     margin-bottom: 10px;
     padding: 10px;
-    border-radius: calc(var(--border-radius) * 2);
+    border-radius: calc(var(--border-radius) * 1.7);
     cursor: pointer;
     box-shadow: inset 0 0px 0px 0 #5b5b5b;
     transition: box-shadow 0.3s;

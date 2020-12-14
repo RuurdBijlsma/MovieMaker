@@ -22,6 +22,67 @@ export default {
     },
     getters: {},
     actions: {
+        async exportVideo({state, rootState}, filePath) {
+            let command = ffmpeg();
+            for (let video of rootState.videoFiles) {
+                command = command
+                    .input(video.filePath.replace(/\\/gi, '/'))
+            }
+            let fragments = rootState.timeline;
+            const parseFilter = subFilters => subFilters.map(sf => `${sf[0]}=${sf[1]}`).join(',');
+            let filter = [];
+            for (let i = 0; i < fragments.length; i++) {
+                let fragment = fragments[i];
+                let videoIndex = rootState.videoFiles.indexOf(fragment.video);
+                let start = fragment.start * fragment.video.duration;
+                let end = fragment.end * fragment.video.duration;
+                filter.push({
+                    filter: parseFilter([
+                        ['trim', `start=${start}:end=${end}`],
+                        ['setpts', `${1 / fragment.playbackRate}*(PTS-STARTPTS)`],
+                    ]),
+                    inputs: `[${videoIndex}:v]`,
+                    outputs: 'v' + i,
+                });
+                filter.push({
+                    filter: parseFilter([
+                        ['atrim', `start=${start}:end=${end}`],
+                        ['asetpts', `PTS-STARTPTS`],
+                        ['atempo', `${fragment.playbackRate}`],
+                        ['volume', `${fragment.volume}`],
+                    ]),
+                    inputs: `[${videoIndex}:a]`,
+                    outputs: 'a' + i,
+                });
+            }
+            filter.push({
+                filter: 'concat',
+                options: `n=${fragments.length}:a=1`,
+                inputs: fragments.flatMap((f, i) => ['v' + i, 'a' + i]),
+                outputs: 'out',
+            });
+            command = command.complexFilter(filter, 'out')
+            command = command
+                .on('start', commandLine => {
+                    console.log("Spawned ffmepg with command", commandLine);
+                })
+                .on('progress', progress => {
+                    console.log("ffmpeg progress", progress.percent);
+                })
+                .on('error', (err, stdout, stderr) => {
+                    console.warn("ffmpeg error", err, stdout, stderr);
+                })
+                .on('end', (stdout, stderr) => {
+                    console.log("ffmpeg DONE", stdout, stderr);
+                })
+                .saveToFile(filePath);
+
+            console.log({ffmpeg, command});
+            // todo: set to desired fps from export options
+            // .fps(60)
+            // .size('2560x1440')
+            // .autopad('black')
+        },
         async initializeFfmpeg({dispatch, state}) {
             console.log("Getting ffmpeg and ffprobe...");
             await dispatch('getPaths');

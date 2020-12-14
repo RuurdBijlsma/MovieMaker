@@ -293,9 +293,6 @@ export default new Vuex.Store({
         pause({state}) {
             state.activeFragment.video.element.pause();
         },
-        exportVideo({}) {
-
-        },
         exportToYouTube({}) {
 
         },
