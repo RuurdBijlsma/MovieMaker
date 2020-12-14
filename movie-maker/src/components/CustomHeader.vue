@@ -1,9 +1,9 @@
 <template>
     <div class="header">
         <div class="left-content">
-            <div class="logo mr-4">
-                <div class="logo-icon" :style="{backgroundImage: `url(img/favicon.png)`}"></div>
-            </div>
+            <v-avatar class="no-drag logo mr-5" size="40" rounded v-ripple @click="goHome">
+                <v-img :src="`img/favicon.png`"></v-img>
+            </v-avatar>
             <v-tooltip bottom v-if="hasProject">
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn :disabled="importVideoLoading || importProjectLoading"
@@ -153,6 +153,10 @@ export default {
 
     },
     methods: {
+        goHome() {
+            if (this.$route.path !== '/')
+                this.$router.push("/");
+        },
         ...mapActions([
             'promptVideoInput', 'exportToYouTube', 'exportVideo', 'secureClose',
             'promptProjectInput', 'saveProjectAs', 'newProject', 'saveProject',
@@ -192,20 +196,11 @@ export default {
 
 .left-content {
     display: flex;
+    align-items: center;
 }
 
 .logo {
-    display: flex;
-    place-items: center;
-}
-
-.logo-icon {
-    height: 30px;
-    width: 30px;
-    margin-right: 1em;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+    cursor: pointer;
 }
 
 .center-content {

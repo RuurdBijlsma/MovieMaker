@@ -20,14 +20,8 @@ export default {
     mutations: {
         videoFileCache: (state, {path, file}) => Vue.set(state.videoFileCache, path, file),
     },
-    getters: {},
-    actions: {
-        async exportVideo({state, rootState}, filePath) {
-            let command = ffmpeg();
-            for (let video of rootState.videoFiles) {
-                command = command
-                    .input(video.filePath.replace(/\\/gi, '/'))
-            }
+    getters: {
+        complexFilter: (state, getters, rootState) => {
             let fragments = rootState.timeline;
             const parseFilter = subFilters => subFilters.map(sf => `${sf[0]}=${sf[1]}`).join(',');
             let filter = [];
@@ -56,7 +50,6 @@ export default {
                         break;
                     }
                 }
-                console.log(tempoCommands)
                 filter.push({
                     filter: parseFilter([
                         ['atrim', `start=${start}:end=${end}`],
@@ -74,8 +67,15 @@ export default {
                 inputs: fragments.flatMap((f, i) => ['v' + i, 'a' + i]),
                 outputs: 'out',
             });
-            command = command.complexFilter(filter, 'out')
-            command = command
+            return filter;
+        }
+    },
+    actions: {
+        async exportVideo({state, rootState, getters}, filePath) {
+            let command = ffmpeg();
+            for (let video of rootState.videoFiles)
+                command = command.input(video.filePath.replace(/\\/gi, '/'))
+            command = command.complexFilter(getters.complexFilter, 'out')
                 .on('start', commandLine => {
                     console.log("Spawned ffmepg with command", commandLine);
                 })

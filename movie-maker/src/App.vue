@@ -33,10 +33,14 @@
 // use https://ffmpeg.org/ffmpeg-filters.html#ebur128-1 instead of pcm
 // show export prompt for where to save and a dialog for export options (fps, resolution, more?)
 
+// Advanced export (visualize filter graph)
+// apply filter only if thing changed
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// dont show save prompt dialog when it's not possible to save
+// check all key binds for weird effects
 // chain atempos together for <0.5 tempo
 // ffmpeg volume
 // does video element still work (not frozen) after coming back from settings?
@@ -199,6 +203,8 @@ export default {
                         this.$store.commit('fullscreen', false);
                     break;
                 case e.key === 'F11':
+                    if (!this.hasProject)
+                        return;
                     e.preventDefault();
                     if (this.fullscreen)
                         this.$store.commit('fullscreen', false);
@@ -206,61 +212,91 @@ export default {
                         this.$store.commit('fullscreen', true);
                     break;
                 case e.key === ' ':
+                    if (!this.hasProject)
+                        return;
                     if (this.playing) this.pause();
                     else this.play();
                     break;
                 case e.key === 'e' && e.ctrlKey:
+                    if (!this.hasProject)
+                        return;
                     this.exportVideo()
                     break;
                 case e.key === 'i' && e.ctrlKey:
                     this.promptVideoInput()
                     break;
                 case e.key === 'ArrowLeft':
+                    if (!this.hasProject)
+                        return;
                     this.skipFrames(-this.activeFragment.video.fps * 5);
                     break;
                 case e.key === 'ArrowRight':
+                    if (!this.hasProject)
+                        return;
                     this.skipFrames(this.activeFragment.video.fps * 5);
                     break;
                 case e.key === 'm':
+                    if (!this.hasProject)
+                        return;
                     if (this.activeFragment.volume === 0)
                         this.setVolume({volume: 1});
                     else
                         this.setVolume({volume: 0});
                     break;
                 case e.key === 'ArrowUp':
+                    if (!this.hasProject)
+                        return;
                     let volumeHigh = this.activeFragment.volume * 1.2;
                     this.setVolume({volume: volumeHigh});
                     break;
                 case e.key === 'ArrowDown':
+                    if (!this.hasProject)
+                        return;
                     let volumeLow = this.activeFragment.volume / 1.2;
                     this.setVolume({volume: volumeLow});
                     break;
                 case e.key === '-':
+                    if (!this.hasProject)
+                        return;
                     let pbrHigh = this.activeFragment.playbackRate / 1.2;
                     this.setPlaybackRate({playbackRate: pbrHigh});
                     break;
                 case e.key === '+':
                 case e.key === '=':
+                    if (!this.hasProject)
+                        return;
                     let pbrLow = this.activeFragment.playbackRate * 1.2;
                     this.setPlaybackRate({playbackRate: pbrLow});
                     break;
                 case e.key === ',':
+                    if (!this.hasProject)
+                        return;
                     this.shiftFragment({shift: -1});
                     break;
                 case e.key === '.':
+                    if (!this.hasProject)
+                        return;
                     this.shiftFragment({shift: 1});
                     break;
                 case e.key === 'Backspace':
                 case e.key === 'Delete':
+                    if (!this.hasProject)
+                        return;
                     this.removeFragment();
                     break;
                 case e.key === '\\':
+                    if (!this.hasProject)
+                        return;
                     this.split({})
                     break;
                 case e.key === '[':
+                    if (!this.hasProject)
+                        return;
                     this.setStartPoint({})
                     break;
                 case e.key === ']':
+                    if (!this.hasProject)
+                        return;
                     this.setEndPoint({})
                     break;
                 case e.key === 'y' && e.ctrlKey:
@@ -277,6 +313,8 @@ export default {
                     this.$store.dispatch('openDevTools');
                     break;
                 case !isNaN(+e.key):
+                    if (!this.hasProject)
+                        return;
                     let progress = (+e.key) / 10;
                     this.seek(progress);
                     break;
@@ -300,9 +338,11 @@ export default {
                 '--soft-background': this.themeColors.softBackground,
                 '--softer-background': this.themeColors.softerBackground,
                 '--secondary': this.themeColors.secondary,
+                '--success': this.themeColors.success,
+                '--error': this.themeColors.error,
             }
         },
-        ...mapGetters(['themeColors']),
+        ...mapGetters(['themeColors', 'hasProject']),
         ...mapState({
             activeFragment: state => state.activeFragment,
             showContextMenu: state => state.showContextMenu,

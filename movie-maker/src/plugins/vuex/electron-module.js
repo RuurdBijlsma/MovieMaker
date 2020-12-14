@@ -100,7 +100,7 @@ export default {
             if (!getters.hasProject)
                 return;
             console.log("Saving project to file", filePath);
-            let project = await dispatch('exportProject');
+            let project = JSON.stringify(getters.project)
             try {
                 await fs.writeFile(filePath, project);
                 commit('projectFilePath', filePath);
@@ -118,7 +118,9 @@ export default {
                 await dispatch('saveProjectAs');
             }
         },
-        async saveProjectAs({dispatch}) {
+        async saveProjectAs({dispatch, getters}) {
+            if (!getters.hasProject)
+                return;
             let defaultPath = Directories.videos;
             let {canceled, filePath} = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
                 title: "Save project as...",

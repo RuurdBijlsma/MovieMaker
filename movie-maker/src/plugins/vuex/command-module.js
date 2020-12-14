@@ -50,15 +50,7 @@ export default {
         canUndo: state => state.stackIndex > -1,
         canRedo: state => state.stackIndex < state.undoStack.length - 1,
         hasProject: state => state.undoStack.length > 0,
-    },
-    actions: {
-        async discardChangesPrompt({dispatch, state}) {
-            if (state.hasUnsavedAction) {
-                return await dispatch('showPrompt', {});
-            }
-            return true;
-        },
-        exportProject({state}) {
+        project: state=>{
             let commands = JSON.parse(JSON.stringify(state.undoStack));
             commands.forEach(c => delete c.batchOn);
             let addFragmentObjects = commands.filter(c => c.name === 'Add fragment').map(c => c.fragment);
@@ -73,14 +65,22 @@ export default {
                 }
                 command.fragment = command.fragment.id;
             }
-            let result = {
+            return {
                 videos,
                 fragments,
                 index: state.stackIndex,
                 commands,
+            };
+        }
+    },
+    actions: {
+        async discardChangesPrompt({dispatch, state}) {
+            if (state.hasUnsavedAction) {
+                return await dispatch('showPrompt', {
+                    confirmText: 'Discard'
+                });
             }
-            console.log("export projectString", result);
-            return JSON.stringify(result);
+            return true;
         },
         async newProject({commit, state, dispatch}, overwriteFilePath = true) {
             if (await dispatch('discardChangesPrompt'))
