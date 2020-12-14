@@ -29,6 +29,7 @@
 // ffmpeg output video
 // youtube output video
 
+// history panel doesnt scroll down when adding command
 // use https://ffmpeg.org/ffmpeg-filters.html#ebur128-1 instead of pcm
 // show export prompt for where to save and a dialog for export options (fps, resolution, more?)
 
