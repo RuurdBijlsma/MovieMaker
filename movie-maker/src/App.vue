@@ -30,12 +30,13 @@
 // youtube output video
 
 // use https://ffmpeg.org/ffmpeg-filters.html#ebur128-1 instead of pcm
-// chain atempos together for <0.5 tempo
+// show export prompt for where to save and a dialog for export options (fps, resolution, more?)
 
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// chain atempos together for <0.5 tempo
 // ffmpeg volume
 // does video element still work (not frozen) after coming back from settings?
 // check if user wants to save before clearing anything (new project, import project, closing the app)

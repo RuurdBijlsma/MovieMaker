@@ -44,11 +44,24 @@ export default {
                     inputs: `[${videoIndex}:v]`,
                     outputs: 'v' + i,
                 });
+                let tempoCommands = [];
+                let playbackRate = fragment.playbackRate;
+                let minTempo = 0.5;
+                while (true) {
+                    if (playbackRate < minTempo) {
+                        tempoCommands.push(['atempo', `0.5`]);
+                        playbackRate *= 2;
+                    } else {
+                        tempoCommands.push(['atempo', `${playbackRate}`]);
+                        break;
+                    }
+                }
+                console.log(tempoCommands)
                 filter.push({
                     filter: parseFilter([
                         ['atrim', `start=${start}:end=${end}`],
                         ['asetpts', `PTS-STARTPTS`],
-                        ['atempo', `${fragment.playbackRate}`],
+                        ...tempoCommands,
                         ['volume', `${fragment.volume}`],
                     ]),
                     inputs: `[${videoIndex}:a]`,
