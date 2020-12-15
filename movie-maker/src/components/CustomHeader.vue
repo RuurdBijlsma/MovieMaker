@@ -1,7 +1,7 @@
 <template>
     <div class="header">
         <div class="left-content">
-            <v-avatar class="no-drag logo mr-5" size="40" rounded v-ripple @click="goHome">
+            <v-avatar class="no-drag logo mr-5" size="35" rounded v-ripple @click="goHome">
                 <v-img :src="`img/favicon.png`"></v-img>
             </v-avatar>
             <v-tooltip bottom v-if="hasProject">
@@ -52,25 +52,35 @@
             </span>
         </div>
         <div class="right-content">
-            <v-tooltip bottom v-if="hasProject">
+
+            <v-menu open-on-hover close-delay="100" offset-y v-if="hasProject">
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon
-                           @click="exportVideo('C:\\Users\\Ruurd\\Videos\\exportTest.mp4')"
-                           v-bind="attrs" v-on="on">
+                    <v-btn class="no-drag" icon v-bind="attrs" v-on="on">
                         <v-icon>mdi-export</v-icon>
                     </v-btn>
                 </template>
-                <span>Export video</span>
-            </v-tooltip>
-            <v-tooltip bottom v-if="hasProject">
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="no-drag" icon @click="exportToYouTube" v-bind="attrs" v-on="on">
-                        <v-icon>mdi-youtube</v-icon>
-                    </v-btn>
-                </template>
-                <span>Export video to YouTube</span>
-            </v-tooltip>
-            <v-menu open-on-hover close-delay="200" v-if="hasProject && projectFileName !== ''">
+                <v-list dense>
+                    <v-list-item @click="exportVideoAs">
+                        <v-list-item-icon>
+                            <v-icon>mdi-movie-outline</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Quick export</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="$store.commit('showExportDialog',true)">
+                        <v-list-item-icon>
+                            <v-icon>mdi-movie-open-outline</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Export</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="exportToYouTube">
+                        <v-list-item-icon>
+                            <v-icon>mdi-youtube</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Export to YouTube</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+            <v-menu offset-y open-on-hover close-delay="100" v-if="hasProject && projectFileName !== ''">
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn class="no-drag" icon v-bind="attrs" v-on="on">
                         <v-icon>mdi-content-save-outline</v-icon>
@@ -158,7 +168,7 @@ export default {
                 this.$router.push("/");
         },
         ...mapActions([
-            'promptVideoInput', 'exportToYouTube', 'exportVideo', 'secureClose',
+            'promptVideoInput', 'exportToYouTube', 'exportVideoAs', 'secureClose',
             'promptProjectInput', 'saveProjectAs', 'newProject', 'saveProject',
         ]),
     },

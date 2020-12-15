@@ -10,6 +10,8 @@
         </v-main>
 
         <custom-dialog></custom-dialog>
+        <export-dialog></export-dialog>
+        <export-status></export-status>
 
         <v-snackbar v-for="snack in $store.state.snackbars" app v-model="snack.open" :timeout="snack.timeout"
                     :outlined="!$vuetify.theme.dark" color="primary">
@@ -29,9 +31,14 @@
 // ffmpeg output video
 // youtube output video
 
+// you can hide export status dialog while it's busy exporting,
+// this may be allowed, but then there should be a way to get back to the current export status,
+// perhaps replace the export video button with a status indicator, if you click that open the status dialog
+// allow set output bitrate
+// implement open video button
+// implement open video folder button
+
 // history panel doesnt scroll down when adding command
-// use https://ffmpeg.org/ffmpeg-filters.html#ebur128-1 instead of pcm
-// show export prompt for where to save and a dialog for export options (fps, resolution, more?)
 
 // Advanced export (visualize filter graph)
 // apply filter only if thing changed
@@ -39,6 +46,9 @@
 // when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// show export prompt for where to save and a dialog for export options (fps, resolution, more?)
+// use https://ffmpeg.org/ffmpeg-filters.html#ebur128-1 instead of pcm
+// it doesnt remember import directory from last time :(
 // dont show save prompt dialog when it's not possible to save
 // check all key binds for weird effects
 // chain atempos together for <0.5 tempo
@@ -101,10 +111,12 @@ import contextMenu from "electron-context-menu";
 import path from 'path'
 import Utils from "@/js/Utils";
 import CustomDialog from "@/components/CustomDialog";
+import ExportDialog from "@/components/ExportDialog";
+import ExportStatus from "@/components/ExportStatus";
 
 export default {
     name: 'App',
-    components: {CustomDialog, VideoInfoFooter, CustomHeader},
+    components: {ExportStatus, ExportDialog, CustomDialog, VideoInfoFooter, CustomHeader},
     data: () => ({
         disposeContextMenu: null,
     }),
@@ -183,7 +195,9 @@ export default {
             this.$store.commit('windowWidth', window.innerWidth)
         },
         keyListener(e) {
-            console.log(e.key);
+            if (e.target.toString() === "[object HTMLInputElement]") {
+                return;
+            }
             switch (true) {
                 case e.key === 'n' && e.ctrlKey:
                     this.newProject();

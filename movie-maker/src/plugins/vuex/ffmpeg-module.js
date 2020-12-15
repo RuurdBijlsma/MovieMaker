@@ -16,8 +16,10 @@ export default {
         downloading: false,
         ffmpegReady: false,
         videoFileCache: {},
+        availableFormats: [],
     },
     mutations: {
+        availableFormats: (state, formats) => state.availableFormats = formats,
         videoFileCache: (state, {path, file}) => Vue.set(state.videoFileCache, path, file),
     },
     getters: {
@@ -71,23 +73,23 @@ export default {
         }
     },
     actions: {
-        async exportVideo({state, rootState, getters}, filePath) {
+        async exportVideo({state, rootState, getters, commit}, filePath) {
+
+            commit('statusDone', false);
+            commit('statusProgress', 0);
+            commit('statusOutput', []);
+            commit('statusError', '');
+            commit('showExportStatus', true);
+
             let command = ffmpeg();
             for (let video of rootState.videoFiles)
-                command = command.input(video.filePath.replace(/\\/gi, '/'))
+                command = command.input(Utils.fixPath(video.filePath))
             command = command.complexFilter(getters.complexFilter, 'out')
-                .on('start', commandLine => {
-                    console.log("Spawned ffmepg with command", commandLine);
-                })
-                .on('progress', progress => {
-                    console.log("ffmpeg progress", progress.percent);
-                })
-                .on('error', (err, stdout, stderr) => {
-                    console.warn("ffmpeg error", err, stdout, stderr);
-                })
-                .on('end', (stdout, stderr) => {
-                    console.log("ffmpeg DONE", stdout, stderr);
-                })
+                .on('start', commandLine => console.log("Spawned ffmepg with command", commandLine))
+                .on('stderr', line => commit('addStatusOutput', line))
+                .on('progress', progress => commit('statusProgress', progress))
+                .on('error', (err, stdout, stderr) => commit('statusError', err))
+                .on('end', (stdout, stderr) => commit('statusDone', true))
                 .saveToFile(filePath);
 
             console.log({ffmpeg, command});
@@ -96,7 +98,95 @@ export default {
             // .size('2560x1440')
             // .autopad('black')
         },
-        async initializeFfmpeg({dispatch, state}) {
+        async getLoudness({}, {filePath, loudness = {}}) {
+            return new Promise(((resolve, reject) => {
+                let min = Infinity, max = -Infinity;
+                loudness.dbMin = -45;
+                loudness.dbMax = 0;
+                loudness.absLoudness = 0.8;
+                loudness.data = [];
+                let filter = [
+                    {
+                        filter: 'ebur128',
+                        inputs: '[0:a]',
+                        options: 'peak=true',
+                        outputs: 'out',
+                    }
+                ];
+                ffmpeg()
+                    .input(Utils.fixPath(filePath))
+                    .complexFilter(filter, 'out')
+                    .on('error', (err, stdout, stderr) => reject({err, stdout, stderr}))
+                    .on('stderr', line => {
+                        line = line.trim();
+                        if (line.startsWith('LRA low:'))
+                            loudness.low = +line.split(' ').filter(n => n !== '')[2];
+                        if (line.startsWith('LRA high:'))
+                            loudness.high = +line.split(' ').filter(n => n !== '')[2];
+                        if (line.startsWith('I:'))
+                            loudness.integrated = +line.split(' ').filter(n => n !== '')[1];
+                        // console.log(line);
+                        if (!line.startsWith('[Parsed_ebur128'))
+                            return;
+                        let time = line.split('t:')[1]?.trim()?.split(' ')?.[0];
+                        let m = line.split('M:')[1]?.trim()?.split(' ')?.[0];
+                        // let s = line.split('S:')[1]?.trim()?.split(' ')?.[0];
+                        // let i = line.split('I:')[1]?.trim()?.split(' ')?.[0];
+                        // let lra = line.split('LRA:')[1]?.trim()?.split(' ')?.[0];
+                        // let ftpk = line.split('FTPK:')[1]?.trim()?.split(' ')?.[0];
+                        let tpk = line.split('TPK:')[1]?.trim()?.split(' ')?.[0];
+                        if (time !== undefined && m !== undefined) {
+                            let db = +tpk;
+                            loudness.data.push({
+                                time: +time,
+                                volume: Math.exp(db),
+                                db: db,
+                            });
+                            if (db < min)
+                                min = db;
+                            if (db > max)
+                                max = db;
+                        }
+                    })
+                    .on('end', () => {
+                        let absMin = -45;
+                        let absMax = 0;
+                        loudness.absLoudness = (loudness.integrated - absMin) / (absMax - absMin)
+                        loudness.dbMin = min;
+                        loudness.dbMax = max;
+                        resolve(loudness);
+                    })
+                    .format('null')
+                    .saveToFile('-')
+            }))
+        },
+        async getFormats({}) {
+            return new Promise(((resolve, reject) => {
+                ffmpeg.getAvailableFormats((err, result) => {
+                    if (err)
+                        return reject(err);
+                    let formats = [];
+                    for (let extension in result) {
+                        if (!result.hasOwnProperty(extension))
+                            continue;
+                        let {description, canMux, canDemux} = result[extension];
+                        if (canMux && canDemux)
+                            formats.push({extension, description});
+                    }
+
+                    let mp4 = formats.splice(formats.findIndex(f => f.extension === 'mp4'), 1);
+                    formats.unshift(mp4[0]);
+                    formats = formats
+                        .map(format => ({
+                            name: format.description,
+                            extensions: [format.extension],
+                        }));
+
+                    resolve(formats);
+                });
+            }))
+        },
+        async initializeFfmpeg({dispatch, state, commit}) {
             console.log("Getting ffmpeg and ffprobe...");
             await dispatch('getPaths');
             VideoFile.ffmpegPath = state.paths.ffmpeg;
@@ -106,7 +196,7 @@ export default {
             setTimeout(() => {
                 state.ffmpegReady = true;
                 state.downloadEvent.emit('ffmpegReady');
-            }, 500);
+            }, 800);
         },
         async waitForFfmpeg({state}) {
             return new Promise(resolve => {
@@ -160,7 +250,14 @@ export default {
                     screenshots.all.push(...ss);
                     screenshots.merged = await dispatch('mergeScreenshots', ss);
                 });
-                commit('videoFileCache', {path: file, file: new VideoFile(result, screenshots)});
+
+                let loudness = {};
+                let videoFile = new VideoFile(result, screenshots, loudness);
+                dispatch('getLoudness', {
+                    filePath: file,
+                    loudness,
+                }).then(() => console.log(videoFile))
+                commit('videoFileCache', {path: file, file: videoFile});
             }
             return state.videoFileCache[file];
         },

@@ -22,7 +22,7 @@
             }"></div>
                     <canvas class="audio-wave" ref="audioCanvases"></canvas>
                 </div>
-                <div v-show="activeVisualFragment === fragment" :style="{
+                <div v-show="activeVisualFragmentIndex === i" :style="{
                 left: seekLeft + 'px',
             }" class="seek-thumb"></div>
             </div>
@@ -40,9 +40,10 @@ export default {
         bounds: null,
         visualFragments: [],
         renderAudioInterval: -1,
-        activeVisualFragment: null,
+        activeVisualFragmentIndex: null,
         seekLeft: 0,
         fragmentIndex: false,
+        contexts: [],
     }),
     beforeDestroy() {
         window.removeEventListener('resize', this.windowResize);
@@ -90,7 +91,6 @@ export default {
         move(e) {
             if (this.fragmentIndex !== false) {
                 this.seekToProgress(e);
-                requestAnimationFrame(() => this.calculateSeekPosition());
             }
         },
         moveEnd(e) {
@@ -100,15 +100,16 @@ export default {
         },
         calculateSeekPosition() {
             const fragmentProgress = this.activeFragment.progress;
-            const visualFragment = this.visualFragments.find(v =>
+            const visualFragmentIndex = this.visualFragments.findIndex(v =>
                 v.fragment === this.activeFragment &&
                 v.start <= fragmentProgress && fragmentProgress <= v.end
             );
-            if (visualFragment === undefined)
+            if (visualFragmentIndex === -1)
                 return;
 
+            const visualFragment = this.visualFragments[visualFragmentIndex];
             const margin = (visualFragment.continuesLeft ? 0 : 10) + (visualFragment.continuesRight ? 0 : 10);
-            this.activeVisualFragment = visualFragment;
+            this.activeVisualFragmentIndex = visualFragmentIndex;
             let visualFragmentProgress = (fragmentProgress - visualFragment.start) / (visualFragment.end - visualFragment.start);
             this.seekLeft = Math.round(
                 Utils.clamp(visualFragmentProgress) *
@@ -120,27 +121,39 @@ export default {
                 return;
             if (this.$refs.audioCanvases.length !== this.visualFragments.length)
                 return;
-            for (let i = 0; i < this.visualFragments.length; i++) {
-                const fragment = this.visualFragments[i];
-                const pcm = fragment.fragment.video.pcm;
-                if (pcm === undefined)
-                    continue;
-                const canvas = this.$refs.audioCanvases[i];
-                const context = canvas.getContext('2d');
-                context.clearRect(0, 0, canvas.width, canvas.height);
 
-                const visFragStart = fragment.fragment.start + fragment.start * fragment.fragment.portion;
-                const visFragEnd = fragment.fragment.start + fragment.end * fragment.fragment.portion;
-                const startIndex = Math.floor(visFragStart * pcm.length)
-                const endIndex = Math.floor(visFragEnd * pcm.length)
+            for (let i = 0; i < this.visualFragments.length; i++) {
+                const visFragment = this.visualFragments[i];
+                const loudness = visFragment.fragment.video.loudness;
+                const fragment = visFragment.fragment;
+                const duration = fragment.video.duration;
+                const visFragStart = visFragment.fragment.start + visFragment.start * visFragment.fragment.portion;
+                const visFragEnd = visFragment.fragment.start + visFragment.end * visFragment.fragment.portion;
+
+                const canvas = this.$refs.audioCanvases[i];
+                const context = this.contexts[i];
 
                 context.fillStyle = this.themeColors.secondary;
                 context.strokeStyle = this.themeColors.primary;
+                context.clearRect(0, 0, canvas.width, canvas.height);
                 context.beginPath();
                 context.moveTo(0, canvas.height);
-                for (let j = startIndex; j < endIndex; j++) {
-                    let height = pcm[j] * canvas.height * fragment.fragment.volume;
-                    context.lineTo((j - startIndex) / (endIndex - startIndex) * canvas.width, canvas.height - height);
+
+                for (let j = 0; j < loudness.data.length; j++) {
+                    let {time, db} = loudness.data[j];
+                    let videoProgress = time / duration;
+                    if (videoProgress < visFragStart)
+                        continue;
+                    if (videoProgress > visFragEnd)
+                        break;
+
+                    let fragmentProgress = (videoProgress - fragment.start) / fragment.portion;
+                    let visFragmentProgress = (fragmentProgress - visFragment.start) / (visFragment.end - visFragment.start);
+                    let height = (db - loudness.dbMin) / (loudness.dbMax - loudness.dbMin) *
+                        Math.log(1 + visFragment.fragment.volume) *
+                        loudness.absLoudness *
+                        canvas.height;
+                    context.lineTo(visFragmentProgress * canvas.width, canvas.height - height);
                 }
                 context.lineTo(canvas.width, canvas.height);
                 context.lineTo(0, canvas.height);
@@ -192,10 +205,10 @@ export default {
             this.$nextTick(() => {
                 this.calculateSeekPosition();
                 if (this.$refs.audioCanvases) {
+                    this.contexts = this.$refs.audioCanvases.map(c => c.getContext('2d'));
                     for (const canvas of this.$refs.audioCanvases) {
                         const bounds = canvas.getBoundingClientRect();
                         canvas.width = bounds.width;
-                        canvas.height = bounds.height;
                     }
                     this.renderAudio();
                 }
@@ -314,7 +327,7 @@ export default {
     /*box-shadow: 0 0 0 1px grey;*/
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     width: 100%;
-    height: 100%;
+    min-height: 80px;
     background-color: var(--soft-background);
     background-repeat: repeat;
     background-size: auto 100%;
@@ -329,15 +342,15 @@ export default {
 }
 
 .continues-right.active {
-    clip-path: inset(0px 5px 0px 0px);
+    clip-path: inset(0px 2px 0px 0px);
 }
 
 .continues-left.active {
-    clip-path: inset(0px 0px 0px 5px);
+    clip-path: inset(0px 0px 0px 2px);
 }
 
 .continues-left.continues-right.active {
-    clip-path: inset(0px 5px 0px 5px);
+    clip-path: inset(0px 2px 0px 2px);
 }
 
 .continues-right .fragment-background, .continues-right .audio-wave, .continues-right.fragment {
@@ -352,7 +365,7 @@ export default {
 
 .audio-wave {
     width: 100%;
-    height: 25px;
+    min-height: 25px;
     background-color: rgba(80, 80, 80, 0.4);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }

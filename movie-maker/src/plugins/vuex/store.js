@@ -22,6 +22,21 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
+        exportStatus: {
+            done: false,
+            show: false,
+            progress: 0,
+            output: [],
+            error: '',
+        },
+        export: {
+            showDialog: false,
+            fps: 60,
+            customResolution: false,
+            width: 2560,
+            height: 1440,
+            outputPath: '',
+        },
         windowWidth: window.innerWidth,
         projectFilePath: '',
         snackbars: [],
@@ -47,6 +62,18 @@ export default new Vuex.Store({
         },
     },
     mutations: {
+        statusDone: (state, value) => state.exportStatus.done = value,
+        statusProgress: (state, value) => state.exportStatus.progress = value,
+        addStatusOutput: (state, value) => state.exportStatus.output.push(value),
+        statusOutput: (state, value) => state.exportStatus.output = value,
+        statusError: (state, value) => state.exportStatus.error = value,
+        showExportStatus: (state, value) => state.exportStatus.show = value,
+
+        exportOutputPath: (state, outputPath) => state.export.outputPath = outputPath,
+        customHeight: (state, height) => state.export.height = height,
+        customWidth: (state, width) => state.export.width = width,
+        showExportDialog: (state, value) => state.export.showDialog = value,
+
         timeline: (state, fragments) => state.timeline = fragments,
         projectFilePath: (state, p) => {
             console.log("Setting project file path to", p);
@@ -121,6 +148,14 @@ export default new Vuex.Store({
             state.configTimeline.widthPerSecond = localStorage.widthPerSecond = pixels,
     },
     getters: {
+        exportProgress: (state, getters) => {
+            let time = state.exportStatus.progress.timemark;
+            if (typeof time !== 'string')
+                return 0;
+            let [h, m, s] = time.split(':').map(n => +n);
+            let seconds = s + m * 60 + h * 3600;
+            return seconds / getters.fullDuration;
+        },
         projectFileName: state => path.basename(state.projectFilePath),
         scale: state => {
             switch (true) {
@@ -257,9 +292,13 @@ export default new Vuex.Store({
             dispatch('executeCommand', new DeleteFragment(fragment));
         },
         async importVideo({dispatch}, path) {
-            let videoFile = await dispatch('loadMetadata', path);
-            let fragment = new VideoFragment(videoFile);
-            dispatch('executeCommand', new AddFragment(fragment));
+            try {
+                let videoFile = await dispatch('loadMetadata', path);
+                let fragment = new VideoFragment(videoFile);
+                dispatch('executeCommand', new AddFragment(fragment));
+            } catch (e) {
+                dispatch("addSnack", {text: "Failed to import video, please try again"})
+            }
         },
         async seek({state, commit, getters}, progress) {
             let {fragment, videoProgress} = getters.fragmentAtProgress(progress);

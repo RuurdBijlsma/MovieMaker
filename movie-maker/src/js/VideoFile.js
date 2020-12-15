@@ -1,17 +1,13 @@
-import pcm from 'pcm-extract'
 import EventEmitter from 'events'
 import Utils from "@/js/Utils";
 
 export default class VideoFile extends EventEmitter {
-    constructor(probeData, screenshots) {
+    constructor(probeData, screenshots, loudness) {
         super();
         this.probe = probeData;
         this.screenshots = screenshots;
         this.container = null;
 
-        // 10 points per second
-        const avgWindowSize = this.audioStream.sample_rate / 10;
-        this.pcm = new Float32Array(Math.ceil(this.audioStream.sample_rate * this.duration / avgWindowSize));
         this._elCache = null;
 
         this.canPlay = false;
@@ -21,32 +17,7 @@ export default class VideoFile extends EventEmitter {
 
         this.source = null;
         this.gainNode = null;
-
-        let stream = pcm.getStream({
-            filepath: this.filePath,
-            channels: 1,
-            ffmpeg: VideoFile.ffmpegPath,
-        });
-        let i = 0;
-        this.pcmLoaded = false;
-        stream.on('readable', () => {
-            let avg = 0;
-            while (true) {
-                let value = stream.read();
-                if (value === null)
-                    break;
-                avg += Math.abs(value);
-                if (i++ % avgWindowSize === 0) {
-                    let index = Math.floor(i / avgWindowSize);
-                    this.pcm[index] = avg / avgWindowSize;
-                    avg = 0;
-                    if (index + 1 >= this.pcm.length) {
-                        this.emit("pcm");
-                        this.pcmLoaded = true;
-                    }
-                }
-            }
-        });
+        this.loudness = loudness;
     }
 
     get element() {

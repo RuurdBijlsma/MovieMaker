@@ -49,7 +49,7 @@ export default {
     getters: {
         canUndo: state => state.stackIndex > -1,
         canRedo: state => state.stackIndex < state.undoStack.length - 1,
-        hasProject: state => state.undoStack.length > 0,
+        hasProject: (state, getters, rootState) => rootState.activeFragment !== null,
         project: state=>{
             let commands = JSON.parse(JSON.stringify(state.undoStack));
             commands.forEach(c => delete c.batchOn);

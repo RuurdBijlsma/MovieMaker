@@ -56,11 +56,41 @@ export default {
                 })
             }));
         },
+        previousPath({}, {key = '', defaultPath = Directories.videos}) {
+            return localStorage.getItem('previousPath' + key) ?? defaultPath;
+        },
+        usePath({}, {key = '', usedPath}) {
+            localStorage['previousPath' + key] = path.basename(usedPath);
+        },
+        async promptVideoExport({dispatch, commit}) {
+            let formats = await dispatch('getFormats');
+
+            let {canceled, filePath} = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
+                title: "Export video",
+                defaultPath: await dispatch('previousPath', {key: 'videoExport'}),
+                buttonLabel: 'Export video',
+                filters: formats,
+            });
+
+            if (!canceled) {
+                commit('exportOutputPath', filePath);
+                dispatch('usePath', {key: 'videoExport', usedPath: filePath})
+            }
+            return {canceled, filePath};
+        },
+        async exportVideoAs({dispatch, getters}) {
+            if (!getters.hasProject)
+                return;
+            let {canceled, filePath} = await dispatch('promptVideoExport');
+            if (!canceled) {
+                console.log("EXPORT", filePath);
+                await dispatch('exportVideo', filePath);
+            }
+        },
         async promptVideoInput({dispatch, commit}) {
-            let defaultPath = Directories.videos;
             let {canceled, filePaths} = await remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
                 title: "Import video",
-                defaultPath,
+                defaultPath: await dispatch('previousPath', {key: 'video'}),
                 filters: [
                     {name: "Videos", extensions: ['mp4', 'ogg', 'webm']},
                     {name: "All Files", extensions: ['*']},
@@ -68,6 +98,7 @@ export default {
                 properties: ['openFile', 'multiSelections'],
             });
             if (!canceled) {
+                dispatch('usePath', {key: 'video', usedPath: filePaths[0]})
                 commit('importVideoLoading', true);
                 await Promise.all(filePaths.map(f => dispatch('importVideo', f)));
                 commit('importVideoLoading', false);
@@ -85,14 +116,14 @@ export default {
         async promptProjectInput({dispatch}) {
             if (!(await dispatch('discardChangesPrompt')))
                 return;
-            let defaultPath = Directories.videos;
             let {canceled, filePaths} = await remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
                 title: "Open project",
-                defaultPath,
+                defaultPath: await dispatch('previousPath', {key: 'project'}),
                 filters: [{name: "Ruurd Movie Maker Project", extensions: ["rmm"]}],
                 properties: ["openFile"],
             });
             if (!canceled) {
+                dispatch('usePath', {key: 'project', usedPath: filePaths[0]})
                 dispatch('importProjectByPath', filePaths[0]);
             }
         },
@@ -121,13 +152,13 @@ export default {
         async saveProjectAs({dispatch, getters}) {
             if (!getters.hasProject)
                 return;
-            let defaultPath = Directories.videos;
             let {canceled, filePath} = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
                 title: "Save project as...",
-                defaultPath,
+                defaultPath: await dispatch('previousPath', {key: 'project'}),
                 filters: [{name: "Ruurd Movie Maker Project", extensions: ["rmm"]}],
             });
             if (!canceled) {
+                dispatch('usePath', {key: 'project', usedPath: filePath})
                 await dispatch('saveProjectToFile', filePath);
             }
         },
