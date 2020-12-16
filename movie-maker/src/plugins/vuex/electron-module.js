@@ -37,8 +37,22 @@ export default {
             state.prompt.onCancel = onCancel;
         },
     },
-    getters: {},
+    getters: {
+        systemProgress: (state, getters, rootState) => {
+            let status = rootState.exportStatus;
+            if (getters.isExporting) {
+                currentWindow.setProgressBar(getters.exportProgress, {mode: 'normal'});
+            } else if (status.error !== '') {
+                currentWindow.setProgressBar(1, {mode: 'error'});
+            } else {
+                currentWindow.setProgressBar(-1, {mode: 'normal'});
+            }
+        }
+    },
     actions: {
+        updateSystemProgress({getters}) {
+            currentWindow.setProgressBar(...getters.systemProgress);
+        },
         async showPrompt({commit}, {
             title = 'Are you sure?',
             subtitle = 'This will discard all unsaved changes',
@@ -183,6 +197,9 @@ export default {
             } else {
                 dispatch('closeWindow');
             }
+        },
+        async openFile({}, filePath) {
+            await electron.shell.openExternal(filePath);
         },
         async openFolder({}, filePath) {
             if (process.platform === 'win32') {

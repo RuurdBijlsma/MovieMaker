@@ -73,23 +73,37 @@ export default {
         }
     },
     actions: {
-        async exportVideo({state, rootState, getters, commit}, filePath) {
-
+        async exportVideo({dispatch, state, rootState, getters, commit}, filePath) {
+            if (getters.isExporting) {
+                return dispatch('addSnack', {text: "A video is already exporting, abort it before trying again"})
+            }
             commit('statusDone', false);
             commit('statusProgress', 0);
             commit('statusOutput', []);
             commit('statusError', '');
             commit('showExportStatus', true);
+            commit('showExportStatus', true);
 
             let command = ffmpeg();
+            commit('statusCommand', command);
+
             for (let video of rootState.videoFiles)
                 command = command.input(Utils.fixPath(video.filePath))
             command = command.complexFilter(getters.complexFilter, 'out')
-                .on('start', commandLine => console.log("Spawned ffmepg with command", commandLine))
+                .on('start', commandLine => {
+                    console.log("Spawned ffmepg with command", commandLine)
+                    commit('addStatusOutput', commandLine);
+                })
                 .on('stderr', line => commit('addStatusOutput', line))
                 .on('progress', progress => commit('statusProgress', progress))
-                .on('error', (err, stdout, stderr) => commit('statusError', err))
-                .on('end', (stdout, stderr) => commit('statusDone', true))
+                .on('error', (err, stdout, stderr) => {
+                    commit('statusCommand', null);
+                    commit('statusError', err)
+                })
+                .on('end', (stdout, stderr) => {
+                    commit('statusDone', true);
+                    commit('statusCommand', null);
+                })
                 .saveToFile(filePath);
 
             console.log({ffmpeg, command});

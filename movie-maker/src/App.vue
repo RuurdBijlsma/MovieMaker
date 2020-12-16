@@ -28,15 +28,12 @@
 
 <script>
 // TODO: Features
+// test for bugs
 // ffmpeg output video
 // youtube output video
 
-// you can hide export status dialog while it's busy exporting,
-// this may be allowed, but then there should be a way to get back to the current export status,
-// perhaps replace the export video button with a status indicator, if you click that open the status dialog
 // allow set output bitrate
-// implement open video button
-// implement open video folder button
+// load in audio wave cleaner (don't set last point at (end, 0)
 
 // history panel doesnt scroll down when adding command
 
@@ -46,6 +43,12 @@
 // when at start of a 2nd part of split fragment and press next frame it breaks
 
 // DONE TODO
+// implement open video button
+// implement open video folder button
+// this may be allowed, but then there should be a way to get back to the current export status,
+// perhaps replace the export video button with a status indicator, if you click that open the status dialog
+// you can hide export status dialog while it's busy exporting,
+// add progress to system icon
 // show export prompt for where to save and a dialog for export options (fps, resolution, more?)
 // use https://ffmpeg.org/ffmpeg-filters.html#ebur128-1 instead of pcm
 // it doesnt remember import directory from last time :(
@@ -339,8 +342,14 @@ export default {
             'removeFragment', 'redo', 'undo', 'promptVideoInput',
             'exportVideo', 'play', 'pause', 'seek', 'importProjectByPath',
             'skipFrames', 'shiftFragment', 'setVolume', 'setPlaybackRate',
-            'newProject', 'promptProjectInput', 'saveProjectAs', 'saveProject'
-        ])
+            'newProject', 'promptProjectInput', 'saveProjectAs', 'saveProject',
+            'updateSystemProgress',
+        ]),
+    },
+    watch: {
+        systemProgress() {
+            this.updateSystemProgress();
+        },
     },
     computed: {
         cssProps() {
@@ -356,12 +365,13 @@ export default {
                 '--error': this.themeColors.error,
             }
         },
-        ...mapGetters(['themeColors', 'hasProject']),
+        ...mapGetters(['themeColors', 'hasProject', 'systemProgress']),
         ...mapState({
             activeFragment: state => state.activeFragment,
             showContextMenu: state => state.showContextMenu,
             playing: state => state.player.playing,
             fullscreen: state => state.player.fullscreen,
+            status: state => state.exportStatus,
         }),
     }
 };

@@ -53,7 +53,16 @@
         </div>
         <div class="right-content">
 
-            <v-menu open-on-hover close-delay="100" offset-y v-if="hasProject">
+            <v-btn class="no-drag" icon v-if="!isExporting && status.done" @click="$store.commit('showExportStatus', true)">
+                <v-icon color="success">mdi-check</v-icon>
+            </v-btn>
+            <v-btn icon v-if="isExporting" @click="$store.commit('showExportStatus', true)">
+                <v-progress-circular class="no-drag" :value="exportProgress * 100">
+                    {{ Math.round(exportProgress * 100) }}
+                </v-progress-circular>
+            </v-btn>
+
+            <v-menu open-on-hover close-delay="100" offset-y v-else-if="hasProject">
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn class="no-drag" icon v-bind="attrs" v-on="on">
                         <v-icon>mdi-export</v-icon>
@@ -178,12 +187,13 @@ export default {
         },
     },
     computed: {
-        ...mapGetters(['hasProject', 'projectFileName']),
+        ...mapGetters(['hasProject', 'projectFileName', 'isExporting', 'exportProgress']),
         ...mapState({
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
             importProjectLoading: state => state.loading.projectImport,
             hasUnsavedAction: state => state.command.hasUnsavedAction,
+            status: state => state.exportStatus,
         }),
     },
 }

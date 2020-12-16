@@ -28,6 +28,7 @@ export default new Vuex.Store({
             progress: 0,
             output: [],
             error: '',
+            command: null,
         },
         export: {
             showDialog: false,
@@ -62,6 +63,7 @@ export default new Vuex.Store({
         },
     },
     mutations: {
+        statusCommand: (state, command) => state.exportStatus.command = command,
         statusDone: (state, value) => state.exportStatus.done = value,
         statusProgress: (state, value) => state.exportStatus.progress = value,
         addStatusOutput: (state, value) => state.exportStatus.output.push(value),
@@ -148,13 +150,14 @@ export default new Vuex.Store({
             state.configTimeline.widthPerSecond = localStorage.widthPerSecond = pixels,
     },
     getters: {
+        isExporting: state => state.exportStatus.command !== null,
         exportProgress: (state, getters) => {
             let time = state.exportStatus.progress.timemark;
             if (typeof time !== 'string')
                 return 0;
             let [h, m, s] = time.split(':').map(n => +n);
             let seconds = s + m * 60 + h * 3600;
-            return seconds / getters.fullDuration;
+            return Utils.clamp(seconds / getters.fullDuration);
         },
         projectFileName: state => path.basename(state.projectFilePath),
         scale: state => {
