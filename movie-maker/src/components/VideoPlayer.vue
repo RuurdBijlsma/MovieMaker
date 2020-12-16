@@ -2,6 +2,7 @@
     <perfect-scrollbar class="player" ref="player">
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
             <video @canplay="canPlay" ref="videos"
+                   @ended="playNextFragment(true)"
                    v-for="videoFile in videoFiles"
                    :key="videoFile.filePath"
                    :id="videoFile.filePath"
@@ -20,7 +21,7 @@
                 <span class="seek-time">{{ toHms(progress * fullDuration) }} / {{ toHms(fullDuration) }}</span>
             </div>
             <div class="playback-controls" v-if="videoFiles.length > 0">
-                <v-menu open-on-hover :close-on-content-click="false">
+                <v-menu open-on-hover :close-on-content-click="false" v-if="!fullscreen">
                     <template v-slot:activator="{ on, attrs }">
                         <v-icon
                             v-bind="attrs"
@@ -98,7 +99,7 @@ export default {
                 if (!isNaN(progress))
                     this.$store.commit('progress', progress);
 
-                if (this.activeFragment.progress > 1) {
+                if (this.activeFragment.progress >= 1) {
                     this.playNextFragment();
                 }
 

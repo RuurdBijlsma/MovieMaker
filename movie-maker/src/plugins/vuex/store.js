@@ -195,7 +195,7 @@ export default new Vuex.Store({
             let beforeParts = 0;
             for (let fragment of state.timeline) {
                 let fragmentPart = fragment.adjustedDuration / fullDuration;
-                if (beforeParts + fragmentPart >= progress - 0.0001) {
+                if (beforeParts + fragmentPart >= progress) {
                     let fragmentProgress = (progress - beforeParts) / fragmentPart;
                     let fragmentCut = fragment.end - fragment.start;
                     return {
@@ -282,9 +282,7 @@ export default new Vuex.Store({
             let duration = n / state.activeFragment.video.fps;
             let currentTime = state.player.progress * getters.fullDuration;
             let newProgress = Utils.clamp((currentTime + duration) / getters.fullDuration);
-            console.log("NEW progress", newProgress, currentTime, duration)
             let {fragment, videoProgress} = getters.fragmentAtProgress(newProgress);
-            console.log("f v", {fragment: state.timeline.indexOf(fragment), videoProgress})
             commit('activeFragment', fragment);
             fragment.video.element.pause();
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;

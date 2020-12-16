@@ -87,10 +87,12 @@ export default {
     },
     watch: {
         visualIndex() {
-            let commandIndex = Utils.clamp(this.visualIndex - 1, 0, this.visualCommands.length - 1);
-            let element = this.$refs.commands[commandIndex];
-            if (element?.$el)
-                element.$el.scrollIntoViewIfNeeded();
+            this.$nextTick(()=>{
+                let commandIndex = Utils.clamp(this.visualIndex - 1, 0, this.$refs.commands.length - 1);
+                let element = this.$refs.commands[commandIndex];
+                if (element?.$el)
+                    element.$el.scrollIntoViewIfNeeded();
+            });
         },
     },
     computed: {
