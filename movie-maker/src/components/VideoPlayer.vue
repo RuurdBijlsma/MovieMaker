@@ -1,7 +1,7 @@
 <template>
     <perfect-scrollbar class="player" ref="player">
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
-            <video @ended="playNextFragment" @canplay="canPlay" ref="videos"
+            <video @canplay="canPlay" ref="videos"
                    v-for="videoFile in videoFiles"
                    :key="videoFile.filePath"
                    :id="videoFile.filePath"
@@ -98,9 +98,7 @@ export default {
                 if (!isNaN(progress))
                     this.$store.commit('progress', progress);
 
-                // console.log(this.$store.getters.computedProgress);
-                if (this.activeFragment.progress >= 1 && !activeVideo.paused || this.activeFragment.progress > 1) {
-                    // console.log('play next fragment');
+                if (this.activeFragment.progress > 1) {
                     this.playNextFragment();
                 }
 

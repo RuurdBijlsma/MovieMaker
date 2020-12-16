@@ -139,6 +139,7 @@ export default {
                 context.beginPath();
                 context.moveTo(0, canvas.height);
 
+                let visFragmentProgress;
                 for (let j = 0; j < loudness.data.length; j++) {
                     let {time, db} = loudness.data[j];
                     let videoProgress = time / duration;
@@ -148,14 +149,14 @@ export default {
                         break;
 
                     let fragmentProgress = (videoProgress - fragment.start) / fragment.portion;
-                    let visFragmentProgress = (fragmentProgress - visFragment.start) / (visFragment.end - visFragment.start);
+                    visFragmentProgress = (fragmentProgress - visFragment.start) / (visFragment.end - visFragment.start);
                     let height = (db - loudness.dbMin) / (loudness.dbMax - loudness.dbMin) *
                         Math.log(1 + visFragment.fragment.volume) *
                         loudness.absLoudness *
                         canvas.height;
                     context.lineTo(visFragmentProgress * canvas.width, canvas.height - height);
                 }
-                context.lineTo(canvas.width, canvas.height);
+                context.lineTo(visFragmentProgress * canvas.width, canvas.height);
                 context.lineTo(0, canvas.height);
                 context.stroke();
                 context.fill();

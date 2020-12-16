@@ -139,7 +139,9 @@ export default new Vuex.Store({
             if (state.activeFragment === null)
                 state.activeFragment = fragment;
         },
-        activeFragment: (state, fragment) => state.activeFragment = fragment,
+        activeFragment: (state, fragment) => {
+            state.activeFragment = fragment
+        },
         progress: (state, progress) => state.player.progress = progress,
         playing: (state, playing) => state.player.playing = playing,
         playerWidth: (state, percent) =>
@@ -280,7 +282,9 @@ export default new Vuex.Store({
             let duration = n / state.activeFragment.video.fps;
             let currentTime = state.player.progress * getters.fullDuration;
             let newProgress = Utils.clamp((currentTime + duration) / getters.fullDuration);
+            console.log("NEW progress", newProgress, currentTime, duration)
             let {fragment, videoProgress} = getters.fragmentAtProgress(newProgress);
+            console.log("f v", {fragment: state.timeline.indexOf(fragment), videoProgress})
             commit('activeFragment', fragment);
             fragment.video.element.pause();
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
@@ -311,7 +315,7 @@ export default new Vuex.Store({
             if (state.player.playing && fragment.video.element.paused)
                 fragment.video.element.play();
         },
-        async playNextFragment({state, commit, dispatch}) {
+        async playNextFragment({state, commit, dispatch}, play = false) {
             let currentIndex = state.timeline.indexOf(state.activeFragment);
             if (currentIndex >= state.timeline.length - 1) {
                 state.activeFragment.video.element.pause();
@@ -321,8 +325,10 @@ export default new Vuex.Store({
             let nextFragment = state.timeline[currentIndex + 1];
             let element = nextFragment.video.element;
             element.currentTime = nextFragment.start * nextFragment.video.duration;
-            if (!state.activeFragment.video.element.paused)
+            console.log(state.activeFragment);
+            if (!state.activeFragment.video.element.paused || play) {
                 element.play().then();
+            }
             commit('activeFragment', nextFragment);
         },
         async play({state, commit}) {

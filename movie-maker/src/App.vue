@@ -33,16 +33,17 @@
 // youtube output video
 
 // allow set output bitrate
-// load in audio wave cleaner (don't set last point at (end, 0)
-
 // history panel doesnt scroll down when adding command
 
 // Advanced export (visualize filter graph)
 // apply filter only if thing changed
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
-// when at start of a 2nd part of split fragment and press next frame it breaks
+// when at start of a 2nd part of split fragment and press next frame it breaks:
+// * problem lies in skipFrames not skipping to next fragment properly when at end of fragment
 
 // DONE TODO
+// load in audio wave cleaner (don't set last point at (end, 0)
+// pause when switching to next fragment while playing???
 // implement open video button
 // implement open video folder button
 // this may be allowed, but then there should be a way to get back to the current export status,
