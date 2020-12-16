@@ -69,11 +69,39 @@ export default {
                 inputs: fragments.flatMap((f, i) => ['v' + i, 'a' + i]),
                 outputs: 'out',
             });
+            if (rootState.export.customResolution)
+                filter.push({
+                    inputs: 'out',
+                    filter: 'scale',
+                    options: {
+                        w: rootState.export.width,
+                        h: rootState.export.height,
+                        flags: 'bicubic',
+                    },
+                    outputs: 'out',
+                })
+            if (rootState.export.fps !== '' && rootState.export.interpolate)
+                filter.push({
+                    inputs: 'out',
+                    filter: 'minterpolate',
+                    options: {
+                        fps: `${rootState.export.fps}`
+                    },
+                    outputs: 'out',
+                })
+            else if (rootState.export.fps !== '')
+                filter.push({
+                    inputs: 'out',
+                    filter: 'fps',
+                    options: `${rootState.export.fps}`,
+                    outputs: 'out',
+                })
+
             return filter;
         }
     },
     actions: {
-        async exportVideo({dispatch, state, rootState, getters, commit}, filePath) {
+        async exportVideo({dispatch, rootState, getters, commit}) {
             if (getters.isExporting) {
                 return dispatch('addSnack', {text: "A video is already exporting, abort it before trying again"})
             }
@@ -103,8 +131,10 @@ export default {
                 .on('end', (stdout, stderr) => {
                     commit('statusDone', true);
                     commit('statusCommand', null);
-                })
-                .saveToFile(filePath);
+                });
+            if (rootState.export.bitrate !== '')
+                command = command.videoBitrate(Math.round(rootState.export.bitrate * 1000) + 'k');
+            command.saveToFile(rootState.export.outputPath);
 
             console.log({ffmpeg, command});
             // todo: set to desired fps from export options

@@ -29,16 +29,15 @@
 <script>
 // TODO: Features
 // test for bugs
-// ffmpeg output video
 // youtube output video
-
-// allow set output bitrate
 
 // Advanced export (visualize filter graph)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // apply filter only if thing changed
 
 // DONE TODO
+// ffmpeg output video
+// allow set output bitrate
 // history panel doesnt scroll down when adding command
 // when at start of a 2nd part of split fragment and press next frame it breaks:
 // * problem lies in skipFrames not skipping to next fragment properly when at end of fragment

@@ -85,14 +85,18 @@ export default {
     methods: {
         dismiss() {
             this.$store.commit('showExportStatus', false);
-            if (this.status.error)
-                this.$store.commit('statusError', '');
         },
         abort() {
             this.status.command.kill();
             console.log('abort');
         },
         ...mapActions(['openFile', 'openFolder']),
+    },
+    watch: {
+        'status.show'() {
+            if (!this.status.show && this.status.error !== '')
+                this.$store.commit('statusError', '');
+        },
     },
     computed: {
         ...mapGetters(['exportProgress', 'isExporting']),

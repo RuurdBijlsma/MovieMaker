@@ -12,13 +12,22 @@
                                   v-model="$store.state.export.outputPath"></v-text-field>
                     <v-btn @click="promptVideoExport" rounded class="ml-4 mb-1" text>...</v-btn>
                 </div>
-                <v-text-field label="Output FPS"
+                <v-text-field label="Output FPS (optional)"
                               outlined
                               dense
                               v-model="$store.state.export.fps"
+                              type="number"></v-text-field>
+                <v-switch v-if="$store.state.export.fps !== ''"
+                          label="Interpolate frames"
+                          class="interpolate-switch"
+                          v-model="$store.state.export.interpolate"></v-switch>
+                <v-text-field label="Video bitrate (MB/s, optional)"
+                              outlined
+                              dense
+                              v-model="$store.state.export.bitrate"
                               hide-details="auto"
                               type="number"></v-text-field>
-                <v-switch v-model="$store.state.export.customResolution" label="Edit output resolution"></v-switch>
+                <v-switch v-model="$store.state.export.customResolution" label="Change output resolution"></v-switch>
                 <div class="resolution">
                     <v-text-field label="Width"
                                   outlined
@@ -66,7 +75,7 @@ export default {
         },
         confirm() {
             if (path.isAbsolute(this.outputPath)) {
-                this.$store.dispatch('exportVideo', this.outputPath);
+                this.$store.dispatch('exportVideo');
                 this.$store.commit('showExportDialog', false);
             } else {
                 this.$store.dispatch('addSnack', {text: `Given path "${this.outputPath}" is not valid`});
@@ -123,6 +132,10 @@ export default {
     border-radius: 3px;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.interpolate-switch {
+    margin-top: -10px;
 }
 
 .resolution {

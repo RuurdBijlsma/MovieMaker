@@ -32,7 +32,9 @@ export default new Vuex.Store({
         },
         export: {
             showDialog: false,
-            fps: 60,
+            fps: '',
+            interpolate: false,
+            bitrate: '',
             customResolution: false,
             width: 2560,
             height: 1440,

@@ -92,13 +92,14 @@ export default {
             }
             return {canceled, filePath};
         },
-        async exportVideoAs({dispatch, getters}) {
+        async exportVideoAs({commit,dispatch, getters}) {
             if (!getters.hasProject)
                 return;
             let {canceled, filePath} = await dispatch('promptVideoExport');
             if (!canceled) {
+                commit('exportOutputPath', filePath);
                 console.log("EXPORT", filePath);
-                await dispatch('exportVideo', filePath);
+                await dispatch('exportVideo');
             }
         },
         async promptVideoInput({dispatch, commit}) {
