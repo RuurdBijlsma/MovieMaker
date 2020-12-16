@@ -31,6 +31,8 @@
 // test for bugs
 // youtube output video
 
+// add youtube title/description input field to ExportDialog
+
 // Advanced export (visualize filter graph)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // apply filter only if thing changed
