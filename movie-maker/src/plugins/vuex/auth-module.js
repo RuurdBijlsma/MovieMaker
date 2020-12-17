@@ -72,10 +72,6 @@ export default {
             commit('ytDone', false);
             commit('ytProgress', 0);
             commit('ytUrl', '');
-            let options = rootState.youtube;
-            // const fileSize = fs.statSync(filePath).size;
-            // console.log({filePath, fileSize})
-
 
             let filePath = 'C:/Users/Ruurd/Videos/soep.mp4';
             let fileSize = fs.statSync(filePath).size;
