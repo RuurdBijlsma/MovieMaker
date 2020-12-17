@@ -1,8 +1,10 @@
 import electron, {remote} from "electron";
 import http from "http";
-import youtube from "youtube-api";
+import {google} from 'googleapis'
 import Utils from "@/js/Utils";
 import fs from 'fs';
+
+const service = google.youtube('v3')
 
 const express = window.require('express');
 
@@ -41,73 +43,87 @@ export default {
             state.tokens.access_token !== null &&
             state.tokens.refresh_token !== null,
         redirectUrl: state => 'http://localhost:' + state.port,
-        oauth: (state, getters) =>
-            youtube.authenticate({
-                type: "oauth",
-                client_id: state.ytId,
-                client_secret: state.ytSecret,
-                redirect_url: getters.redirectUrl,
-            }),
+        oauth: (state, getters) => {
+            let client = new google.auth.OAuth2(
+                state.ytId,
+                state.ytSecret,
+                getters.redirectUrl,
+            );
+            console.log("stuff", client._clientId, client._clientSecret);
+            client.on('tokens', (tokens) => {
+                console.log("auto setting access token to", tokens.access_token);
+                state.tokens.access_token = tokens.access_token;
+            });
+            return client;
+        },
         authUrl: (state, getters) =>
             getters.oauth.generateAuthUrl({
-                access_type: "offline",
+                access_type: 'offline',
                 scope: [
                     "https://www.googleapis.com/auth/youtube.upload",
                     "https://www.googleapis.com/auth/youtube.readonly"
                 ],
-            }),
+            })
     },
     actions: {
-        uploadVideo({commit, state, rootState}, filePath) {
-            return new Promise(async (resolve, reject) => {
-                console.log("Upload", filePath, youtube);
-                commit('ytUpload', true);
-                commit('ytDone', false);
-                commit('ytProgress', 0);
-                commit('ytUrl', '');
-                let options = rootState.youtube;
+        async uploadVideo({commit, getters, rootState}) {
+            console.log("Upload", filePath, service);
+            commit('ytUpload', true);
+            commit('ytDone', false);
+            commit('ytProgress', 0);
+            commit('ytUrl', '');
+            let options = rootState.youtube;
+            // const fileSize = fs.statSync(filePath).size;
+            // console.log({filePath, fileSize})
 
-                const fileSize = fs.statSync(filePath).size;
-                console.log({filePath, fileSize})
-                let res = await youtube.videos.insert({
-                    resource: {
-                        // Video title and description
-                        snippet: {
-                            title: "Testing YoutTube API NodeJS module"
-                            , description: "Test video upload via YouTube API"
-                        }
-                        // I don't want to spam my subscribers
-                        , status: {
-                            privacyStatus: "private"
-                        }
+
+            let filePath = 'C:/Users/Ruurd/Videos/soep.mp4';
+            let fileSize = fs.statSync(filePath).size;
+            let title = 'What up gang my new rocet league video here';
+            console.log("Uploading", title);
+            let res = await service.videos.insert({
+                auth: getters.oauth,
+                part: 'snippet,status',
+                resource: {
+                    snippet: {
+                        title,
+                        description: 'how u doing'
                     },
-                    part: "snippet,status",
-                    media: {body: fs.createReadStream(filePath)},
-                });
-                console.log(res);
-            })
+                    status: {
+                        privacyStatus: "unlisted"
+                    },
+                },
+                media: {
+                    mimeType: 'video/mp4',
+                    body: fs.createReadStream(filePath)
+                },
+            }, {
+                onUploadProgress: function (e) {
+                    console.log('progress', e.bytesRead / fileSize);
+                }
+            });
+            console.log(res);
         },
 
-        cacheAuth({state}) {
-            localStorage.auth = JSON.stringify(state);
-            console.log("Auth cached!");
+        async initializeAuth({state, getters, dispatch}) {
+            if (!getters.isLoggedIn) return;
+            dispatch('setTokens', state.tokens);
         },
         setTokens({commit, getters, dispatch}, tokens) {
             commit('tokens', tokens);
+            console.log("SETTING CREDENTIALS", tokens);
             getters.oauth.setCredentials(tokens);
             dispatch('processAuth');
-            console.log("set credentials");
         },
-        async initializeAuth({state, getters, dispatch}) {
-            if (!getters.isLoggedIn) return;
-            getters.oauth.setCredentials(state.tokens);
-            dispatch('processAuth');
-        },
-        async processAuth({commit}) {
-            let result = await youtube.channels.list({part: 'snippet', mine: true});
+        async processAuth({commit, getters}) {
+            let result = await service.channels.list({auth: getters.oauth, part: 'snippet', mine: true});
             let userInfo = result.data.items?.[0]?.snippet;
             commit("userInfo", userInfo);
-            console.log(youtube);
+            console.log(service);
+        },
+        cacheAuth({state}) {
+            localStorage.auth = JSON.stringify(state);
+            console.log("Auth cached!");
         },
         resetYtLogin({state, commit}) {
             if (state.server !== null) {
@@ -140,6 +156,7 @@ export default {
                     return;
                 }
                 let {shell} = electron;
+                console.log(getters.oauth, getters.authUrl);
                 await shell.openExternal(getters.authUrl);
 
                 if (state.server !== null)
@@ -153,10 +170,9 @@ export default {
                         server.close()
                         commit('server', null);
                         console.log("Stopped listening on *:" + state.port);
-                        getters.oauth.getToken(req.query.code, (err, tokens) => {
-                            remote.getCurrentWindow().focus();
-                            resolve(tokens);
-                        });
+                        let {tokens} = await getters.oauth.getToken(req.query.code);
+                        remote.getCurrentWindow().focus();
+                        resolve(tokens);
                     }
                     res.send(`
                         <html lang="en">
