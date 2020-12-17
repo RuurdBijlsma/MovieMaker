@@ -141,6 +141,21 @@ export default {
                 dispatch('getFilters')
             }, 800);
         },
+        resetYouTubeStatus({commit}){
+            commit('ytDone', false);
+            commit('ytUrl', '');
+            commit("ytProgress", {
+                uploaded: 0,
+                total: -1,
+                percent: 0,
+            })
+        },
+        resetExportStatus({commit}){
+            commit('statusDone', false);
+            commit('statusProgress', 0);
+            commit('statusOutput', []);
+            commit('statusError', '');
+        },
         async exportVideo({dispatch, rootState, getters, commit}) {
             if (getters.isExporting) {
                 dispatch('addSnack', {text: "A video is already exporting, abort it before trying again"})
@@ -148,11 +163,7 @@ export default {
             }
 
             return new Promise(((resolve, reject) => {
-                commit('statusDone', false);
-                commit('statusProgress', 0);
-                commit('statusOutput', []);
-                commit('statusError', '');
-                commit('showExportStatus', true);
+                dispatch('resetExportStatus');
                 commit('showExportStatus', true);
 
                 let command = ffmpeg();

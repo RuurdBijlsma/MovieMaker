@@ -24,6 +24,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         exportStatus: {
+            youtube: false,
             done: false,
             show: false,
             progress: 0,
@@ -92,6 +93,7 @@ export default new Vuex.Store({
         customWidth: (state, width) => state.export.width = width,
         showExportDialog: (state, value) => state.export.showDialog = value,
 
+        isYtUpload: (state, value) => state.exportStatus.youtube = value,
         statusCommand: (state, command) => state.exportStatus.command = command,
         statusDone: (state, value) => state.exportStatus.done = value,
         statusProgress: (state, value) => state.exportStatus.progress = value,
@@ -176,6 +178,7 @@ export default new Vuex.Store({
             state.configTimeline.widthPerSecond = localStorage.widthPerSecond = pixels,
     },
     getters: {
+        isUploading: state=>state.youtube.upload && !state.youtube.done,
         isExporting: state => state.exportStatus.command !== null,
         exportProgress: (state, getters) => {
             let time = state.exportStatus.progress.timemark;
@@ -368,6 +371,7 @@ export default new Vuex.Store({
                 return;
             let filePath = path.join(Directories.temp, 'yt.mp4');
             commit('exportOutputPath', filePath);
+            commit('isYtUpload', true);
             try {
                 let success = await dispatch('exportVideo');
                 if (!success)

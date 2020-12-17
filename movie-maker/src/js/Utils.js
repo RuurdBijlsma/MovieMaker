@@ -7,6 +7,10 @@ export default class Utils {
     }
 
     static readableBytes(bytes, si = true, dp = 1) {
+        if (bytes === undefined || bytes === null || isNaN(bytes)) {
+            return '0 B';
+        }
+
         const thresh = si ? 1000 : 1024;
 
         if (Math.abs(bytes) < thresh) {
@@ -24,11 +28,10 @@ export default class Utils {
             ++u;
         } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
 
-
         return bytes.toFixed(dp) + ' ' + units[u];
     }
 
-    static fixPath(winPath){
+    static fixPath(winPath) {
         return winPath.replace(/\\/gi, '/');
     }
 

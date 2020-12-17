@@ -66,15 +66,12 @@ export default {
             })
     },
     actions: {
-        async uploadVideo({commit, state, getters, rootState}, filePath) {
+        async cancelUpload() {
+            await ipcRenderer.invoke('cancelUpload');
+        },
+        async uploadVideo({dispatch, commit, state, getters, rootState}, filePath) {
+            dispatch('resetYouTubeStatus');
             commit('ytUpload', true);
-            commit('ytDone', false);
-            commit('ytUrl', '');
-            commit("ytProgress", {
-                uploaded: 0,
-                total: -1,
-                percent: 0,
-            })
 
             let uploadId = Math.round(Math.random() * 10000000);
 
@@ -84,21 +81,25 @@ export default {
                     total,
                     percent: uploaded / total,
                 })
-                console.log('progress listener', uploaded, total, uploaded / total);
             });
-            let result = await ipcRenderer.invoke('upload', {
-                title: 'test movie',
-                description: 'hello world',
-                privacy: 'Unlisted',
-                mime: 'video/mp4',
-                filePath,
-                ytId: state.ytId,
-                ytSecret: state.ytSecret,
-                tokens: state.tokens,
-                uploadId: uploadId,
-            });
-            commit('ytDone', true);
-            console.log('invoke result', result);
+            try {
+                let result = await ipcRenderer.invoke('upload', {
+                    title: 'test movie',
+                    description: 'hello world',
+                    privacy: 'Unlisted',
+                    mime: 'video/mp4',
+                    filePath,
+                    ytId: state.ytId,
+                    ytSecret: state.ytSecret,
+                    tokens: state.tokens,
+                    uploadId: uploadId,
+                });
+                console.log('invoke result', result);
+                commit('ytDone', true);
+            } catch (e) {
+                commit('ytUpload', false);
+                commit('statusError', e.message);
+            }
         },
 
         async initializeAuth({state, getters, dispatch}) {

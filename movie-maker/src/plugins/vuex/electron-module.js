@@ -73,11 +73,13 @@ export default {
         systemProgress: (state, getters, rootState) => {
             let status = rootState.exportStatus;
             if (getters.isExporting) {
-                currentWindow.setProgressBar(getters.exportProgress, {mode: 'normal'});
+                return [getters.exportProgress, {mode: 'normal'}];
+            }else if(getters.isUploading){
+                return [rootState.youtube.progress.percent, {mode: 'error'}];
             } else if (status.error !== '') {
-                currentWindow.setProgressBar(1, {mode: 'error'});
+                return [1, {mode: 'paused'}];
             } else {
-                currentWindow.setProgressBar(-1, {mode: 'normal'});
+                return [-1, {mode: 'normal'}];
             }
         }
     },
@@ -151,6 +153,7 @@ export default {
                 return;
             let {canceled, filePath} = await dispatch('promptVideoExport');
             if (!canceled) {
+                commit('isYtUpload', false);
                 commit('exportOutputPath', filePath);
                 console.log("EXPORT", filePath);
                 dispatch('exportVideo');

@@ -128,11 +128,10 @@
 import {mapActions, mapState} from "vuex";
 import path from 'path'
 import AdvancedExportOptions from "@/components/AdvancedExportOptions";
-import CustomExpando from "@/components/CustomExpando";
 
 export default {
     name: "ExportDialog",
-    components: {CustomExpando, AdvancedExportOptions},
+    components: {AdvancedExportOptions},
     data: () => ({
         pathRules: [
             v => path.isAbsolute(v) || 'Must be a valid path',

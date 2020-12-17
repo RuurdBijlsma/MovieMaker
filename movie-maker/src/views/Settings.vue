@@ -8,14 +8,16 @@
         <v-divider class="mt-2 mb-2"></v-divider>
         <div class="secrets">
             <h2>Secrets</h2>
-            <p class="caption">These values must be set before using features related to YouTube. Order: YouTube Id, Youtube
+            <p class="caption">These values must be set before using features related to YouTube. Order: YouTube Id,
+                Youtube
                 Secret</p>
             <div class="secret-textarea">
                 <div class="secret-help">
                     <p>Client ID</p>
                     <p>Client Secret</p>
                 </div>
-                <v-textarea :placeholder="secretsPlaceholder" no-resize spellcheck="false" :rules="secretRules"
+                <v-textarea :placeholder="secretsPlaceholder" no-resize spellcheck="false"
+                            :rules="secretRules"
                             outlined
                             hide-details="auto"
                             auto-grow row-height="4"
@@ -27,7 +29,7 @@
             </p>
             <p v-else class="key-saved">
                 <v-icon color="error">mdi-close</v-icon>
-                <span>One ore more keys not valid</span>
+                <span>One or more keys not valid</span>
             </p>
         </div>
         <div>
@@ -76,12 +78,13 @@
                         v-model="secondaryColor"
                         hide-mode-switch
         />
-        <v-btn class="mt-2" text color="primary" @click="resetColor()">Reset Theme Color</v-btn>
+        <v-btn class="mt-2" text color="primary" @click="resetColor()">Reset Theme Colors</v-btn>
     </div>
 </template>
 
 <script>
 import Vuetify from '../plugins/vuetify'
+import {mapState} from "vuex";
 
 const theme = Vuetify.framework.theme.themes[Vuetify.framework.theme.isDark ? 'dark' : 'light'];
 export default {
@@ -91,7 +94,7 @@ export default {
         secondaryColor: theme.secondary,
         editingPrimary: true,
 
-        secretsPlaceholder: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        secretsPlaceholder: "4876207845-anjsasd9gjan90dg8as89yd.apps.googleusercontent.com\nDadShg98sduHJDAFs9d8",
         secrets: "",
         loginLoading: false,
         secretRules: [
@@ -103,7 +106,8 @@ export default {
     },
     methods: {
         updateSecrets() {
-            this.secrets = this.$store.state.auth.ytId + '\n' + this.$store.state.auth.ytSecret;
+            if (this.auth.ytId !== '' || this.auth.ytSecret !== '')
+                this.secrets = this.$store.state.auth.ytId + '\n' + this.$store.state.auth.ytSecret;
         },
         async resetLogin() {
             await this.$store.dispatch('resetYtLogin');
@@ -115,7 +119,7 @@ export default {
             this.loginLoading = false;
         },
         async logout() {
-            this.$store.dispatch('ytLogout');
+            await this.$store.dispatch('ytLogout');
         },
         resetColor() {
             this.primaryColor = '#ed4b83';
@@ -155,6 +159,11 @@ export default {
                 localStorage.secondaryColor = this.secondaryColor;
             }
         },
+    },
+    computed: {
+        ...mapState({
+            auth: state => state.auth,
+        }),
     }
 }
 </script>

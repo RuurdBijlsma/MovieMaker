@@ -53,13 +53,16 @@
         </div>
         <div class="right-content">
 
-            <v-btn class="no-drag" icon v-if="!isExporting && status.done"
+            <v-btn class="no-drag" icon v-if="status.done && !(isExporting || isUploading) && status.error === ''"
                    @click="$store.commit('showExportStatus', true)">
                 <v-icon color="success">mdi-check</v-icon>
             </v-btn>
-            <v-btn icon v-if="isExporting" @click="$store.commit('showExportStatus', true)">
-                <v-progress-circular class="no-drag" :value="exportProgress * 100">
-                    {{ Math.round(exportProgress * 100) }}
+            <v-btn icon v-if="isExporting || isUploading"
+                   @click="$store.commit('showExportStatus', true)">
+                <v-progress-circular class="no-drag"
+                                     :color="isUploading ? 'red' : 'default'"
+                                     :value="(isUploading ? youtube.progress.percent : exportProgress) * 100">
+                    {{ Math.round((isUploading ? youtube.progress.percent : exportProgress) * 100) }}
                 </v-progress-circular>
             </v-btn>
 
@@ -174,6 +177,11 @@ export default {
     },
     methods: {
         showExportDialog(youtube = false) {
+            if (youtube && !this.isLoggedIn) {
+                this.addSnack({text: "You must log in to YouTube before uploading"});
+                this.$router.push("/settings");
+                return;
+            }
             this.$store.commit('ytShow', youtube);
             this.$store.commit('showExportDialog', true);
         },
@@ -183,7 +191,7 @@ export default {
         },
         ...mapActions([
             'promptVideoInput', 'exportToYouTube', 'exportVideoAs', 'secureClose',
-            'promptProjectInput', 'saveProjectAs', 'newProject', 'saveProject',
+            'promptProjectInput', 'saveProjectAs', 'newProject', 'saveProject', 'addSnack',
         ]),
     },
     watch: {
@@ -192,8 +200,9 @@ export default {
         },
     },
     computed: {
-        ...mapGetters(['hasProject', 'projectFileName', 'isExporting', 'exportProgress']),
+        ...mapGetters(['hasProject', 'projectFileName', 'isExporting', 'exportProgress', 'isUploading', 'isLoggedIn']),
         ...mapState({
+            youtube: state => state.youtube,
             activeFragment: state => state.activeFragment,
             importVideoLoading: state => state.loading.videoImport,
             importProjectLoading: state => state.loading.projectImport,

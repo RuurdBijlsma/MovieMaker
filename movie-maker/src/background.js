@@ -7,7 +7,7 @@ import path from 'path'
 import * as Splashscreen from "@trodi/electron-splashscreen";
 import Utils from "@/js/Utils";
 import {upload} from "@/js/yt";
-
+import AbortController from "abort-controller";
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -125,8 +125,15 @@ function createWindow() {
     });
 }
 
+let controller = new AbortController();
+ipcMain.handle('cancelUpload', () => {
+    console.log("aborting signal");
+    controller.abort();
+    controller = new AbortController();
+})
+
 ipcMain.handle('upload', async (event, args) => {
-    return await upload(win, args);
+    return await upload(win, args, controller.signal);
 })
 
 ipcMain.on('quit', (event, args) => {

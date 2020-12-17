@@ -15,7 +15,7 @@
         <export-status></export-status>
 
         <v-snackbar v-for="snack in $store.state.snackbars" app v-model="snack.open" :timeout="snack.timeout"
-                    :outlined="!$vuetify.theme.dark" color="primary">
+                     color="secondary">
             {{ snack.text }}
             <template v-slot:action="{ attrs }">
                 <v-btn text v-bind="attrs" :color="$vuetify.theme.dark ? 'default' : 'primary'"
@@ -30,13 +30,6 @@
 <script>
 // TODO: Features
 // test for bugs
-// youtube output video
-
-// transform to 'googleapis' remove 'youtube-api'
-
-// if not logged in don't allow user to youtube stuff
-// upload video to youtube
-// show youtube video upload status
 
 // Advanced export (visualize filter graph)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
@@ -44,6 +37,12 @@
 // add cpu priority to settings
 
 // DONE TODO
+// transform to 'googleapis' remove 'youtube-api'
+// add cancel button when uploading video
+// show youtube video upload status
+// upload video to youtube
+// if not logged in don't allow user to youtube stuff
+// youtube output video
 // add youtube title/description input field to ExportDialog
 // now that i have a prompt maybe do it on add of filter (and on chip click)
 // change export button to choose output path button
@@ -137,6 +136,7 @@ export default {
         disposeContextMenu: null,
     }),
     async mounted() {
+        this.updateSystemProgress();
         if (location.search.includes('file=video')) {
             this.$store.commit('importVideoLoading', true);
         } else if (location.search.includes('file=project')) {
