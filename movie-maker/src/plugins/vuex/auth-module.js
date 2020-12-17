@@ -1,4 +1,4 @@
-import electron, {remote} from "electron";
+import electron, {remote, ipcRenderer} from "electron";
 import http from "http";
 import {google} from 'googleapis'
 import Utils from "@/js/Utils";
@@ -66,39 +66,39 @@ export default {
             })
     },
     actions: {
-        async uploadVideo({commit, getters, rootState}) {
-            console.log("Upload", filePath, service);
+        async uploadVideo({commit, state, getters, rootState}, filePath) {
             commit('ytUpload', true);
             commit('ytDone', false);
-            commit('ytProgress', 0);
             commit('ytUrl', '');
+            commit("ytProgress", {
+                uploaded: 0,
+                total: -1,
+                percent: 0,
+            })
 
-            let filePath = 'C:/Users/Ruurd/Videos/soep.mp4';
-            let fileSize = fs.statSync(filePath).size;
-            let title = 'What up gang my new rocet league video here';
-            console.log("Uploading", title);
-            let res = await service.videos.insert({
-                auth: getters.oauth,
-                part: 'snippet,status',
-                resource: {
-                    snippet: {
-                        title,
-                        description: 'how u doing'
-                    },
-                    status: {
-                        privacyStatus: "unlisted"
-                    },
-                },
-                media: {
-                    mimeType: 'video/mp4',
-                    body: fs.createReadStream(filePath)
-                },
-            }, {
-                onUploadProgress: function (e) {
-                    console.log('progress', e.bytesRead / fileSize);
-                }
+            let uploadId = Math.round(Math.random() * 10000000);
+
+            ipcRenderer.on('progress' + uploadId, (e, uploaded, total) => {
+                commit("ytProgress", {
+                    uploaded,
+                    total,
+                    percent: uploaded / total,
+                })
+                console.log('progress listener', uploaded, total, uploaded / total);
             });
-            console.log(res);
+            let result = await ipcRenderer.invoke('upload', {
+                title: 'test movie',
+                description: 'hello world',
+                privacy: 'Unlisted',
+                mime: 'video/mp4',
+                filePath,
+                ytId: state.ytId,
+                ytSecret: state.ytSecret,
+                tokens: state.tokens,
+                uploadId: uploadId,
+            });
+            commit('ytDone', true);
+            console.log('invoke result', result);
         },
 
         async initializeAuth({state, getters, dispatch}) {

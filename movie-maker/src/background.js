@@ -6,6 +6,7 @@ import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import path from 'path'
 import * as Splashscreen from "@trodi/electron-splashscreen";
 import Utils from "@/js/Utils";
+import {upload} from "@/js/yt";
 
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -124,7 +125,11 @@ function createWindow() {
     });
 }
 
-ipcMain.on('quit', (event, arg) => {
+ipcMain.handle('upload', async (event, args) => {
+    return await upload(win, args);
+})
+
+ipcMain.on('quit', (event, args) => {
     quitAllowed = true;
     app.quit();
 })

@@ -7,7 +7,6 @@ module.exports = {
                 'express',
                 'fluent-ffmpeg',
                 'electron-context-menu',
-                'googleapis',
             ],
             "builderOptions": {
                 "appId": "dev.ruurd.moviemaker",
