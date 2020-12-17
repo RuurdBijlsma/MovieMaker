@@ -1,9 +1,9 @@
 <template>
-    <v-dialog v-model="$store.state.exportStatus.show" width="800">
-        <v-card :loading="!status.done">
+    <v-dialog v-model="$store.state.exportStatus.show" width="700">
+        <v-card :loading="true">
             <template slot="progress">
                 <v-progress-linear
-                    :color="status.error !== '' ? 'error' : exportProgress > 0.9 ? 'success' : 'primary'"
+                    :color="status.error !== '' ? 'error' : status.done ? 'success' : 'primary'"
                     :value="exportProgress * 100"
                 ></v-progress-linear>
             </template>
@@ -90,7 +90,7 @@ export default {
             this.status.command.kill();
             console.log('abort');
         },
-        ...mapActions(['openFile', 'openFolder']),
+        ...mapActions(['openFile', 'openFolder','showTextPrompt']),
     },
     watch: {
         'status.show'() {

@@ -16,10 +16,14 @@ export default {
         downloading: false,
         ffmpegReady: false,
         videoFileCache: {},
-        availableFormats: [],
+        cache: {
+            filters: null,
+            formats: null,
+        },
     },
     mutations: {
-        availableFormats: (state, formats) => state.availableFormats = formats,
+        formatsCache: (state, formatsCache) => state.cache.formats = formatsCache,
+        filtersCache: (state, filters) => state.cache.filters = filters,
         videoFileCache: (state, {path, file}) => Vue.set(state.videoFileCache, path, file),
     },
     getters: {
@@ -67,7 +71,7 @@ export default {
                 filter: 'concat',
                 options: `n=${fragments.length}:a=1`,
                 inputs: fragments.flatMap((f, i) => ['v' + i, 'a' + i]),
-                outputs: 'out',
+                outputs: ['out', 'outa'],
             });
             if (rootState.export.customResolution)
                 filter.push({
@@ -97,50 +101,88 @@ export default {
                     outputs: 'out',
                 })
 
-            return filter;
+            let outputs = new Set(['out', 'outa'])
+            rootState.export.filters.forEach(f => {
+                if (f.input === 'audio' && f.output === 'video') {
+                    filter.push({
+                        inputs: 'out',
+                        filter: 'nullsink',
+                    })
+                    outputs.delete('outa');
+                } else if (f.input === 'video' && f.output === 'audio') {
+                    outputs.delete('out');
+                    filter.push({
+                        inputs: 'outa',
+                        filter: 'nullsink',
+                    })
+                }
+                filter.push({
+                    inputs: 'out' + (f.input === 'audio' ? 'a' : ''),
+                    filter: f.name,
+                    options: f.options,
+                    outputs: 'out' + (f.output === 'audio' ? 'a' : ''),
+                })
+            })
+
+            return [filter, [...outputs]];
         }
     },
     actions: {
+        async initializeFfmpeg({dispatch, state, commit}) {
+            console.log("Getting ffmpeg and ffprobe...");
+            await dispatch('getPaths');
+            VideoFile.ffmpegPath = state.paths.ffmpeg;
+            ffmpeg.setFfmpegPath(state.paths.ffmpeg);
+            ffmpeg.setFfprobePath(state.paths.ffprobe);
+            console.log("ffmpeg and ffprobe have been retrieved", {ffmpeg});
+            setTimeout(() => {
+                state.ffmpegReady = true;
+                state.downloadEvent.emit('ffmpegReady');
+                dispatch('getFilters')
+            }, 800);
+        },
         async exportVideo({dispatch, rootState, getters, commit}) {
             if (getters.isExporting) {
-                return dispatch('addSnack', {text: "A video is already exporting, abort it before trying again"})
+                dispatch('addSnack', {text: "A video is already exporting, abort it before trying again"})
+                return false;
             }
-            commit('statusDone', false);
-            commit('statusProgress', 0);
-            commit('statusOutput', []);
-            commit('statusError', '');
-            commit('showExportStatus', true);
-            commit('showExportStatus', true);
 
-            let command = ffmpeg();
-            commit('statusCommand', command);
+            return new Promise(((resolve, reject) => {
+                commit('statusDone', false);
+                commit('statusProgress', 0);
+                commit('statusOutput', []);
+                commit('statusError', '');
+                commit('showExportStatus', true);
+                commit('showExportStatus', true);
 
-            for (let video of rootState.videoFiles)
-                command = command.input(Utils.fixPath(video.filePath))
-            command = command.complexFilter(getters.complexFilter, 'out')
-                .on('start', commandLine => {
-                    console.log("Spawned ffmepg with command", commandLine)
-                    commit('addStatusOutput', commandLine);
-                })
-                .on('stderr', line => commit('addStatusOutput', line))
-                .on('progress', progress => commit('statusProgress', progress))
-                .on('error', (err, stdout, stderr) => {
-                    commit('statusCommand', null);
-                    commit('statusError', err)
-                })
-                .on('end', (stdout, stderr) => {
-                    commit('statusDone', true);
-                    commit('statusCommand', null);
-                });
-            if (rootState.export.bitrate !== '')
-                command = command.videoBitrate(Math.round(rootState.export.bitrate * 1000) + 'k');
-            command.saveToFile(rootState.export.outputPath);
+                let command = ffmpeg();
+                commit('statusCommand', command);
 
-            console.log({ffmpeg, command});
-            // todo: set to desired fps from export options
-            // .fps(60)
-            // .size('2560x1440')
-            // .autopad('black')
+                for (let video of rootState.videoFiles)
+                    command = command.input(Utils.fixPath(video.filePath))
+                command = command.complexFilter(...getters.complexFilter)
+                    .on('start', commandLine => {
+                        console.log("Spawned ffmepg with command", commandLine)
+                        commit('addStatusOutput', commandLine);
+                    })
+                    .on('stderr', line => commit('addStatusOutput', line))
+                    .on('progress', progress => commit('statusProgress', progress))
+                    .on('error', (err, stdout, stderr) => {
+                        commit('statusCommand', null);
+                        commit('statusError', err)
+                        reject(err);
+                    })
+                    .on('end', (stdout, stderr) => {
+                        commit('statusDone', true);
+                        commit('statusCommand', null);
+                        resolve(true);
+                    });
+
+                if (rootState.export.bitrate !== '')
+                    command = command.videoBitrate(Math.round(rootState.export.bitrate * 1000) + 'k');
+                command.saveToFile(rootState.export.outputPath);
+                console.log({ffmpeg, command});
+            }))
         },
         async getLoudness({}, {filePath, loudness = {}}) {
             return new Promise(((resolve, reject) => {
@@ -204,7 +246,32 @@ export default {
                     .saveToFile('-')
             }))
         },
-        async getFormats({}) {
+        async getFilters({state, dispatch, commit}) {
+            if (state.cache.filters === null)
+                commit('filtersCache', await dispatch('_getFilters'));
+            return state.cache.filters;
+        },
+        async _getFilters({}) {
+            return new Promise((resolve, reject) => {
+                ffmpeg.getAvailableFilters((err, filters) => {
+                    if (err)
+                        return reject(err);
+                    console.log("Available filters:");
+                    filters = Object.entries(filters)
+                        .filter(([_, v]) => !v.multipleOutputs && !v.multipleInputs)
+                        .map(([k, v]) => ({name: k, ...v}));
+                    //todo possibly filter out v.output !== 'video' also input !+'ivdoe
+                    console.dir(filters);
+                    resolve(filters);
+                });
+            })
+        },
+        async getFormats({state, commit, dispatch}) {
+            if (state.cache.formats === null)
+                commit('formatsCache', await dispatch('_getFormats'));
+            return state.cache.formats;
+        },
+        async _getFormats({}) {
             return new Promise(((resolve, reject) => {
                 ffmpeg.getAvailableFormats((err, result) => {
                     if (err)
@@ -229,18 +296,6 @@ export default {
                     resolve(formats);
                 });
             }))
-        },
-        async initializeFfmpeg({dispatch, state, commit}) {
-            console.log("Getting ffmpeg and ffprobe...");
-            await dispatch('getPaths');
-            VideoFile.ffmpegPath = state.paths.ffmpeg;
-            ffmpeg.setFfmpegPath(state.paths.ffmpeg);
-            ffmpeg.setFfprobePath(state.paths.ffprobe);
-            console.log("ffmpeg and ffprobe have been retrieved", {ffmpeg});
-            setTimeout(() => {
-                state.ffmpegReady = true;
-                state.downloadEvent.emit('ffmpegReady');
-            }, 800);
         },
         async waitForFfmpeg({state}) {
             return new Promise(resolve => {

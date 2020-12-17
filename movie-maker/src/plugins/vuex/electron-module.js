@@ -8,6 +8,17 @@ const currentWindow = remote.getCurrentWindow();
 
 export default {
     state: {
+        textPrompt: {
+            show: false,
+            title: '',
+            subtitle: '',
+            label: '',
+            value: '',
+            cancelText: '',
+            confirmText: '',
+            onConfirm: () => 0,
+            onCancel: () => 0,
+        },
         prompt: {
             show: false,
             title: '',
@@ -19,6 +30,27 @@ export default {
         },
     },
     mutations: {
+        hideTextPrompt: state => state.textPrompt.show = false,
+        showTextPrompt: (state, {
+            title = 'Input',
+            subtitle = '',
+            value = '',
+            label = '',
+            cancelText = 'Cancel',
+            confirmText = 'Submit',
+            onConfirm = () => 0,
+            onCancel = () => 0,
+        }) => {
+            state.textPrompt.show = true;
+            state.textPrompt.title = title;
+            state.textPrompt.subtitle = subtitle;
+            state.textPrompt.value = value;
+            state.textPrompt.label = label;
+            state.textPrompt.cancelText = cancelText;
+            state.textPrompt.confirmText = confirmText;
+            state.textPrompt.onConfirm = onConfirm;
+            state.textPrompt.onCancel = onCancel;
+        },
         hidePrompt: state => state.prompt.show = false,
         showPrompt: (state, {
             title = 'Are you sure?',
@@ -53,6 +85,27 @@ export default {
         updateSystemProgress({getters}) {
             currentWindow.setProgressBar(...getters.systemProgress);
         },
+        async showTextPrompt({commit, state}, {
+            title = 'Input',
+            subtitle = '',
+            value = '',
+            label = '',
+            cancelText = 'Cancel',
+            confirmText = 'Confirm',
+        }) {
+            return new Promise((resolve => {
+                commit('showTextPrompt', {
+                    title,
+                    subtitle,
+                    label,
+                    value,
+                    cancelText,
+                    confirmText,
+                    onConfirm: () => resolve({confirmed: true, value: state.textPrompt.value}),
+                    onCancel: () => resolve({confirmed: false, value: state.textPrompt.value}),
+                })
+            }));
+        },
         async showPrompt({commit}, {
             title = 'Are you sure?',
             subtitle = 'This will discard all unsaved changes',
@@ -74,7 +127,8 @@ export default {
             return localStorage.getItem('previousPath' + key) ?? defaultPath;
         },
         usePath({}, {key = '', usedPath}) {
-            localStorage['previousPath' + key] = path.basename(usedPath);
+            // localStorage['previousPath' + key] = path.dirname(usedPath);
+            localStorage['previousPath' + key] = usedPath;
         },
         async promptVideoExport({dispatch, commit}) {
             let formats = await dispatch('getFormats');
@@ -92,15 +146,16 @@ export default {
             }
             return {canceled, filePath};
         },
-        async exportVideoAs({commit,dispatch, getters}) {
+        async exportVideoAs({commit, dispatch, getters}) {
             if (!getters.hasProject)
                 return;
             let {canceled, filePath} = await dispatch('promptVideoExport');
             if (!canceled) {
                 commit('exportOutputPath', filePath);
                 console.log("EXPORT", filePath);
-                await dispatch('exportVideo');
+                dispatch('exportVideo');
             }
+            return canceled;
         },
         async promptVideoInput({dispatch, commit}) {
             let {canceled, filePaths} = await remote.dialog.showOpenDialog(remote.getCurrentWindow(), {

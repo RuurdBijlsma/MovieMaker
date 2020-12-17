@@ -1,6 +1,9 @@
 import electron, {remote} from "electron";
 import http from "http";
-import Youtube from "youtube-api";
+import youtube from "youtube-api";
+import Utils from "@/js/Utils";
+import fs from 'fs';
+
 const express = window.require('express');
 
 export default {
@@ -39,7 +42,7 @@ export default {
             state.tokens.refresh_token !== null,
         redirectUrl: state => 'http://localhost:' + state.port,
         oauth: (state, getters) =>
-            Youtube.authenticate({
+            youtube.authenticate({
                 type: "oauth",
                 client_id: state.ytId,
                 client_secret: state.ytSecret,
@@ -55,6 +58,36 @@ export default {
             }),
     },
     actions: {
+        uploadVideo({commit, state, rootState}, filePath) {
+            return new Promise(async (resolve, reject) => {
+                console.log("Upload", filePath, youtube);
+                commit('ytUpload', true);
+                commit('ytDone', false);
+                commit('ytProgress', 0);
+                commit('ytUrl', '');
+                let options = rootState.youtube;
+
+                const fileSize = fs.statSync(filePath).size;
+                console.log({filePath, fileSize})
+                let res = await youtube.videos.insert({
+                    resource: {
+                        // Video title and description
+                        snippet: {
+                            title: "Testing YoutTube API NodeJS module"
+                            , description: "Test video upload via YouTube API"
+                        }
+                        // I don't want to spam my subscribers
+                        , status: {
+                            privacyStatus: "private"
+                        }
+                    },
+                    part: "snippet,status",
+                    media: {body: fs.createReadStream(filePath)},
+                });
+                console.log(res);
+            })
+        },
+
         cacheAuth({state}) {
             localStorage.auth = JSON.stringify(state);
             console.log("Auth cached!");
@@ -71,10 +104,10 @@ export default {
             dispatch('processAuth');
         },
         async processAuth({commit}) {
-            let result = await Youtube.channels.list({part: 'snippet', mine: true});
+            let result = await youtube.channels.list({part: 'snippet', mine: true});
             let userInfo = result.data.items?.[0]?.snippet;
             commit("userInfo", userInfo);
-            console.log(Youtube);
+            console.log(youtube);
         },
         resetYtLogin({state, commit}) {
             if (state.server !== null) {

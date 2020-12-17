@@ -9,6 +9,7 @@
             <router-view class="router-view"></router-view>
         </v-main>
 
+        <custom-prompt></custom-prompt>
         <custom-dialog></custom-dialog>
         <export-dialog></export-dialog>
         <export-status></export-status>
@@ -31,13 +32,22 @@
 // test for bugs
 // youtube output video
 
-// add youtube title/description input field to ExportDialog
+// transform to 'googleapis' remove 'youtube-api'
+
+// if not logged in don't allow user to youtube stuff
+// upload video to youtube
+// show youtube video upload status
 
 // Advanced export (visualize filter graph)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // apply filter only if thing changed
+// add cpu priority to settings
 
 // DONE TODO
+// add youtube title/description input field to ExportDialog
+// now that i have a prompt maybe do it on add of filter (and on chip click)
+// change export button to choose output path button
+// add lotta filters in advanced export options thing expando
 // ffmpeg output video
 // allow set output bitrate
 // history panel doesnt scroll down when adding command
@@ -118,10 +128,11 @@ import Utils from "@/js/Utils";
 import CustomDialog from "@/components/CustomDialog";
 import ExportDialog from "@/components/ExportDialog";
 import ExportStatus from "@/components/ExportStatus";
+import CustomPrompt from "@/components/CustomPrompt";
 
 export default {
     name: 'App',
-    components: {ExportStatus, ExportDialog, CustomDialog, VideoInfoFooter, CustomHeader},
+    components: {CustomPrompt, ExportStatus, ExportDialog, CustomDialog, VideoInfoFooter, CustomHeader},
     data: () => ({
         disposeContextMenu: null,
     }),

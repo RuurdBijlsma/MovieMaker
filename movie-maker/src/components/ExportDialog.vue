@@ -1,49 +1,115 @@
 <template>
-    <v-dialog v-model="$store.state.export.showDialog" width="800">
+    <v-dialog v-model="$store.state.export.showDialog" width="700">
         <v-card>
-            <v-card-title>Export video</v-card-title>
-            <v-card-text>
-                <div class="output-path">
-                    <v-text-field label="Output path"
-                                  outlined
+            <v-expansion-panels accordion multiple v-model="panel">
+                <v-expansion-panel :disabled="!youtube.show">
+                    <v-expansion-panel-header>
+                        <div>
+                            <v-icon class="mr-3" color="red">mdi-youtube</v-icon>
+                            YouTube
+                        </div>
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <v-text-field
+                            label="Title"
+                            outlined
+                            hide-details="auto"
+                            class="mb-4"
+                            dense
+                            v-model="$store.state.youtube.title">
+                        </v-text-field>
+                        <v-textarea
+                            rows="3"
+                            label="Description"
+                            hide-details="auto"
+                            outlined
+                            dense
+                            v-model="$store.state.youtube.description">
+                        </v-textarea>
+                        <v-select v-model="$store.state.youtube.privacy"
+                                  hide-details="auto"
                                   dense
-                                  :rules="pathRules"
-                                  class="mt-5"
-                                  v-model="$store.state.export.outputPath"></v-text-field>
-                    <v-btn @click="promptVideoExport" rounded class="ml-4 mb-1" text>...</v-btn>
-                </div>
-                <v-text-field label="Output FPS (optional)"
-                              outlined
-                              dense
-                              v-model="$store.state.export.fps"
-                              type="number"></v-text-field>
-                <v-switch v-if="$store.state.export.fps !== ''"
-                          label="Interpolate frames"
-                          class="interpolate-switch"
-                          v-model="$store.state.export.interpolate"></v-switch>
-                <v-text-field label="Video bitrate (MB/s, optional)"
-                              outlined
-                              dense
-                              v-model="$store.state.export.bitrate"
-                              hide-details="auto"
-                              type="number"></v-text-field>
-                <v-switch v-model="$store.state.export.customResolution" label="Change output resolution"></v-switch>
-                <div class="resolution">
-                    <v-text-field label="Width"
+                                  label="Privacy status"
                                   outlined
-                                  :disabled="!$store.state.export.customResolution"
+                                  class="mt-4"
+                                  :items="['Public','Unlisted','Private']"
+                        ></v-select>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+                <v-expansion-panel>
+                    <v-expansion-panel-header>
+                        <div>
+                            <v-icon class="mr-3">mdi-cog</v-icon>
+                            Export settings
+                        </div>
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <v-text-field label="Output FPS (optional)"
+                                      outlined
+                                      dense
+                                      hide-details="auto"
+                                      class="mb-4"
+                                      v-model="$store.state.export.fps"
+                                      type="number"></v-text-field>
+                        <v-switch v-if="$store.state.export.fps !== ''"
+                                  label="Interpolate frames"
+                                  inset
                                   dense
-                                  v-model="exportWidth"
-                                  type="number"></v-text-field>
-                    <p>x</p>
-                    <v-text-field label="Height"
-                                  :disabled="!$store.state.export.customResolution"
-                                  outlined
+                                  class="interpolate-switch"
+                                  v-model="$store.state.export.interpolate"></v-switch>
+                        <v-text-field label="Video bitrate (MB/s, optional)"
+                                      outlined
+                                      dense
+                                      v-model="$store.state.export.bitrate"
+                                      hide-details="auto"
+                                      type="number"></v-text-field>
+                        <v-switch v-model="$store.state.export.customResolution"
+                                  inset
                                   dense
-                                  v-model="exportHeight"
-                                  type="number"></v-text-field>
-                </div>
-            </v-card-text>
+                                  label="Change output resolution"></v-switch>
+                        <div class="resolution mb-2">
+                            <v-text-field label="Width"
+                                          outlined
+                                          :disabled="!$store.state.export.customResolution"
+                                          dense
+                                          class="mr-2"
+                                          hide-details="auto"
+                                          v-model="exportWidth"
+                                          type="number"></v-text-field>
+                            <v-text-field label="Height"
+                                          :disabled="!$store.state.export.customResolution"
+                                          outlined
+                                          class="ml-2"
+                                          dense
+                                          hide-details="auto"
+                                          v-model="exportHeight"
+                                          type="number"></v-text-field>
+                        </div>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+                <v-expansion-panel>
+                    <v-expansion-panel-header>
+                        <div>
+                            <v-icon class="mr-3">mdi-movie-filter-outline</v-icon>
+                            Advanced options
+                        </div>
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <v-chip-group class="chip-group" show-arrows>
+                            <v-chip @click="editFilter(filter)"
+                                    color="secondary"
+                                    :close="true"
+                                    class="mb-2"
+                                    @click:close="removeFilter(filter)"
+                                    v-for="filter in selectedFilters">
+                                {{ filter.name }}{{ filter.options === '' ? '' : '=' }}{{ filter.options }}
+                            </v-chip>
+                        </v-chip-group>
+                        <advanced-export-options></advanced-export-options>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+            </v-expansion-panels>
+
             <v-divider></v-divider>
             <v-card-actions>
                 <v-spacer></v-spacer>
@@ -51,7 +117,7 @@
                     Cancel
                 </v-btn>
                 <v-btn color="primary" text @click="confirm">
-                    Export
+                    {{ youtube.show ? 'Upload' : 'Export' }}
                 </v-btn>
             </v-card-actions>
         </v-card>
@@ -61,27 +127,59 @@
 <script>
 import {mapActions, mapState} from "vuex";
 import path from 'path'
+import AdvancedExportOptions from "@/components/AdvancedExportOptions";
+import CustomExpando from "@/components/CustomExpando";
 
 export default {
     name: "ExportDialog",
+    components: {CustomExpando, AdvancedExportOptions},
     data: () => ({
         pathRules: [
             v => path.isAbsolute(v) || 'Must be a valid path',
         ],
+        panel: [0, 1],
     }),
+    mounted() {
+
+    },
     methods: {
+        async editFilter(filter) {
+            let {confirmed, value} = await this.showTextPrompt({
+                title: `Edit options for filter: ${filter.name}`,
+                value: filter.options,
+            });
+
+            if (confirmed) {
+                filter.options = value;
+            }
+        },
+        removeFilter(filter) {
+            this.$store.commit('removeExportFilter', filter);
+        },
         cancel() {
             this.$store.commit('showExportDialog', false);
         },
-        confirm() {
-            if (path.isAbsolute(this.outputPath)) {
-                this.$store.dispatch('exportVideo');
+        async confirm() {
+            if (this.youtube.show) {
+                this.exportToYouTube();
                 this.$store.commit('showExportDialog', false);
             } else {
-                this.$store.dispatch('addSnack', {text: `Given path "${this.outputPath}" is not valid`});
+                let canceled = await this.exportVideoAs();
+                if (!canceled)
+                    this.$store.commit('showExportDialog', false);
             }
         },
-        ...mapActions(['promptVideoExport']),
+        ...mapActions(['promptVideoExport', 'showTextPrompt', 'exportVideoAs', 'exportToYouTube']),
+    },
+    watch: {
+        'export.showDialog'() {
+            if (this.export.showDialog) {
+                if (this.youtube.show)
+                    this.panel = [0];
+                else
+                    this.panel = [1];
+            }
+        },
     },
     computed: {
         exportHeight: {
@@ -112,12 +210,19 @@ export default {
         },
         ...mapState({
             outputPath: state => state.export.outputPath,
+            selectedFilters: state => state.export.filters,
+            youtube: state => state.youtube,
+            export: state => state.export,
         }),
     },
 }
 </script>
 
 <style scoped>
+.card-content {
+    padding: 24px;
+}
+
 .output-path {
     display: flex;
     align-items: center;
@@ -147,5 +252,14 @@ export default {
     vertical-align: middle;
     margin: 0 15px;
     margin-bottom: 25px;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+}
+
+.chip-group {
+    max-width: 100%;
 }
 </style>

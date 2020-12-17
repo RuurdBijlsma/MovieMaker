@@ -53,7 +53,8 @@
         </div>
         <div class="right-content">
 
-            <v-btn class="no-drag" icon v-if="!isExporting && status.done" @click="$store.commit('showExportStatus', true)">
+            <v-btn class="no-drag" icon v-if="!isExporting && status.done"
+                   @click="$store.commit('showExportStatus', true)">
                 <v-icon color="success">mdi-check</v-icon>
             </v-btn>
             <v-btn icon v-if="isExporting" @click="$store.commit('showExportStatus', true)">
@@ -75,13 +76,13 @@
                         </v-list-item-icon>
                         <v-list-item-title>Quick export</v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="$store.commit('showExportDialog',true)">
+                    <v-list-item @click="showExportDialog(false)">
                         <v-list-item-icon>
                             <v-icon>mdi-movie-open-outline</v-icon>
                         </v-list-item-icon>
                         <v-list-item-title>Export</v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="exportToYouTube">
+                    <v-list-item @click="showExportDialog(true)">
                         <v-list-item-icon>
                             <v-icon>mdi-youtube</v-icon>
                         </v-list-item-icon>
@@ -172,6 +173,10 @@ export default {
 
     },
     methods: {
+        showExportDialog(youtube = false) {
+            this.$store.commit('ytShow', youtube);
+            this.$store.commit('showExportDialog', true);
+        },
         goHome() {
             if (this.$route.path !== '/')
                 this.$router.push("/");

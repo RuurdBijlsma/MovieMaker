@@ -17,6 +17,7 @@ import command from './command-module'
 import auth from './auth-module'
 import Utils from "@/js/Utils";
 import path from 'path';
+import Directories from "@/js/Directories";
 
 Vue.use(Vuex)
 
@@ -30,7 +31,18 @@ export default new Vuex.Store({
             error: '',
             command: null,
         },
+        youtube: {
+            privacy: 'Unlisted',
+            show: false,
+            title: '',
+            description: '',
+            upload: false,
+            done: false,
+            progress: 0,
+            url: '',
+        },
         export: {
+            filters: [],
             showDialog: false,
             fps: '',
             interpolate: false,
@@ -65,6 +77,21 @@ export default new Vuex.Store({
         },
     },
     mutations: {
+        ytPrivacy: (state, value) => state.youtube.privacy = value,
+        ytUpload: (state, value) => state.youtube.upload = value,
+        ytDone: (state, value) => state.youtube.done = value,
+        ytProgress: (state, value) => state.youtube.progress = value,
+        ytUrl: (state, value) => state.youtube.url = value,
+        ytShow: (state, show) => state.youtube.show = show,
+
+        removeExportFilter: (state, filter) => state.export.filters.splice(state.export.filters.indexOf(filter), 1),
+        addExportFilter: (state, filter) => state.export.filters.push(filter),
+        exportFilters: (state, filters) => state.export.filters = filters,
+        exportOutputPath: (state, outputPath) => state.export.outputPath = outputPath,
+        customHeight: (state, height) => state.export.height = height,
+        customWidth: (state, width) => state.export.width = width,
+        showExportDialog: (state, value) => state.export.showDialog = value,
+
         statusCommand: (state, command) => state.exportStatus.command = command,
         statusDone: (state, value) => state.exportStatus.done = value,
         statusProgress: (state, value) => state.exportStatus.progress = value,
@@ -72,11 +99,6 @@ export default new Vuex.Store({
         statusOutput: (state, value) => state.exportStatus.output = value,
         statusError: (state, value) => state.exportStatus.error = value,
         showExportStatus: (state, value) => state.exportStatus.show = value,
-
-        exportOutputPath: (state, outputPath) => state.export.outputPath = outputPath,
-        customHeight: (state, height) => state.export.height = height,
-        customWidth: (state, width) => state.export.width = width,
-        showExportDialog: (state, value) => state.export.showDialog = value,
 
         timeline: (state, fragments) => state.timeline = fragments,
         projectFilePath: (state, p) => {
@@ -341,8 +363,19 @@ export default new Vuex.Store({
         pause({state}) {
             state.activeFragment.video.element.pause();
         },
-        exportToYouTube({}) {
-
+        async exportToYouTube({getters, commit, dispatch}) {
+            if (!getters.hasProject)
+                return;
+            let filePath = path.join(Directories.temp, 'yt.mp4');
+            commit('exportOutputPath', filePath);
+            try {
+                let success = await dispatch('exportVideo');
+                if (!success)
+                    return
+                await dispatch('uploadVideo', filePath);
+            } catch (e) {
+                console.warn("Error in exportToYouTube", e);
+            }
         },
         addSnack: async ({state, commit}, {text, timeout = 3000}) => {
             let snack = {text, open: true, timeout};
