@@ -1,5 +1,6 @@
 import {google} from "googleapis";
 import fs from 'fs'
+import AbortSignal from "@/js/AbortSignal";
 
 export async function upload(
     win,
@@ -14,7 +15,7 @@ export async function upload(
     oauth2Client.setCredentials(tokens);
     let fileSize = fs.statSync(filePath).size;
     let service = google.youtube('v3')
-    console.log("Uploading", title);
+    console.log("Uploading", title, 'signal', abortSignal);
     return await service.videos.insert(
         {
             auth: oauth2Client,
@@ -34,7 +35,7 @@ export async function upload(
             },
         },
         {
-            signal: abortSignal,
+            signal: new AbortSignal(abortSignal),
             onUploadProgress: e => {
                 win.webContents.send('progress' + uploadId, e.bytesRead, fileSize);
             },

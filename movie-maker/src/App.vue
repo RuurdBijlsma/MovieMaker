@@ -31,6 +31,8 @@
 // TODO: Features
 // test for bugs
 
+// remember size of screen when closing
+// save localstorage to file and restore if localStorage is empty and that file exists
 // on simple edits frames before the start time still get decoded
 // fix bug with player being too high after having opened an audio track?
 // audio player
@@ -133,6 +135,7 @@ import CustomDialog from "@/components/CustomDialog";
 import ExportDialog from "@/components/ExportDialog";
 import ExportStatus from "@/components/ExportStatus";
 import CustomPrompt from "@/components/CustomPrompt";
+import AbortSignal from "@/js/AbortSignal";
 
 export default {
     name: 'App',

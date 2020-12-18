@@ -1,6 +1,6 @@
 {
   "name": "movie-maker",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Edit videos",
   "keywords": [
     "Edit",
@@ -33,6 +33,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "googleapis": "^66.0.0",
     "register-service-worker": "^1.7.2",
+    "terser-webpack-plugin": "^5.0.3",
     "vue": "^2.6.11",
     "vue-router": "^3.4.9",
     "vue2-perfect-scrollbar": "^1.5.0",

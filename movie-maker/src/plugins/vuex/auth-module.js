@@ -3,6 +3,7 @@ import http from "http";
 import {google} from 'googleapis'
 import Utils from "@/js/Utils";
 import fs from 'fs';
+import AbortSignal from "@/js/AbortSignal";
 
 const service = google.youtube('v3')
 
@@ -96,6 +97,7 @@ export default {
                 });
                 console.log('invoke result', result);
                 commit('ytDone', true);
+                commit('ytUrl', `https://youtu.be/${result.data.id}`);
             } catch (e) {
                 commit('ytUpload', false);
                 commit('statusError', e.message);

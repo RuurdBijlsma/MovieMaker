@@ -178,7 +178,7 @@ export default new Vuex.Store({
             state.configTimeline.widthPerSecond = localStorage.widthPerSecond = pixels,
     },
     getters: {
-        isUploading: state=>state.youtube.upload && !state.youtube.done,
+        isUploading: state => state.youtube.upload && !state.youtube.done,
         isExporting: state => state.exportStatus.command !== null,
         exportProgress: (state, getters) => {
             let time = state.exportStatus.progress.timemark;
@@ -261,6 +261,7 @@ export default new Vuex.Store({
     },
     actions: {
         async initialize({dispatch}) {
+            await dispatch('syncLocalStorage');
             await dispatch("initializeFfmpeg");
             await dispatch("initializeAuth");
         },

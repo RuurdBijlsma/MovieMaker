@@ -96,7 +96,7 @@
                     <v-tooltip top>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn class="mr-2" icon
-                                   @click="openFolder(youtube.url)"
+                                   @click="openFile(youtube.url)"
                                    v-bind="attrs"
                                    color="red"
                                    v-on="on">

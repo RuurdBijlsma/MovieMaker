@@ -91,7 +91,6 @@ function createWindow() {
         }
 
         // win.webContents.openDevTools()
-
         createProtocol('app')
         // Load the index.html when not in development
         let url = 'app://./index.html';
