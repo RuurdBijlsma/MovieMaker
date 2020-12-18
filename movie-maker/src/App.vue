@@ -31,9 +31,7 @@
 // TODO: Features
 // test for bugs
 
-// right click shouldn't seek
 // remember size of screen when closing
-// save localstorage to file and restore if localStorage is empty and that file exists
 // on simple edits frames before the start time still get decoded
 // fix bug with player being too high after having opened an audio track?
 // audio player
@@ -45,6 +43,8 @@
 // add cpu priority to settings
 
 // DONE TODO
+// save localstorage to file and restore if localStorage is empty and that file exists
+// right click shouldn't seek
 // transform to 'googleapis' remove 'youtube-api'
 // add cancel button when uploading video
 // show youtube video upload status
