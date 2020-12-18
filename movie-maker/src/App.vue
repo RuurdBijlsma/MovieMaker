@@ -31,6 +31,7 @@
 // TODO: Features
 // test for bugs
 
+// on simple edits frames before the start time still get decoded
 // fix bug with player being too high after having opened an audio track?
 // audio player
 // add audio track to video
