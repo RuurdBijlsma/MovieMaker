@@ -154,6 +154,7 @@ export default {
 
 .active-command {
     /*background-color: red;*/
+    pointer-events: none;
 }
 
 .executed-command {

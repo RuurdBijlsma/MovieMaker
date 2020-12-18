@@ -29,7 +29,10 @@
             </div>
             <history v-if="undoStack.length > 0 && scale > 2" class="right-panel"></history>
         </div>
-        <v-footer class="app-footer">
+        <v-footer class="app-footer" :style="{
+            opacity: activeFragment ? 1 : 0,
+            pointerEvents: activeFragment ? 'all' : 'none',
+        }">
             <video-info-footer v-if="activeFragment"></video-info-footer>
             <span v-else class="caption text-uppercase">Ruurd Movie Maker</span>
         </v-footer>
