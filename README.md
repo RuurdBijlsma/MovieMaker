@@ -19,6 +19,7 @@ Video editor created with Electron. This video editor aims to be as easy to use 
    * Remove logo embedded in video
    * Hue
    * And many more filters
+* Upload to YouTube from the editor
 
 ### Screenshots
 Main editor
