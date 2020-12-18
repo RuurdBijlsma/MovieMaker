@@ -31,6 +31,10 @@
 // TODO: Features
 // test for bugs
 
+// fix bug with player being too high after having opened an audio track?
+// audio player
+// add audio track to video
+
 // Advanced export (visualize filter graph)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // apply filter only if thing changed
