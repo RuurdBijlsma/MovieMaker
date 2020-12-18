@@ -83,9 +83,11 @@ export default {
             fragment.video.element.currentTime = videoProgress * fragment.video.element.duration;
         },
         moveStart(e, fragmentIndex) {
-            this.fragmentIndex = fragmentIndex;
             if (this.activeFragment.video.canPlay)
                 this.$store.commit('showContextMenu', true);
+            if (e.button !== 0)
+                return;
+            this.fragmentIndex = fragmentIndex;
             this.seekToProgress(e);
         },
         move(e) {
