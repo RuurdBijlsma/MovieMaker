@@ -15,7 +15,7 @@
         <export-status></export-status>
 
         <v-snackbar v-for="snack in $store.state.snackbars" app v-model="snack.open" :timeout="snack.timeout"
-                     color="secondary">
+                    color="secondary">
             {{ snack.text }}
             <template v-slot:action="{ attrs }">
                 <v-btn text v-bind="attrs" :color="$vuetify.theme.dark ? 'default' : 'primary'"
@@ -211,9 +211,11 @@ export default {
             this.$store.commit('windowWidth', window.innerWidth)
         },
         keyListener(e) {
-            if (e.target.toString() === "[object HTMLInputElement]") {
+            let ignoredElements = ['[object HTMLTextAreaElement]', '[object HTMLInputElement]'];
+            if (ignoredElements.includes(e.target.toString())) {
                 return;
             }
+            console.log(e.target.toString());
             switch (true) {
                 case e.key === 'n' && e.ctrlKey:
                     this.newProject();
