@@ -11,7 +11,13 @@ Video editor created with Electron. This video editor aims to be as easy to use 
 * Concatenate videos
 * Change fps with support for motion interpolation
 * Change resolution and bitrate
-* Many [ffmpeg filters](https://ffmpeg.org/ffmpeg-filters.html)
+* Many [ffmpeg filters](https://ffmpeg.org/ffmpeg-filters.html):
+   * Change contrast, brightness, saturation
+   * Bass boost 
+   * Add echo to audio
+   * Create a histogram of video or audio
+   * Remove logo embedded in video
+   * Hue
 
 ### Screenshots
 Main editor
