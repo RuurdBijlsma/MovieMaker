@@ -261,7 +261,6 @@ export default new Vuex.Store({
     },
     actions: {
         async initialize({dispatch}) {
-            await dispatch('syncLocalStorage');
             await dispatch("initializeFfmpeg");
             await dispatch("initializeAuth");
         },

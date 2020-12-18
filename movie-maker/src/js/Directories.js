@@ -26,6 +26,17 @@ class Directories {
         if (!fs.existsSync(dir))
             fs.mkdirSync(dir);
     }
+
+    importLSFile() {
+        let localStorageFile = path.join(this.files, 'ls.json');
+
+        if (Object.keys(localStorage).length === 0 && fs.existsSync(localStorageFile)) {
+            let ls = JSON.parse(fs.readFileSync(localStorageFile));
+            for (let key in ls)
+                if (ls.hasOwnProperty(key))
+                    localStorage[key] = ls[key];
+        }
+    }
 }
 
 export default new Directories();

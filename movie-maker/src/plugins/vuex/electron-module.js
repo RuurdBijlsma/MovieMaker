@@ -5,6 +5,7 @@ import Directories from "@/js/Directories";
 
 const fs = ofs.promises;
 const currentWindow = remote.getCurrentWindow();
+Directories.importLSFile();
 
 export default {
     state: {
@@ -270,21 +271,6 @@ export default {
         },
         async openDevTools({}) {
             currentWindow.openDevTools();
-        },
-        async syncLocalStorage({dispatch}) {
-            if (Object.keys(localStorage).length === 0)
-                dispatch('importLocalStorage');
-        },
-        async importLocalStorage() {
-            try {
-                let res = await fs.readFile(path.join(Directories.files, 'ls.json'));
-                let obj = JSON.parse(res);
-                for (let key in obj) {
-                    localStorage[key] = obj;
-                }
-            } catch (e) {
-                console.warn("Couldn't import localStorage");
-            }
         },
         async exportLocalStorage() {
             await fs.writeFile(path.join(Directories.files, 'ls.json'), JSON.stringify(localStorage));
