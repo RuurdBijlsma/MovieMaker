@@ -25,7 +25,7 @@ export async function upload(
                     description: description,
                 },
                 status: {
-                    privacyStatus: privacy,
+                    privacyStatus: privacy.toLowerCase(),
                 },
             },
             media: {

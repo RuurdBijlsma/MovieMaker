@@ -74,7 +74,7 @@ export default {
             let status = rootState.exportStatus;
             if (getters.isExporting) {
                 return [getters.exportProgress, {mode: 'normal'}];
-            }else if(getters.isUploading){
+            } else if (getters.isUploading) {
                 return [rootState.youtube.progress.percent, {mode: 'error'}];
             } else if (status.error !== '') {
                 return [1, {mode: 'paused'}];
@@ -165,7 +165,7 @@ export default {
                 title: "Import video",
                 defaultPath: await dispatch('previousPath', {key: 'video'}),
                 filters: [
-                    {name: "Videos", extensions: ['mp4', 'ogg', 'webm']},
+                    {name: "Videos", extensions: ['mp4', 'ogg', 'webm', 'mp3', 'wav']},
                     {name: "All Files", extensions: ['*']},
                 ],
                 properties: ['openFile', 'multiSelections'],

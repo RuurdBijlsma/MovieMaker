@@ -84,9 +84,9 @@ export default {
             });
             try {
                 let result = await ipcRenderer.invoke('upload', {
-                    title: 'test movie',
-                    description: 'hello world',
-                    privacy: 'Unlisted',
+                    title: rootState.youtube.title,
+                    description: rootState.youtube.description,
+                    privacy: rootState.youtube.privacy,
                     mime: 'video/mp4',
                     filePath,
                     ytId: state.ytId,

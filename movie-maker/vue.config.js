@@ -16,7 +16,9 @@ module.exports = {
                         "ext": [
                             "mp4",
                             "webm",
-                            "ogg"
+                            "ogg",
+                            "wav",
+                            "mp3",
                         ],
                         "name": "Edit video",
                         "description": "Edit video with Ruurd Movie Maker.",
