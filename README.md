@@ -14,10 +14,21 @@ Video editor created with Electron. This video editor aims to be as easy to use 
 * Many [ffmpeg filters](https://ffmpeg.org/ffmpeg-filters.html)
 
 ### Screenshots
+Main editor
 ![Editor](/.gh/basic.png?raw=true "Editor")
+
+Light theme support
 ![Editor (light theme)](/.gh/basic-light.png?raw=true "Editor (light theme)")
+
+Export settings
 ![Export settings](/.gh/export-settings.png?raw=true "Export settings")
+
+Advanced export settings
 ![Advanced export settings](/.gh/advanced.png?raw=true "Advanced export settings")
+
+Upload to YouTube
 ![Upload settings](/.gh/upload.png?raw=true "Upload settings")
+
+Check status of export and upload
 ![Export status](/.gh/export-status.png?raw=true "Export status")
 
