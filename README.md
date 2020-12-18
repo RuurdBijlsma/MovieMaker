@@ -18,6 +18,7 @@ Video editor created with Electron. This video editor aims to be as easy to use 
    * Create a histogram of video or audio
    * Remove logo embedded in video
    * Hue
+   * And many more filters
 
 ### Screenshots
 Main editor
