@@ -19,6 +19,8 @@ import Utils from "@/js/Utils";
 import path from 'path';
 import Directories from "@/js/Directories";
 
+Directories.importLSFile();
+
 Vue.use(Vuex)
 
 export default new Vuex.Store({

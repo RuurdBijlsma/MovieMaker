@@ -5,7 +5,6 @@ import Directories from "@/js/Directories";
 
 const fs = ofs.promises;
 const currentWindow = remote.getCurrentWindow();
-Directories.importLSFile();
 
 export default {
     state: {

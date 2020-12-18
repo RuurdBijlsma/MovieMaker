@@ -1,18 +1,23 @@
 import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
+import Directories from "@/js/Directories";
+
+Directories.importLSFile();
 
 let dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 if (localStorage.getItem('darkTheme') !== null)
     dark = localStorage.darkTheme === 'true';
 
 Vue.use(Vuetify);
+const primaryColor = localStorage.getItem('primaryColor') ?? '#ed4b83';
+console.log("Using primary color", primaryColor, localStorage.getItem('primaryColor'));
 
 export default new Vuetify({
     theme: {
         dark,
         themes: {
             dark: {
-                primary: localStorage.getItem('primaryColor') ?? '#ed4b83',
+                primary: primaryColor,
                 foreground: '#ffffff',
                 softForeground: '#d6d6d6',
                 softBackground: '#282727',
@@ -20,7 +25,7 @@ export default new Vuetify({
                 secondary: localStorage.getItem('secondaryColor') ?? '#5f46ff',
             },
             light: {
-                primary: localStorage.getItem('primaryColor') ?? '#ed4b83',
+                primary: primaryColor,
                 foreground: '#17181a',
                 softForeground: '#353535',
                 softBackground: '#f1efef',

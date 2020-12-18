@@ -32,6 +32,7 @@ class Directories {
 
         if (Object.keys(localStorage).length === 0 && fs.existsSync(localStorageFile)) {
             let ls = JSON.parse(fs.readFileSync(localStorageFile));
+            console.log("LocalStorage not found, using file", ls);
             for (let key in ls)
                 if (ls.hasOwnProperty(key))
                     localStorage[key] = ls[key];
