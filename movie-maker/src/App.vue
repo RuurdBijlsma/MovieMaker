@@ -31,7 +31,6 @@
 // TODO: Features
 // test for bugs
 
-// on simple edits frames before the start time still get decoded
 // fix bug with player being too high after having opened an audio track?
 // audio player
 // add audio track to video
@@ -42,6 +41,7 @@
 // add cpu priority to settings
 
 // DONE TODO
+// on simple edits frames before the start time still get decoded
 // remember size of screen when closing
 // show fragment duration in footer
 // higher default width per second
