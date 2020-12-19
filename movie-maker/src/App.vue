@@ -31,7 +31,6 @@
 // TODO: Features
 // test for bugs
 
-// remember size of screen when closing
 // on simple edits frames before the start time still get decoded
 // fix bug with player being too high after having opened an audio track?
 // audio player
@@ -43,6 +42,12 @@
 // add cpu priority to settings
 
 // DONE TODO
+// remember size of screen when closing
+// show fragment duration in footer
+// higher default width per second
+// lower smallest width fragment in timeline
+// if progress is <=0 show indeterminate loading on card and system progress
+// make privacy thing a chip group
 // save localstorage to file and restore if localStorage is empty and that file exists
 // right click shouldn't seek
 // transform to 'googleapis' remove 'youtube-api'

@@ -72,7 +72,9 @@ export default {
     getters: {
         systemProgress: (state, getters, rootState) => {
             let status = rootState.exportStatus;
-            if (getters.isExporting) {
+            if (getters.isExporting && getters.exportProgress <= 0) {
+                return [getters.exportProgress, {mode: 'indeterminate'}];
+            } else if (getters.isExporting) {
                 return [getters.exportProgress, {mode: 'normal'}];
             } else if (getters.isUploading) {
                 return [rootState.youtube.progress.percent, {mode: 'error'}];

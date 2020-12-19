@@ -9,6 +9,7 @@ module.exports = {
                 'electron-context-menu',
             ],
             "builderOptions": {
+                "artifactName":"${productName} Setup.${ext}",
                 "appId": "dev.ruurd.moviemaker",
                 "productName": "Ruurd Movie Maker",
                 "fileAssociations": [

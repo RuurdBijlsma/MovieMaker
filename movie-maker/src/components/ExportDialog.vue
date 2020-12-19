@@ -26,14 +26,14 @@
                             dense
                             v-model="$store.state.youtube.description">
                         </v-textarea>
-                        <v-select v-model="$store.state.youtube.privacy"
-                                  hide-details="auto"
-                                  dense
-                                  label="Privacy status"
-                                  outlined
-                                  class="mt-4"
-                                  :items="['Public','Unlisted','Private']"
-                        ></v-select>
+                        <v-chip-group color="primary"
+                                      mandatory
+                                      class="mt-2"
+                                      v-model="$store.state.youtube.privacy">
+                            <v-chip>Public</v-chip>
+                            <v-chip>Unlisted</v-chip>
+                            <v-chip>Private</v-chip>
+                        </v-chip-group>
                     </v-expansion-panel-content>
                 </v-expansion-panel>
                 <v-expansion-panel>

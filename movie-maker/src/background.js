@@ -7,6 +7,9 @@ import path from 'path'
 import * as Splashscreen from "@trodi/electron-splashscreen";
 import Utils from "@/js/Utils";
 import {upload} from "@/js/yt";
+
+const Store = require('electron-store');
+const store = new Store();
 import AbortController from "abort-controller";
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -39,11 +42,11 @@ function createWindow() {
     // Create the browser window.
     let icon = path.join(__static, process.env.WEBPACK_DEV_SERVER_URL ? 'img/icon-dev.png' : 'img/favicon.png');
     let splash = path.join(__static, 'splash2.html');
+    let bounds = store.get('bounds', {width: 1000, height: 900});
     let windowConfig = {
         minWidth: 640,
         minHeight: 470,
-        width: 1400,
-        height: 900,
+        ...bounds,
         frame: false,
         backgroundColor: '#ed4b83',
         autoHideMenuBar: true,
@@ -137,6 +140,7 @@ ipcMain.handle('upload', async (event, args) => {
 
 ipcMain.on('quit', (event, args) => {
     quitAllowed = true;
+    store.set('bounds', win.getBounds());
     app.quit();
 })
 

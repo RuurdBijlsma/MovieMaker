@@ -4,17 +4,18 @@
             <span @click="openFolder(video.filePath)" v-ripple class="clickable not-uppercase">{{
                     video.fileName
                 }}</span>
+            <span>Fragment: {{ toHms(activeFragment.adjustedDuration) }}</span>
             <span>resolution: {{ video.width }}<span class="not-uppercase">x</span>{{ video.height }}</span>
             <span>fps: {{ video.fps }}</span>
             <span>bitrate: <span class="not-uppercase">{{ readableBitrate(video.bitrate) }}</span></span>
         </div>
         <v-slider hide-details
                   class="zoom-slider"
-                  @click:prepend="rawWps = 2.85"
+                  @click:prepend="rawWps = 3.5"
                   dense
                   min="0.1"
                   @wheel.native="wheel"
-                  max="5"
+                  max="7"
                   step="0.01"
                   prepend-icon="mdi-magnify-plus-outline"
                   v-model="rawWps"
@@ -23,13 +24,13 @@
 </template>
 
 <script>
-import {mapActions, mapState} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import Utils from "@/js/Utils";
 
 export default {
     name: "VideoInfoFooter",
     data: () => ({
-        rawWps: 2.9,
+        rawWps: 3.5,
     }),
     mounted() {
         this.setRawWps();
@@ -43,7 +44,7 @@ export default {
         },
         setRawWps() {
             let wps = this.widthPerSecond;
-            let centerValue = 2;
+            let centerValue = 3;
             if (wps > centerValue)
                 wps = centerValue + (wps - centerValue) / 5;
             this.rawWps = wps;
@@ -52,7 +53,7 @@ export default {
     },
     watch: {
         rawWps() {
-            let centerValue = 2.85;
+            let centerValue = 3;
             let wps = this.rawWps;
             if (wps > centerValue)
                 wps = centerValue + (wps - centerValue) * 5;
@@ -60,6 +61,7 @@ export default {
         },
     },
     computed: {
+        ...mapGetters(['toHms']),
         video() {
             return this.activeFragment.video;
         },

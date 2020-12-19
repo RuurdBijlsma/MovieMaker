@@ -84,10 +84,11 @@ export default {
                 })
             });
             try {
+                let privacy = ['public', 'unlisted', 'private'][rootState.youtube.privacy];
                 let result = await ipcRenderer.invoke('upload', {
                     title: rootState.youtube.title,
                     description: rootState.youtube.description,
-                    privacy: rootState.youtube.privacy,
+                    privacy,
                     mime: 'video/mp4',
                     filePath,
                     ytId: state.ytId,

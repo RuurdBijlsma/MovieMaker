@@ -35,7 +35,7 @@ export default new Vuex.Store({
             command: null,
         },
         youtube: {
-            privacy: 'Unlisted',
+            privacy: 1,
             show: false,
             title: '',
             description: '',
@@ -68,8 +68,8 @@ export default new Vuex.Store({
             projectImport: false,
         },
         configTimeline: {
-            minFragmentWidth: 120,
-            widthPerSecond: +(localStorage.getItem('widthPerSecond') ?? 2.85),
+            minFragmentWidth: 90,
+            widthPerSecond: +(localStorage.getItem('widthPerSecond') ?? 3.5),
         },
         player: {
             widthPercent: +(localStorage.getItem('playerWidth') ?? 0.5),

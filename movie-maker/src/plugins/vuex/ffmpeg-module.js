@@ -27,6 +27,10 @@ export default {
         videoFileCache: (state, {path, file}) => Vue.set(state.videoFileCache, path, file),
     },
     getters: {
+        earliestStart: (state, getters, rootState) => video =>
+            video.duration * Math.max(...rootState.timeline
+                .filter(f => f.video === video)
+                .map(f => f.start)),
         complexFilter: (state, getters, rootState) => {
             let fragments = rootState.timeline;
             const parseFilter = subFilters => subFilters.map(sf => `${sf[0]}=${sf[1]}`).join(',');
@@ -34,7 +38,7 @@ export default {
             for (let i = 0; i < fragments.length; i++) {
                 let fragment = fragments[i];
                 let videoIndex = rootState.videoFiles.indexOf(fragment.video);
-                let start = fragment.start * fragment.video.duration;
+                let start = fragment.start * fragment.video.duration - getters.earliestStart(fragment.video);
                 let end = fragment.end * fragment.video.duration;
                 filter.push({
                     filter: parseFilter([
@@ -141,7 +145,7 @@ export default {
                 dispatch('getFilters')
             }, 800);
         },
-        resetYouTubeStatus({commit}){
+        resetYouTubeStatus({commit}) {
             commit('ytDone', false);
             commit('ytUrl', '');
             commit("ytProgress", {
@@ -150,7 +154,7 @@ export default {
                 percent: 0,
             })
         },
-        resetExportStatus({commit}){
+        resetExportStatus({commit}) {
             commit('statusDone', false);
             commit('statusProgress', 0);
             commit('statusOutput', []);
@@ -169,8 +173,11 @@ export default {
                 let command = ffmpeg();
                 commit('statusCommand', command);
 
-                for (let video of rootState.videoFiles)
-                    command = command.input(Utils.fixPath(video.filePath))
+                for (let video of rootState.videoFiles) {
+                    command = command
+                        .input(Utils.fixPath(video.filePath))
+                        .seekInput(getters.earliestStart(video));
+                }
                 command = command.complexFilter(...getters.complexFilter)
                     .on('start', commandLine => {
                         console.log("Spawned ffmepg with command", commandLine)

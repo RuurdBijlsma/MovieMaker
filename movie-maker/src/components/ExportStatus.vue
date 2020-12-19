@@ -8,11 +8,13 @@
                     :value="100"
                 ></v-progress-linear>
                 <v-progress-linear
+                    :indeterminate="exportProgress <= 0"
                     v-else-if="isExporting || (status.done && !status.youtube) || youtube.done"
                     color="success"
                     :value="exportProgress * 100"
                 ></v-progress-linear>
                 <v-progress-linear
+                    :indeterminate="exportProgress <= 0"
                     v-else-if="isUploading"
                     color="red"
                     :value="youtube.progress.percent * 100"
