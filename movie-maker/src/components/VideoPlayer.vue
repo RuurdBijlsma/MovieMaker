@@ -255,7 +255,7 @@ export default {
         maxVideoHeight() {
             let maxRatio = this.videoFiles
                 .filter(v => !v.isAudio)
-                .reduce((a, b) => Math.min(a, b.aspectRatio), 3);
+                .reduce((a, b) => Math.min(a, b.aspectRatio), 2);
             return this.videoWidth / maxRatio;
         },
         ...mapGetters([
