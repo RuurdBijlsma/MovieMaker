@@ -77,8 +77,6 @@ export default {
             this.fileHover = false;
             let files = e.dataTransfer.files;
             if (files.length === 1 && Utils.isProjectFile(files[0].path)) {
-                console.log("IMPORT PROJECT");
-
                 if (!(await this.discardChangesPrompt()))
                     return;
                 this.$store.commit('importProjectLoading', true);

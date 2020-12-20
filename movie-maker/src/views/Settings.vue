@@ -134,7 +134,6 @@ export default {
             this.updateSecrets();
         },
         async secrets() {
-            console.log("Secrets changed to", this.secrets);
             let splitSecret = this.secrets.split('\n');
             if (splitSecret.length === 2) {
                 let [ytId, ytSecret] = splitSecret;
@@ -145,7 +144,6 @@ export default {
         },
         primaryColor() {
             if (this.primaryColor) {
-                console.log("setting primary", this.primaryColor);
                 this.$vuetify.theme.themes.dark.primary = this.primaryColor;
                 this.$vuetify.theme.themes.light.primary = this.primaryColor;
                 localStorage.primaryColor = this.primaryColor;
@@ -153,7 +151,6 @@ export default {
         },
         secondaryColor() {
             if (this.secondaryColor) {
-                console.log("setting secondary", this.secondaryColor);
                 this.$vuetify.theme.themes.dark.secondary = this.secondaryColor;
                 this.$vuetify.theme.themes.light.secondary = this.secondaryColor;
                 localStorage.secondaryColor = this.secondaryColor;

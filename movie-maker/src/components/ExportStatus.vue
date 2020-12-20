@@ -133,7 +133,6 @@ export default {
             } else if (this.isUploading) {
                 this.cancelUpload();
             }
-            console.log('abort');
         },
         ...mapActions(['openFile', 'cancelUpload', 'openFolder', 'showTextPrompt', 'resetYouTubeStatus', 'resetExportStatus']),
     },

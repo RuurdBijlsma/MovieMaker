@@ -42,6 +42,7 @@ export default {
             'Set end point': 'mdi-contain-end',
             'Set playback rate': 'mdi-speedometer',
             'Set start point': 'mdi-contain-start',
+            'Duplicate fragment': 'mdi-content-duplicate',
             'Set volume': 'mdi-volume-high',
             'Split fragment': 'mdi-arrow-split-vertical',
         },

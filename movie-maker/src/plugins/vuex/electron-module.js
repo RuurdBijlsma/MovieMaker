@@ -157,7 +157,6 @@ export default {
             if (!canceled) {
                 commit('isYtUpload', false);
                 commit('exportOutputPath', filePath);
-                console.log("EXPORT", filePath);
                 dispatch('exportVideo');
             }
             return canceled;
@@ -205,7 +204,6 @@ export default {
         async saveProjectToFile({getters, dispatch, commit}, filePath) {
             if (!getters.hasProject)
                 return;
-            console.log("Saving project to file", filePath);
             let project = JSON.stringify(getters.project)
             try {
                 await fs.writeFile(filePath, project);
@@ -279,7 +277,6 @@ export default {
         async closeWindow({dispatch}) {
             await dispatch('exportLocalStorage');
             await dispatch('clearDirectory', Directories.temp);
-            console.log("Sent quit event");
             electron.ipcRenderer.send('quit');
         },
         minimizeWindow: async ({}) => {

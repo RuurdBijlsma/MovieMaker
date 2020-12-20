@@ -50,9 +50,7 @@ export default {
                 state.ytSecret,
                 getters.redirectUrl,
             );
-            console.log("stuff", client._clientId, client._clientSecret);
             client.on('tokens', (tokens) => {
-                console.log("auto setting access token to", tokens.access_token);
                 state.tokens.access_token = tokens.access_token;
             });
             return client;
@@ -96,7 +94,6 @@ export default {
                     tokens: state.tokens,
                     uploadId: uploadId,
                 });
-                console.log('invoke result', result);
                 commit('ytDone', true);
                 commit('ytUrl', `https://youtu.be/${result.data.id}`);
             } catch (e) {
@@ -111,7 +108,6 @@ export default {
         },
         setTokens({commit, getters, dispatch}, tokens) {
             commit('tokens', tokens);
-            console.log("SETTING CREDENTIALS", tokens);
             getters.oauth.setCredentials(tokens);
             dispatch('processAuth');
         },
@@ -119,11 +115,9 @@ export default {
             let result = await service.channels.list({auth: getters.oauth, part: 'snippet', mine: true});
             let userInfo = result.data.items?.[0]?.snippet;
             commit("userInfo", userInfo);
-            console.log(service);
         },
         cacheAuth({state}) {
             localStorage.auth = JSON.stringify(state);
-            console.log("Auth cached!");
         },
         resetYtLogin({state, commit}) {
             if (state.server !== null) {
@@ -145,7 +139,6 @@ export default {
         },
         ytLogin: async ({dispatch}) => {
             let tokens = await dispatch('firstLogin');
-            console.log("Auth result from 'firstLogin'", tokens);
             await dispatch('setTokens', tokens);
             await dispatch('cacheAuth');
         },
@@ -156,7 +149,6 @@ export default {
                     return;
                 }
                 let {shell} = electron;
-                console.log(getters.oauth, getters.authUrl);
                 await shell.openExternal(getters.authUrl);
 
                 if (state.server !== null)

@@ -18,6 +18,7 @@ import auth from './auth-module'
 import Utils from "@/js/Utils";
 import path from 'path';
 import Directories from "@/js/Directories";
+import DuplicateFragment from "@/js/commands/DuplicateFragment";
 
 Directories.importLSFile();
 
@@ -106,7 +107,6 @@ export default new Vuex.Store({
 
         timeline: (state, fragments) => state.timeline = fragments,
         projectFilePath: (state, p) => {
-            console.log("Setting project file path to", p);
             state.projectFilePath = p
         },
         fullscreen: (state, value) => state.player.fullscreen = value,
@@ -303,6 +303,11 @@ export default new Vuex.Store({
             if (!getters.canCutAt(split)) return;
             dispatch('executeCommand', new SplitFragment(fragment, split));
         },
+        duplicate({state, getters, dispatch}, {
+            fragment = state.activeFragment,
+        }) {
+            dispatch('executeCommand', new DuplicateFragment(fragment));
+        },
         async skipFrames({state, getters, commit}, n) {
             if (n > 0 && !getters.canSkipFrameRight)
                 return;
@@ -352,7 +357,6 @@ export default new Vuex.Store({
             let nextFragment = state.timeline[currentIndex + 1];
             let element = nextFragment.video.element;
             element.currentTime = nextFragment.start * nextFragment.video.duration;
-            console.log(state.activeFragment);
             if (!state.activeFragment.video.element.paused || play) {
                 element.play().then();
             }

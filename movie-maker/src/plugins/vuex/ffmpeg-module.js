@@ -132,8 +132,7 @@ export default {
         }
     },
     actions: {
-        async initializeFfmpeg({dispatch, state, commit}) {
-            console.log("Getting ffmpeg and ffprobe...");
+        async initializeFfmpeg({dispatch, state}) {
             await dispatch('getPaths');
             VideoFile.ffmpegPath = state.paths.ffmpeg;
             ffmpeg.setFfmpegPath(state.paths.ffmpeg);
@@ -199,7 +198,6 @@ export default {
                 if (rootState.export.bitrate !== '')
                     command = command.videoBitrate(Math.round(rootState.export.bitrate * 1000) + 'k');
                 command.saveToFile(rootState.export.outputPath);
-                console.log({ffmpeg, command});
             }))
         },
         async getLoudness({}, {filePath, loudness = {}}) {
@@ -229,15 +227,10 @@ export default {
                             loudness.high = +line.split(' ').filter(n => n !== '')[2];
                         if (line.startsWith('I:'))
                             loudness.integrated = +line.split(' ').filter(n => n !== '')[1];
-                        // console.log(line);
                         if (!line.startsWith('[Parsed_ebur128'))
                             return;
                         let time = line.split('t:')[1]?.trim()?.split(' ')?.[0];
                         let m = line.split('M:')[1]?.trim()?.split(' ')?.[0];
-                        // let s = line.split('S:')[1]?.trim()?.split(' ')?.[0];
-                        // let i = line.split('I:')[1]?.trim()?.split(' ')?.[0];
-                        // let lra = line.split('LRA:')[1]?.trim()?.split(' ')?.[0];
-                        // let ftpk = line.split('FTPK:')[1]?.trim()?.split(' ')?.[0];
                         let tpk = line.split('TPK:')[1]?.trim()?.split(' ')?.[0];
                         if (time !== undefined && m !== undefined) {
                             let db = +tpk;
@@ -274,12 +267,9 @@ export default {
                 ffmpeg.getAvailableFilters((err, filters) => {
                     if (err)
                         return reject(err);
-                    console.log("Available filters:");
                     filters = Object.entries(filters)
                         .filter(([_, v]) => !v.multipleOutputs && !v.multipleInputs)
                         .map(([k, v]) => ({name: k, ...v}));
-                    //todo possibly filter out v.output !== 'video' also input !+'ivdoe
-                    console.dir(filters);
                     resolve(filters);
                 });
             })
@@ -373,7 +363,7 @@ export default {
                 dispatch('getLoudness', {
                     filePath: file,
                     loudness,
-                }).then(() => console.log(videoFile))
+                }).then()
                 commit('videoFileCache', {path: file, file: videoFile});
             }
             return state.videoFileCache[file];
@@ -413,7 +403,6 @@ export default {
         async isFileLocked({dispatch}, filePath) {
             return new Promise((resolve, reject) => {
                 fs.open(filePath, 'r+', (err, fd) => {
-                    console.log(err, fd);
                     if (err && err.code === 'EBUSY') {
                         resolve(true);
                     } else if (err && err.code === 'ENOENT') {

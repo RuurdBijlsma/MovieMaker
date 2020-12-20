@@ -17,7 +17,6 @@ export default {
             state.undoStack.splice(0, state.undoStack.length);
         },
         addCommand: (state, command) => {
-            // console.log("Command added to stack", command);
             // Erase stack after stackIndex
             state.undoStack.splice(++state.stackIndex);
             state.undoStack.push(command);
@@ -50,11 +49,9 @@ export default {
         canUndo: state => state.stackIndex > -1,
         canRedo: state => state.stackIndex < state.undoStack.length - 1,
         hasProject: (state, getters, rootState) => rootState.activeFragment !== null,
-        project: state=>{
+        project: state => {
             let commands = JSON.parse(JSON.stringify(state.undoStack));
             commands.forEach(c => delete c.batchOn);
-            let addFragmentObjects = commands.filter(c => c.name === 'Add fragment').map(c => c.fragment);
-            let videos = [...new Set(addFragmentObjects.map(c => c.video))];
             let fragments = {};
             for (let command of commands) {
                 if (command.name === 'Add fragment')
@@ -63,10 +60,13 @@ export default {
                     fragments[command.newFragment.id] = command.newFragment;
                     command.newFragment = command.newFragment.id;
                 }
+                if (command.name === 'Duplicate fragment') {
+                    fragments[command.newFragment.id] = command.newFragment;
+                    command.newFragment = command.newFragment.id;
+                }
                 command.fragment = command.fragment.id;
             }
             return {
-                videos,
                 fragments,
                 index: state.stackIndex,
                 commands,
@@ -99,7 +99,8 @@ export default {
         async importProject({dispatch, commit, state}, projectString) {
             commit('importProjectLoading', true);
             await dispatch('clearProject', false);
-            let {videos, fragments, index, commands} = JSON.parse(projectString);
+            let {fragments, index, commands} = JSON.parse(projectString);
+            let videos = [...new Set(Object.values(fragments).map(f => f.video))];
             let videoFiles = await Promise.all(videos.map(v => dispatch('loadMetadata', v)));
             const recreateFragment = f => VideoFragment.fromObject(
                 videoFiles.find(v => v.filePath === f.video),
@@ -112,7 +113,7 @@ export default {
             for (let i = 0; i < commands.length; i++) {
                 let command = commands[i];
                 command.fragment = fragments[command.fragment]
-                if (command.name === 'Split fragment')
+                if (command.name === 'Split fragment' || command.name === 'Duplicate fragment')
                     command.newFragment = fragments[command.newFragment]
             }
 

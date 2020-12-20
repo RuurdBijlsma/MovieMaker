@@ -33,14 +33,16 @@
 
 // fix bug with player being too high after having opened an audio track?
 // audio player
-// add audio track to video
 
+// add audio track to video
 // Advanced export (visualize filter graph)
 // try to fix little flash when layout updates (delete fragment/resize to create more visual fragments)
 // apply filter only if thing changed
 // add cpu priority to settings
 
 // DONE TODO
+// duplicate fragment
+// when loading project with start point, the video time isn't set correctly
 // on simple edits frames before the start time still get decoded
 // remember size of screen when closing
 // show fragment duration in footer
@@ -203,8 +205,12 @@ export default {
                         click: () => this.setEndPoint({})
                     },
                     {
-                        label: "Split video",
+                        label: "Split fragment",
                         click: () => this.split({})
+                    },
+                    {
+                        label: "Duplicate fragment",
+                        click: () => this.duplicate({})
                     },
                 ],
                 append: () => [
@@ -229,7 +235,6 @@ export default {
             if (ignoredElements.includes(e.target.toString())) {
                 return;
             }
-            console.log(e.target.toString());
             switch (true) {
                 case e.key === 'n' && e.ctrlKey:
                     this.newProject();
@@ -345,6 +350,11 @@ export default {
                         return;
                     this.setEndPoint({})
                     break;
+                case e.key === 'd' && e.ctrlKey:
+                    if (!this.hasProject)
+                        return;
+                    this.duplicate({})
+                    break;
                 case e.key === 'y' && e.ctrlKey:
                 case e.key === 'Z' && e.ctrlKey && e.shiftKey:
                     this.redo();
@@ -372,7 +382,7 @@ export default {
             'exportVideo', 'play', 'pause', 'seek', 'importProjectByPath',
             'skipFrames', 'shiftFragment', 'setVolume', 'setPlaybackRate',
             'newProject', 'promptProjectInput', 'saveProjectAs', 'saveProject',
-            'updateSystemProgress',
+            'updateSystemProgress', 'duplicate',
         ]),
     },
     watch: {

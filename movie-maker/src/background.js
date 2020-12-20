@@ -129,7 +129,6 @@ function createWindow() {
 
 let controller = new AbortController();
 ipcMain.handle('cancelUpload', () => {
-    console.log("aborting signal");
     controller.abort();
     controller = new AbortController();
 })

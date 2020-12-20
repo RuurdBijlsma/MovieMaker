@@ -1,7 +1,7 @@
 <template>
     <perfect-scrollbar class="player" ref="player">
         <div ref="videosContainer" class="videos" :style="{height: maxVideoHeight + 'px'}">
-            <video @canplay="canPlay" ref="videos"
+            <video @canplay.once="canPlay" ref="videos"
                    @ended="playNextFragment(true)"
                    v-for="videoFile in videoFiles"
                    :key="videoFile.filePath"
@@ -132,6 +132,7 @@ export default {
             let video = this.videoFiles.find(v => v.filePath === e.target.getAttribute('id'));
             if (video)
                 video.emit('canplay');
+            this.activeFragment?.reset?.()
         },
         togglePlay() {
             if (this.playing)
@@ -201,7 +202,10 @@ export default {
             let maxRatio = this.videoFiles.reduce((a, b) => Math.min(a, b.aspectRatio), 3);
             return this.videoWidth / maxRatio;
         },
-        ...mapGetters(['fullDuration', 'toHms', 'progressAtFragmentProgress', 'canSkipFrameLeft', 'canSkipFrameRight']),
+        ...mapGetters([
+            'fullDuration', 'toHms', 'progressAtFragmentProgress',
+            'canSkipFrameLeft', 'canSkipFrameRight'
+        ]),
         ...mapState({
             videoFiles: state => state.videoFiles,
             activeFragment: state => state.activeFragment,

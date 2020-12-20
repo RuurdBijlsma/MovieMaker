@@ -15,7 +15,6 @@ export async function upload(
     oauth2Client.setCredentials(tokens);
     let fileSize = fs.statSync(filePath).size;
     let service = google.youtube('v3')
-    console.log("Uploading", title, 'signal', abortSignal);
     return await service.videos.insert(
         {
             auth: oauth2Client,

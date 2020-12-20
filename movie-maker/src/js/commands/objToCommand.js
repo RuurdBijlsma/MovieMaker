@@ -6,6 +6,7 @@ import SetEndPoint from "@/js/commands/SetEndPoint";
 import MoveFragment from "@/js/commands/MoveFragment";
 import DeleteFragment from "@/js/commands/DeleteFragment";
 import AddFragment from "@/js/commands/AddFragment";
+import DuplicateFragment from "@/js/commands/DuplicateFragment";
 
 export default function objToCommand(obj) {
     let f;
@@ -33,6 +34,9 @@ export default function objToCommand(obj) {
             break;
         case "Split fragment":
             f = new SplitFragment(obj.fragment, obj.splitPoint);
+            break;
+        case "Duplicate fragment":
+            f = new DuplicateFragment(obj.fragment);
             break;
     }
     for (let key in obj) {

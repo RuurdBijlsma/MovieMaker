@@ -10,7 +10,6 @@ if (localStorage.getItem('darkTheme') !== null)
 
 Vue.use(Vuetify);
 const primaryColor = localStorage.getItem('primaryColor') ?? '#ed4b83';
-console.log("Using primary color", primaryColor, localStorage.getItem('primaryColor'));
 
 export default new Vuetify({
     theme: {
