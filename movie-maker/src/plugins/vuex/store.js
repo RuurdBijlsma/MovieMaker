@@ -180,6 +180,8 @@ export default new Vuex.Store({
             state.configTimeline.widthPerSecond = localStorage.widthPerSecond = pixels,
     },
     getters: {
+        isAudio: state => ['mp3', 'wav', 'ogg']
+            .includes(state.activeFragment.video.probe.format.format_name),
         isUploading: state => state.youtube.upload && !state.youtube.done,
         isExporting: state => state.exportStatus.command !== null,
         exportProgress: (state, getters) => {

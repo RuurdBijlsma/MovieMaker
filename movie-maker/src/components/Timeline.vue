@@ -10,12 +10,14 @@
                      'continues-right': fragment.continuesRight,
                      'continues-left': fragment.continuesLeft,
                      'active': fragment.fragment === activeFragment,
+                     'audio': fragment.fragment.video.isAudio,
                  }"
                  ref="fragments"
                  @mousemove="switchFragment($event, i)"
                  @mousedown="moveStart($event, i)">
                 <div class="visual-fragment">
                     <div class="fragment-background"
+                         v-if="!fragment.fragment.video.isAudio"
                          :style="{
                 backgroundImage: `url(${fragment.screenshots.merged})`,
                 backgroundPositionX: (-1 * (fragment.startPixel + fragment.leftPixels)) + 'px'
@@ -297,6 +299,7 @@ export default {
 }
 
 .fragment {
+    vertical-align: top;
     height: 125px;
     display: inline-block;
     margin-bottom: 10px;
@@ -324,6 +327,11 @@ export default {
 
 .fragment > * {
     pointer-events: none;
+}
+
+.audio .fragment-background {
+    min-height: 0;
+    height: 0;
 }
 
 .fragment-background {
@@ -366,11 +374,21 @@ export default {
     border-bottom-left-radius: 0 !important;
 }
 
+.audio .audio-wave {
+    min-height: 105px;
+    max-height: 105px;
+    border-radius: var(--border-radius);
+}
+
 .audio-wave {
     width: 100%;
     min-height: 25px;
     background-color: rgba(80, 80, 80, 0.4);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+.audio .seek-thumb{
+    margin-top: -113px;
 }
 
 .seek-thumb {

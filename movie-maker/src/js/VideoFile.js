@@ -7,6 +7,8 @@ export default class VideoFile extends EventEmitter {
         this.probe = probeData;
         this.screenshots = screenshots;
         this.container = null;
+        this.analyser = null;
+        this.dataArray = null;
 
         this._elCache = null;
 
@@ -28,15 +30,33 @@ export default class VideoFile extends EventEmitter {
             if (el === undefined)
                 return null;
             this.source = VideoFile.audioContext.createMediaElementSource(el);
+
+            if (this.analyser)
+                this.analyser.disconnect();
             if (this.gainNode)
                 this.gainNode.disconnect();
+
             this.gainNode = VideoFile.audioContext.createGain();
             this.source.connect(this.gainNode);
-            this.gainNode.connect(VideoFile.audioContext.destination);
+
+            if (this.isAudio) {
+                this.analyser = VideoFile.audioContext.createAnalyser();
+                this.analyser.fftSize = 2048;
+                this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+                this.gainNode.connect(this.analyser);
+                this.analyser.connect(VideoFile.audioContext.destination);
+            } else {
+                this.gainNode.connect(VideoFile.audioContext.destination);
+            }
             if (el)
                 this._elCache = el;
         }
         return this._elCache;
+    }
+
+    get isAudio() {
+        return this.videoStream.codec_name === 'png' || this.videoStream.codec_name === 'jpg';
     }
 
     get fileName() {

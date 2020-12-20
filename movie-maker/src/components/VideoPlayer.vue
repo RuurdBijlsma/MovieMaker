@@ -6,13 +6,16 @@
                    v-for="videoFile in videoFiles"
                    :key="videoFile.filePath"
                    :id="videoFile.filePath"
+                   v-show="!isAudio"
                    :src="videoFile.filePath"
                    :style="{
                         width: videoWidth + 'px',
-                        height: videoWidth / videoFile.aspectRatio + 'px',
-                        visibility: videoFile === activeFragment.video ? 'visible': 'hidden',
+                        height: videoHeight(videoFile) + 'px',
+                        visibility: videoFile === activeFragment.video &&
+                            !isAudio ? 'visible': 'hidden',
                    }"
             ></video>
+            <canvas v-show="isAudio" ref="audioCanvas"></canvas>
         </div>
         <div class="controls" :class="{fullscreen}">
             <div class="time-control" v-if="videoFiles.length > 0"
@@ -78,13 +81,21 @@ export default {
         bounds: null,
         timeInterval: -1,
         prevVolume: 1,
+        canvas: null,
+        context: null,
+        animationFrame: -1,
     }),
     beforeDestroy() {
         clearInterval(this.timeInterval);
         window.removeEventListener('resize', this.windowResize);
         this.$store.commit('videosContainer', null);
+        cancelAnimationFrame(this.animationFrame);
     },
     mounted() {
+        this.canvas = this.$refs.audioCanvas;
+        this.context = this.canvas.getContext('2d');
+        this.animationFrame = requestAnimationFrame(() => this.visualizeAudio());
+
         this.$store.commit('videosContainer', this.$refs.videosContainer);
         this.windowResize();
         window.addEventListener('resize', this.windowResize, false);
@@ -113,6 +124,48 @@ export default {
         }, 1000 / 60);
     },
     methods: {
+        resizeCanvas() {
+            this.canvas.width = this.videoWidth;
+            this.canvas.height = this.maxVideoHeight;
+        },
+        visualizeAudio() {
+            this.animationFrame = requestAnimationFrame(() => this.visualizeAudio());
+            if (!this.isAudio)
+                return;
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            let video = this.activeFragment.video;
+            video.analyser.getByteTimeDomainData(video.dataArray);
+            let bufferLength = video.analyser.frequencyBinCount;
+
+            this.context.lineWidth = 2;
+            this.context.strokeStyle = this.themeColors.primary;
+
+            this.context.beginPath();
+
+            const sliceWidth = this.canvas.width * 1.0 / bufferLength;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+
+                const v = video.dataArray[i] / 128.0;
+                const y = v * this.canvas.height / 2;
+
+                if (i === 0) {
+                    this.context.moveTo(x, y);
+                } else {
+                    this.context.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+
+            this.context.lineTo(this.canvas.width, this.canvas.height / 2);
+            this.context.stroke();
+        },
+        videoHeight(video) {
+            return this.videoWidth / video.aspectRatio
+        },
         toggleMute() {
             if (this.playerVolume > 0) {
                 this.prevVolume = this.playerVolume;
@@ -142,6 +195,7 @@ export default {
         },
         windowResize() {
             this.bounds = this.$refs.player.$el.getBoundingClientRect();
+            this.resizeCanvas();
         },
         ...mapActions(['play', 'pause', 'playNextFragment', 'skipFrames', 'addSnack'])
     },
@@ -199,12 +253,14 @@ export default {
             return this.bounds.width;
         },
         maxVideoHeight() {
-            let maxRatio = this.videoFiles.reduce((a, b) => Math.min(a, b.aspectRatio), 3);
+            let maxRatio = this.videoFiles
+                .filter(v => !v.isAudio)
+                .reduce((a, b) => Math.min(a, b.aspectRatio), 3);
             return this.videoWidth / maxRatio;
         },
         ...mapGetters([
             'fullDuration', 'toHms', 'progressAtFragmentProgress',
-            'canSkipFrameLeft', 'canSkipFrameRight'
+            'canSkipFrameLeft', 'canSkipFrameRight', 'isAudio', 'themeColors',
         ]),
         ...mapState({
             videoFiles: state => state.videoFiles,
@@ -230,6 +286,11 @@ export default {
 .player video {
     width: 100%;
     position: absolute;
+}
+
+.videos {
+    display: flex;
+    align-items: center;
 }
 
 .controls {
