@@ -5,7 +5,7 @@
                 <v-expansion-panel :disabled="!youtube.show">
                     <v-expansion-panel-header>
                         <div>
-                            <v-icon class="mr-3" color="red">mdi-youtube</v-icon>
+                            <v-icon class="mr-3" :color="youtube.show ? 'red' : ''">mdi-youtube</v-icon>
                             YouTube
                         </div>
                     </v-expansion-panel-header>
