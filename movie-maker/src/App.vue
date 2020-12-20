@@ -31,8 +31,6 @@
 // TODO: Features
 // test for bugs
 
-// fix bug with player being too high after having opened an audio track?
-// audio player
 
 // add audio track to video
 // Advanced export (visualize filter graph)
@@ -41,6 +39,8 @@
 // add cpu priority to settings
 
 // DONE TODO
+// fix bug with player being too high after having opened an audio track?
+// audio player
 // duplicate fragment
 // when loading project with start point, the video time isn't set correctly
 // on simple edits frames before the start time still get decoded
