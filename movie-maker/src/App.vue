@@ -30,6 +30,8 @@
 <script>
 // TODO: Features
 // test for bugs
+// End time + playback rate change = bug
+// support for video without audio stream
 
 
 // add audio track to video

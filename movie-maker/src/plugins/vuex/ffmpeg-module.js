@@ -38,8 +38,10 @@ export default {
             for (let i = 0; i < fragments.length; i++) {
                 let fragment = fragments[i];
                 let videoIndex = rootState.videoFiles.indexOf(fragment.video);
-                let start = fragment.start * fragment.video.duration - getters.earliestStart(fragment.video);
-                let end = fragment.end * fragment.video.duration;
+                let earliestStart = getters.earliestStart(fragment.video);
+                let start = fragment.start * fragment.video.duration - earliestStart;
+                let end = fragment.end * fragment.video.duration - earliestStart;
+                console.log({earliestStart, start, end})
                 filter.push({
                     filter: parseFilter([
                         ['trim', `start=${start}:end=${end}`],
@@ -48,6 +50,19 @@ export default {
                     inputs: `[${videoIndex}:v]`,
                     outputs: 'v' + i,
                 });
+
+                if (!fragment.video.hasAudio) {
+                    let duration = (end - start) / fragment.playbackRate;
+                    console.log("DURATION", duration)
+                    filter.push({
+                        filter: 'aevalsrc',
+                        options: {exprs: '0', duration},
+                        outputs: 'a' + i,
+                    })
+                    continue;
+                }
+                // Audio filters:
+
                 let tempoCommands = [];
                 let playbackRate = fragment.playbackRate;
                 let minTempo = 0.5;
@@ -218,7 +233,9 @@ export default {
                 ffmpeg()
                     .input(Utils.fixPath(filePath))
                     .complexFilter(filter, 'out')
-                    .on('error', (err, stdout, stderr) => reject({err, stdout, stderr}))
+                    .on('error', (err, stdout, stderr) => {
+                        console.warn(`Error processing audio wave for ${filePath}`)
+                    })
                     .on('stderr', line => {
                         line = line.trim();
                         if (line.startsWith('LRA low:'))

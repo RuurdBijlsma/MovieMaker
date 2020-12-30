@@ -55,6 +55,10 @@ export default class VideoFile extends EventEmitter {
         return this._elCache;
     }
 
+    get hasAudio() {
+        return this.audioStream !== undefined;
+    }
+
     get isAudio() {
         return this.videoStream.codec_name === 'png' || this.videoStream.codec_name === 'jpg';
     }
