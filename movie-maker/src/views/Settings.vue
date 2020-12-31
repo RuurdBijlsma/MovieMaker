@@ -6,7 +6,7 @@
             Back to editor
         </v-btn>
         <v-divider class="mt-2 mb-2"></v-divider>
-        <div class="secrets" v-if="false">
+        <div class="secrets">
             <h2>Secrets</h2>
             <p class="caption">These values must be set before using features related to YouTube. Order: YouTube Id,
                 Youtube
