@@ -92,6 +92,7 @@ export default {
             commit('timeline', []);
             commit('progress', 0);
             commit('hasUnsavedAction', false);
+            commit('videoFiles', []);
             if (overwriteFilePath)
                 commit('projectFilePath', '');
             commit('videosContainer', null);

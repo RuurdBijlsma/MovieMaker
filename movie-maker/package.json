@@ -1,6 +1,6 @@
 {
   "name": "movie-maker",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Edit videos",
   "keywords": [
     "Edit",
@@ -19,6 +19,7 @@
     "build": "vue-cli-service build",
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
+    "electron:publish": "build -p always",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
@@ -28,7 +29,9 @@
     "abort-controller": "^3.0.0",
     "core-js": "^3.8.1",
     "electron-context-menu": "^2.3.0",
+    "electron-log": "^4.3.1",
     "electron-store": "^6.0.1",
+    "electron-updater": "^4.3.5",
     "express": "^4.17.1",
     "ffbinaries": "^1.1.4",
     "fluent-ffmpeg": "^2.1.2",

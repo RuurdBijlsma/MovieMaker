@@ -70,6 +70,9 @@ export default {
         },
     },
     getters: {
+        appVersion: () => {
+            return remote.app.getVersion();
+        },
         systemProgress: (state, getters, rootState) => {
             let status = rootState.exportStatus;
             if (getters.isExporting && getters.exportProgress <= 0) {

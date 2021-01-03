@@ -30,8 +30,6 @@
 <script>
 // TODO: Features
 // test for bugs
-// End time + playback rate change = bug
-// support for video without audio stream
 
 
 // add audio track to video
@@ -41,6 +39,8 @@
 // add cpu priority to settings
 
 // DONE TODO
+// End time + playback rate change = bug
+// support for video without audio stream
 // fix bug with player being too high after having opened an audio track?
 // audio player
 // duplicate fragment
@@ -139,13 +139,12 @@ import CustomHeader from "@/components/CustomHeader";
 import VideoInfoFooter from "@/components/VideoInfoFooter";
 import electron from "electron";
 import contextMenu from "electron-context-menu";
-import path from 'path'
 import Utils from "@/js/Utils";
 import CustomDialog from "@/components/CustomDialog";
 import ExportDialog from "@/components/ExportDialog";
 import ExportStatus from "@/components/ExportStatus";
 import CustomPrompt from "@/components/CustomPrompt";
-import AbortSignal from "@/js/AbortSignal";
+
 
 export default {
     name: 'App',

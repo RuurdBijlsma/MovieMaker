@@ -1,10 +1,15 @@
 <template>
     <div class="settings">
         <v-divider class="mt-2 mb-2"></v-divider>
-        <v-btn to="/" text>
-            <v-icon small class="mr-2">mdi-chevron-left</v-icon>
-            Back to editor
-        </v-btn>
+        <div class="settings-top">
+            <v-btn to="/" text>
+                <v-icon small class="mr-2">mdi-chevron-left</v-icon>
+                Back to editor
+            </v-btn>
+            <v-btn to="/" text disabled>
+                Version: {{ appVersion }}
+            </v-btn>
+        </div>
         <v-divider class="mt-2 mb-2"></v-divider>
         <div class="secrets">
             <h2>Secrets</h2>
@@ -84,7 +89,7 @@
 
 <script>
 import Vuetify from '../plugins/vuetify'
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 
 const theme = Vuetify.framework.theme.themes[Vuetify.framework.theme.isDark ? 'dark' : 'light'];
 export default {
@@ -158,6 +163,7 @@ export default {
         },
     },
     computed: {
+        ...mapGetters(['appVersion']),
         ...mapState({
             auth: state => state.auth,
         }),
@@ -174,6 +180,12 @@ export default {
     display: flex;
     flex-direction: column;
     place-items: start;
+}
+
+.settings-top {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
 }
 
 .colors {

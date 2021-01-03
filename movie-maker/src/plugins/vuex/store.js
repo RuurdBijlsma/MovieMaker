@@ -170,6 +170,7 @@ export default new Vuex.Store({
         activeFragment: (state, fragment) => {
             state.activeFragment = fragment
         },
+        videoFiles: (state, videoFiles) => state.videoFiles = videoFiles,
         progress: (state, progress) => state.player.progress = progress,
         playing: (state, playing) => state.player.playing = playing,
         playerWidth: (state, percent) =>

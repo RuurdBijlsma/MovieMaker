@@ -11,6 +11,11 @@ import {upload} from "@/js/yt";
 const Store = require('electron-store');
 const store = new Store();
 import AbortController from "abort-controller";
+import {autoUpdater} from "electron-updater";
+import log from "electron-log";
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -162,6 +167,7 @@ app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,Media
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
+    autoUpdater.checkForUpdatesAndNotify().then(r => console.log('updater', r));
     app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
     registerLocalResourceProtocol()
