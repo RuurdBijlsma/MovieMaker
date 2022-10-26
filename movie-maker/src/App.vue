@@ -171,6 +171,7 @@ export default {
         });
         electron.ipcRenderer.on('open-file', async (e, args) => {
             electron.ipcRenderer.send('received-file');
+            console.log("RECEIVED OPEN FILE COMMAND", args);
             if (args.length === 1 && Utils.isProjectFile(args[0])) {
 
                 this.$store.commit('importProjectLoading', true);

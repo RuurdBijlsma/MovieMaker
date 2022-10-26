@@ -3,7 +3,7 @@ import path from 'path';
 export default class Utils {
     static isProjectFile(filePath) {
         let ext = path.extname(filePath);
-        return ext === '.rmm' || ext === '.RMM';
+        return ext.toLowerCase() === '.rmm';
     }
 
     static readableBytes(bytes, si = true, dp = 1) {

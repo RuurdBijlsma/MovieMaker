@@ -83,12 +83,14 @@ function createWindow() {
     let openFiles;
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         openFiles = process.argv.slice(2);
+        console.log(openFiles, {length: openFiles.length});
         // Load the url of the dev server if in development mode
         // win.loadURL(`file://${__dirname}/dist/index.html`);
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + `?file=${openFiles.length > 0}`);
         if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
         openFiles = process.argv.slice(1);
+        console.log(openFiles, {length: openFiles.length});
         let query = '?file=';
         if (openFiles.length === 1 && Utils.isProjectFile(openFiles[0])) {
             query += 'project';
@@ -106,6 +108,7 @@ function createWindow() {
         // win.webContents.openDevTools()
     }
 
+    // openFiles = ['C:/Users/Ruurd/Videos/Rocket League/Rocket League 2022.10.26 - 13.10.26.04.DVR.mp4']
     let receivedFile = false;
     ipcMain.on('received-file', () => receivedFile = true);
     let sendInterval = setInterval(() => {
