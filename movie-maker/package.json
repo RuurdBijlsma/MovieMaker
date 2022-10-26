@@ -19,7 +19,7 @@
     "build": "vue-cli-service build",
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
-    "electron:publish": "npm run electron:build -- -p always",
+    "electron:publish": "set GH_TOKEN=asdfasdfascf & npm run electron:build -- -p always",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
