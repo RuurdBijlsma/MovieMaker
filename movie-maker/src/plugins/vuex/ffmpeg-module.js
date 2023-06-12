@@ -387,6 +387,7 @@ export default {
         },
         async getPaths({state}) {
             const downloadDirectory = Directories.files;
+            console.log(`Start download of ffmpeg to ${downloadDirectory}!`);
             return new Promise(async (resolve) => {
                 if (state.paths)
                     return resolve(state.paths);
@@ -394,7 +395,10 @@ export default {
                     return state.downloadEvent.once('downloaded', resolve);
 
                 state.downloading = true;
-                ffbinaries.downloadBinaries(['ffmpeg', 'ffprobe'], {destination: downloadDirectory}, () => {
+                ffbinaries.downloadBinaries(['ffmpeg', 'ffprobe'], {destination: downloadDirectory}, err => {
+                    if (err) {
+                        console.error("FFMPEG DOWNLOAD ERROR:", err);
+                    }
                     state.paths = {
                         ffmpeg: path.join(downloadDirectory, ffbinaries.getBinaryFilename('ffmpeg', ffbinaries.detectPlatform())),
                         ffprobe: path.join(downloadDirectory, ffbinaries.getBinaryFilename('ffprobe', ffbinaries.detectPlatform())),
