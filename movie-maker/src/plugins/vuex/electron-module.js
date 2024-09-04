@@ -247,19 +247,6 @@ export default {
             } catch (e) {
             }
         },
-        async secureClose({commit, rootState, dispatch}) {
-            if (rootState.command.hasUnsavedAction) {
-                currentWindow.focus();
-                commit('showPrompt', {
-                    title: 'Are you sure you want to close?',
-                    subtitle: 'You may have unsaved changes',
-                    confirmText: 'Close',
-                    onConfirm: () => dispatch('closeWindow'),
-                });
-            } else {
-                dispatch('closeWindow');
-            }
-        },
         async openFile({}, filePath) {
             await electron.shell.openExternal(filePath);
         },

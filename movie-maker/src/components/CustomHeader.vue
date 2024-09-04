@@ -156,7 +156,7 @@
             <v-btn class="no-drag" icon @click="$store.dispatch('minimizeWindow')">
                 <v-icon>mdi-minus</v-icon>
             </v-btn>
-            <v-btn class="no-drag close-button" icon @click="secureClose">
+            <v-btn class="no-drag close-button" icon @click="closeWindow">
                 <v-icon>mdi-close</v-icon>
             </v-btn>
         </div>
@@ -190,7 +190,7 @@ export default {
                 this.$router.push("/");
         },
         ...mapActions([
-            'promptVideoInput', 'exportToYouTube', 'exportVideoAs', 'secureClose',
+            'promptVideoInput', 'exportToYouTube', 'exportVideoAs', 'closeWindow',
             'promptProjectInput', 'saveProjectAs', 'newProject', 'saveProject', 'addSnack',
         ]),
     },
