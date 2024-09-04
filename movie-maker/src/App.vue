@@ -167,7 +167,7 @@ export default {
 
         let electron = window.require('electron');
         electron.ipcRenderer.on('before-close', async () => {
-            await this.$store.dispatch('secureClose');
+            await this.$store.dispatch('closeWindow');
         });
         electron.ipcRenderer.on('open-file', async (e, args) => {
             electron.ipcRenderer.send('received-file');
